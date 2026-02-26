@@ -1,0 +1,43 @@
+name: "🐞 Bug Report"
+description: "버그 해결을 위한 이슈 템플릿"
+labels: ["bug", "priority:high"]
+title: "[BUG] "
+body:
+  - type: textarea
+    id: bug-summary
+    attributes:
+      label: 💡 버그 설명
+      description: 발생한 버그에 대해 간결하게 설명해 주세요.
+      placeholder:
+        e.g.
+        로그인 시도 시 화면이 멈춥니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction-steps
+    attributes:
+      label: 📝 재현 경로 및 상황 설명
+      description: 어떤 상황에서, 어떤 행동을 했을 때, 어떤 문제가 발생했는지 순서대로 적어주세요.
+      placeholder: |
+        e.g.
+        - 상황: 사용자가 앱을 실행하고 로그아웃 상태입니다.
+        - 시기: 로그인 버튼을 누르고 이메일과 비밀번호를 입력합니다.
+        - 문제: 버튼이 비활성화되며 화면 전환이 이루어지지 않습니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-result
+    attributes:
+      label: 🎯 예상 결과
+      description: 예상했던 정상 결과는 무엇이었는지 설명해주세요.
+      placeholder: e.g. 로그인 성공 후 메인 페이지로 이동해야 합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📋 추가 정보 (로그, 스크린샷, 환경 등)
+      description: 스크린샷, 에러 로그, 사용 환경(OS, 브라우저/앱 버전) 등 참고할만한 자료를 첨부해주세요.
