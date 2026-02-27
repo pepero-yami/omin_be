@@ -15,3 +15,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+app:
+  seed:
+    enabled: true  # TODO(prod): 운영에서는 반드시 false 또는 local 프로필로 제한할 것
