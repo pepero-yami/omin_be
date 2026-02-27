@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest
@@ -42,6 +43,7 @@ class RegionApiTest {
                         .content("""
                                 {"address":"서울"}
                                 """))
+                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(201))
@@ -57,6 +59,7 @@ class RegionApiTest {
                         .content("""
                                 {"address":""}
                                 """))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("validation failed"))
@@ -70,6 +73,7 @@ class RegionApiTest {
         given(regionService.get(id)).willThrow(new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
 
         mockMvc.perform(get("/api/v1/region/{regionId}", id))
+                .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.data.error").value("NOT_FOUND"));
@@ -85,6 +89,7 @@ class RegionApiTest {
                         .content("""
                                 {"address":"서울"}
                                 """))
+                .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
                 .andExpect(jsonPath("$.data.error").value("CONFLICT"));
@@ -96,6 +101,7 @@ class RegionApiTest {
         willDoNothing().given(regionService).delete(id);
 
         mockMvc.perform(delete("/api/v1/region/{regionId}", id))
+                .andDo(print())
                 .andExpect(status().isNoContent());
     }
 
@@ -110,6 +116,7 @@ class RegionApiTest {
         ));
 
         mockMvc.perform(get("/api/v1/regions"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("ok"))
