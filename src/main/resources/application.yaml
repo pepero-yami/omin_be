@@ -1,3 +1,17 @@
 spring:
   application:
     name: omin
+  datasource:
+    #host: localhost, 포트: 5432, DB명: omindb
+    url: jdbc:postgresql://localhost:5432/omindb
+    username: omin_user
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 엔티티 변경 시 DB 테이블 자동 갱신
+    show-sql: true     # 실행되는 SQL을 로그로 출력
+    properties:
+      hibernate:
+        format_sql: true
