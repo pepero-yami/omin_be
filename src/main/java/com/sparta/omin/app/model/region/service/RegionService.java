@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional(readOnly = true)
 public class RegionService {
 
     private final RegionRepository regionRepository;
@@ -39,7 +40,6 @@ public class RegionService {
         return RegionResponse.of(saved.getId(), saved.getAddress());
     }
 
-    @Transactional(readOnly = true)
     public RegionResponse get(UUID regionId) {
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
                 // TODO(error): 404 Not Found로 내려주는 커스텀 예외로 교체하는 게 좋을듯
@@ -78,7 +78,6 @@ public class RegionService {
         region.softDelete(actorId, now);
     }
 
-    @Transactional(readOnly = true)
     public List<RegionResponse> list() {
         return regionRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc()
                 .stream()
