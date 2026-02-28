@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.region.service;
 
+import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.dto.RegionCreateRequest;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
@@ -18,14 +19,17 @@ import java.util.UUID;
 public class RegionService {
 
     private final RegionRepository regionRepository;
+    private final KakaoAddressClient kakaoAddressClient;
 
-    public RegionService(RegionRepository regionRepository) {
+    public RegionService(RegionRepository regionRepository, KakaoAddressClient kakaoAddressClient) {
         this.regionRepository = regionRepository;
+        this.kakaoAddressClient = kakaoAddressClient;
     }
 
     @Transactional
     public RegionResponse create(RegionCreateRequest request) {
-        String address = request.getAddress().trim();
+        String rawAddress = request.getAddress().trim();
+        String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         if (regionRepository.existsByAddressAndIsDeletedFalse(address)) {
             // TODO(error): 409 Conflict로 내려주는 커스텀 예외로 교체하는 게 좋을듯
@@ -50,7 +54,8 @@ public class RegionService {
 
     @Transactional
     public RegionResponse update(UUID regionId, RegionUpdateRequest request) {
-        String address = request.getAddress().trim();
+        String rawAddress = request.getAddress().trim();
+        String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
