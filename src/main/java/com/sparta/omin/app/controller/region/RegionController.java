@@ -4,9 +4,8 @@ import com.sparta.omin.app.model.region.dto.RegionCreateRequest;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.common.response.ApiResponse;
-import com.sparta.omin.common.response.ResponseUtil;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,31 +26,32 @@ public class RegionController {
     }
 
     @PostMapping("/region")
-    public ResponseEntity<ApiResponse<RegionResponse>> create(@Valid @RequestBody RegionCreateRequest request) {
-        return ResponseUtil.created(regionService.create(request));
+    public ResponseEntity<RegionResponse> create(@Valid @RequestBody RegionCreateRequest request) {
+        RegionResponse created = regionService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/region/{regionId}")
-    public ResponseEntity<ApiResponse<RegionResponse>> get(@PathVariable UUID regionId) {
-        return ResponseUtil.ok(regionService.get(regionId));
+    public ResponseEntity<RegionResponse> get(@PathVariable UUID regionId) {
+        return ResponseEntity.ok(regionService.get(regionId));
     }
 
     @PutMapping("/region/{regionId}")
-    public ResponseEntity<ApiResponse<RegionResponse>> update(
+    public ResponseEntity<RegionResponse> update(
             @PathVariable UUID regionId,
             @Valid @RequestBody RegionUpdateRequest request
     ) {
-        return ResponseUtil.ok(regionService.update(regionId, request));
+        return ResponseEntity.ok(regionService.update(regionId, request));
     }
 
     @DeleteMapping("/region/{regionId}")
     public ResponseEntity<Void> delete(@PathVariable UUID regionId) {
         regionService.delete(regionId);
-        return ResponseUtil.noContent();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/regions")
-    public ResponseEntity<ApiResponse<List<RegionResponse>>> list() {
-        return ResponseUtil.ok(regionService.list());
+    public ResponseEntity<List<RegionResponse>> list() {
+        return ResponseEntity.ok(regionService.list());
     }
 }
