@@ -46,10 +46,8 @@ class RegionApiTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.message").value("ok"))
-                .andExpect(jsonPath("$.data.uuid").value(id.toString()))
-                .andExpect(jsonPath("$.data.address").value("서울"));
+                .andExpect(jsonPath("$.uuid").value(id.toString()))
+                .andExpect(jsonPath("$.address").value("서울"));
     }
 
     @Test
@@ -61,10 +59,9 @@ class RegionApiTest {
                                 """))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("validation failed"))
-                .andExpect(jsonPath("$.data.error").value("VALIDATION_ERROR"))
-                .andExpect(jsonPath("$.data.details.address").exists());
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details.address").exists());
     }
 
     @Test
@@ -75,8 +72,9 @@ class RegionApiTest {
         mockMvc.perform(get("/api/v1/region/{regionId}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.data.error").value("NOT_FOUND"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("NOT_FOUND"))
+                .andExpect(jsonPath("$.details").exists());
     }
 
     @Test
@@ -91,8 +89,9 @@ class RegionApiTest {
                                 """))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.data.error").value("CONFLICT"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("CONFLICT"))
+                .andExpect(jsonPath("$.details").exists());
     }
 
     @Test
@@ -118,11 +117,10 @@ class RegionApiTest {
         mockMvc.perform(get("/api/v1/regions"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("ok"))
-                .andExpect(jsonPath("$.data[0].uuid").value(id1.toString()))
-                .andExpect(jsonPath("$.data[0].address").value("A"))
-                .andExpect(jsonPath("$.data[1].uuid").value(id2.toString()))
-                .andExpect(jsonPath("$.data[1].address").value("B"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].uuid").value(id1.toString()))
+                .andExpect(jsonPath("$[0].address").value("A"))
+                .andExpect(jsonPath("$[1].uuid").value(id2.toString()))
+                .andExpect(jsonPath("$[1].address").value("B"));
     }
 }
