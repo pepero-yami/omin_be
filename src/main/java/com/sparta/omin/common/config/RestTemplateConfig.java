@@ -11,8 +11,9 @@ import java.time.Duration;
 @Configuration
 public class RestTemplateConfig {
 
-    @Bean
-    public RestTemplate restTemplate() {
+    @Bean(name = "kakaoRestTemplate")
+    public RestTemplate kakaoRestTemplate() {
+        // 외부 API 의존이므로 무한대기 방지
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(2))
                 .build();

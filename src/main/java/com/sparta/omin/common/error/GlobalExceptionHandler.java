@@ -29,6 +29,12 @@ public class GlobalExceptionHandler {
         return ResponseUtil.error(HttpStatus.CONFLICT, e.getMessage(), "CONFLICT");
     }
 
+    //502: 외부 API 장애/연동 실패
+    @ExceptionHandler(KakaoApiException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleKakaoApiException(KakaoApiException e) {
+        return ResponseUtil.error(HttpStatus.BAD_GATEWAY, e.getMessage(), "KAKAO_API_ERROR");
+    }
+
     //400: Validation 실패 (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<ErrorResponse>> handleValidation(MethodArgumentNotValidException e) {

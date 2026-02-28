@@ -7,6 +7,7 @@ import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
 import com.sparta.omin.common.util.AuditUserProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +16,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RegionService {
 
     private final RegionRepository regionRepository;
     private final KakaoAddressClient kakaoAddressClient;
-
-    public RegionService(RegionRepository regionRepository, KakaoAddressClient kakaoAddressClient) {
-        this.regionRepository = regionRepository;
-        this.kakaoAddressClient = kakaoAddressClient;
-    }
 
     @Transactional
     public RegionResponse create(RegionCreateRequest request) {
