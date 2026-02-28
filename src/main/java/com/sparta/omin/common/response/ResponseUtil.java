@@ -1,5 +1,6 @@
 package com.sparta.omin.common.response;
 
+import com.sparta.omin.common.error.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -22,5 +23,15 @@ public final class ResponseUtil {
     //DELETE 204 No Content - 바디 없음
     public static ResponseEntity<Void> noContent() {
         return ResponseEntity.noContent().build();
+    }
+
+    public static <T> ResponseEntity<ApiResponse<T>> error(HttpStatus status, String message, T data) {
+        return ResponseEntity
+                .status(status)
+                .body(ApiResponse.of(status.value(), message, data));
+    }
+
+    public static ResponseEntity<ApiResponse<ErrorResponse>> error(HttpStatus status, String message, String code) {
+        return error(status, message, ErrorResponse.of(code));
     }
 }

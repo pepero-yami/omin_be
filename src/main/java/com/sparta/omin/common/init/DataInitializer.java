@@ -59,7 +59,7 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         List<Region> regions = regionAddresses.stream()
-                .map(addr -> Region.create(UUID.randomUUID(), addr, actorId, now))
+                .map(addr -> Region.create(UUID.randomUUID(), addr, actorId))
                 .toList();
 
         regionRepository.saveAll(regions);
