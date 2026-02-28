@@ -32,9 +32,8 @@ public class RegionService {
         }
 
         UUID actorId = AuditUserProvider.currentUserId(); // TODO(auth): 인증 붙이면 실제 로그인 유저로 변경
-        LocalDateTime now = LocalDateTime.now();
-
-        Region region = Region.create(UUID.randomUUID(), address, actorId, now);
+        // createdAt/updatedAt은 JPA Auditing(@CreatedDate/@LastModifiedDate)으로 자동 세팅
+        Region region = Region.create(UUID.randomUUID(), address, actorId);
         Region saved = regionRepository.save(region);
 
         return RegionResponse.of(saved.getId(), saved.getAddress());
@@ -62,9 +61,8 @@ public class RegionService {
         }
 
         UUID actorId = AuditUserProvider.currentUserId(); // TODO(auth): 인증 붙이면 실제 로그인 유저로 변경
-        LocalDateTime now = LocalDateTime.now();
-
-        region.updateAddress(address, actorId, now);
+        // updatedAt은 JPA Auditing(@LastModifiedDate)으로 자동 갱신
+        region.updateAddress(address, actorId);
 
         return RegionResponse.of(region.getId(), region.getAddress());
     }
@@ -75,8 +73,8 @@ public class RegionService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
 
         UUID actorId = AuditUserProvider.currentUserId(); // TODO(auth): 인증 붙이면 실제 로그인 유저로 변경
+        // deletedAt은 Auditing 대상이 아니므로 삭제 시점 now를 여기서만 세팅
         LocalDateTime now = LocalDateTime.now();
-
         region.softDelete(actorId, now);
     }
 
