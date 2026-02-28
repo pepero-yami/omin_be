@@ -25,7 +25,7 @@ public class RegionService {
 
     @Transactional
     public RegionResponse create(RegionCreateRequest request) {
-        String rawAddress = request.getAddress().trim();
+        String rawAddress = request.address().trim();
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         if (regionRepository.existsByAddressAndIsDeletedFalse(address)) {
@@ -51,7 +51,7 @@ public class RegionService {
 
     @Transactional
     public RegionResponse update(UUID regionId, RegionUpdateRequest request) {
-        String rawAddress = request.getAddress().trim();
+        String rawAddress = request.address().trim();
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
