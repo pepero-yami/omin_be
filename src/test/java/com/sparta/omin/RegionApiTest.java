@@ -2,7 +2,7 @@ package com.sparta.omin;
 
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.common.config.SecurityConfig;
+import com.sparta.omin.app.security.config.SecurityConfig;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
