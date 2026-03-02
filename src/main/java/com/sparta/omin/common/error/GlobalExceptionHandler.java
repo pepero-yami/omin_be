@@ -1,5 +1,8 @@
 package com.sparta.omin.common.error;
 
+import com.sparta.omin.common.error.constants.ErrorCode;
+import com.sparta.omin.common.error.dto.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -11,8 +14,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        log.error("{} is occurred", errorCode);
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.of(errorCode.getDescription()));
+    }
 
     //TODO(error): 도메인 확장되면 NotFoundException 같은 커스텀 예외로 분리하는 게 좋을지도...
     @ExceptionHandler(IllegalArgumentException.class)
