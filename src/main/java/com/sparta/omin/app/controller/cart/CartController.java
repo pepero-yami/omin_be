@@ -40,7 +40,7 @@ public class CartController {
         return ResponseEntity.ok(cartService.get(userId));
     }
 
-    // TODO create 메서드와 통합시켜야함
+    // TODO create 메서드와 통합시켜야함 - - 완료 API 명세서에 따라 일단 유지
     @PostMapping("/cart/{cartId}")
     public ResponseEntity<CartItemResponse> addCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request) {
         return ResponseEntity.ok(cartItemService.create(cartId, request));
