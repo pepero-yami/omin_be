@@ -1,0 +1,107 @@
+package com.sparta.omin.app.model.user.entity;
+
+import com.sparta.omin.app.model.user.constants.Role;
+import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.constants.ErrorCode;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
+import java.util.Collection;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Entity
+@Getter
+@NoArgsConstructor
+@Table(name = "p_user")
+public class User extends BaseTimeEntity implements UserDetails {
+
+	@Id
+	@GeneratedValue
+	@UuidGenerator
+	@Column(name = "id", updatable = false, nullable = false)
+	private UUID id;
+
+	@Column(name = "name", nullable = false)
+	private String name;
+
+	@Column(name = "nickname", nullable = false)
+	@Size(min = 2, max = 10)
+	private String nickname;
+
+	@Column(name = "email", nullable = false, unique = true)
+	private String email;
+
+	@Column(name = "password", nullable = false)
+	private String password;
+
+	@Column(name = "role")
+	@Enumerated(EnumType.STRING)
+	private Role role;
+
+	@Column(name = "is_deleted", nullable = false)
+	private boolean isDeleted;
+
+	@Column(name = "deleted_by")
+	private UUID deletedBy;
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return role.getAuthorities().stream()
+			.map(SimpleGrantedAuthority::new)
+			.collect(Collectors.toList());
+	}
+
+	@Override
+	public String getUsername() {
+		return this.email;
+	}
+
+	@Builder
+	public User(String name, String nickname, String email, String password) {
+		this.name = name;
+		this.nickname = nickname;
+		this.email = email;
+		this.password = password;
+		this.role = Role.CUSTOMER;
+	}
+
+	public void edit(String nickname, String password) {
+		validateCheckEditRequest(nickname, password);
+		this.nickname = nickname != null && !nickname.isBlank() ? nickname : this.nickname;
+		this.password = password != null && !password.isBlank() ? password : this.password;
+	}
+
+	private void validateCheckEditRequest(String nickname, String password) {
+		if (nickname != null && !nickname.isBlank()) {
+			if (!nickname.matches("^[a-zA-Z0-9가-힣]{2,10}$")) {
+				throw new ApiException(ErrorCode.NICKNAME_POLICY_VIOLATION);
+			}
+		}
+
+		if (password != null && !password.isBlank()) {
+			if (!password.matches(
+				"^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$")) {
+				throw new ApiException(ErrorCode.PASSWORD_POLICY_VIOLATION);
+			}
+		}
+	}
+
+	public void softDelete(UUID id) {
+		this.isDeleted = true;
+		this.deletedBy = id;
+	}
+}
