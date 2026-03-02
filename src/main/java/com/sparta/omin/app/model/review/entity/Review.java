@@ -46,8 +46,7 @@ public class Review extends BaseAuditEntity {
             UUID userId,
             UUID orderId,
             double rating,
-            String comment,
-            UUID actorId
+            String comment
     ) {
 
         Review review = new Review();
@@ -56,7 +55,7 @@ public class Review extends BaseAuditEntity {
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
-        review.markCreated(actorId);
+        review.markCreated(userId);
 
         return review;
     }
