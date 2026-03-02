@@ -28,8 +28,8 @@ public class CartController {
      * 주문 완료 → 카트 삭제 (or 비우기)
      */
     @PostMapping("/cart")
-    public ResponseEntity<CartResponse> create(@Valid @RequestBody CartCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.create(request));
+    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(request));
     }
 
     /**
@@ -40,7 +40,7 @@ public class CartController {
         return ResponseEntity.ok(cartService.get(userId));
     }
 
-    // controller 분리 고려
+    // TODO create 메서드와 통합시켜야함
     @PostMapping("/cart/{cartId}")
     public ResponseEntity<CartItemResponse> addCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request) {
         return ResponseEntity.ok(cartItemService.create(cartId, request));
