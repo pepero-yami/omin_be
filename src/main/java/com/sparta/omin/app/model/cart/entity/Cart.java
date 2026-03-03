@@ -49,12 +49,6 @@ public class Cart extends BaseTimeEntity {
     @Column(name = "updated_by", nullable = false)
     private UUID updatedBy;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "deleted_by")
-    private UUID deletedBy;
-
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
