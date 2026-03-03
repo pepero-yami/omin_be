@@ -13,9 +13,4 @@ public enum Role {
 	MASTER(List.of("ROLE_MASTER", "ROLE_MANAGER", "ROLE_OWNER", "ROLE_CUSTOMER"));
 
 	private final List<String> roles;
-
-	public List<String> getAuthorities() {
-		return roles;
-//			.map(role -> "ROLE_" + role.replace("ROLE_", ""))
-	}
 }
