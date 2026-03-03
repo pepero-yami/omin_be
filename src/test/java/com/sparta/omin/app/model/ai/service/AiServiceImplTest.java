@@ -3,6 +3,7 @@ package com.sparta.omin.app.model.ai.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.sparta.omin.app.model.ai.repos.AiLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,17 +25,15 @@ class AiServiceImplTest {
     @Mock
     private ChatClient chatClient;
     @Mock
-    private ChatClient.Builder chatClientBuilder;
-    @Mock
     private ChatClient.ChatClientRequestSpec requestSpec;
     @Mock
     private ChatClient.CallResponseSpec responseSpec;
+    @Mock
+    private AiLogRepository aiLogRepository;
 
     @BeforeEach
     void setUp() {
-        // ChatClient.Builder가 build()될 때 Mock ChatClient를 반환하도록 설정
-        when(chatClientBuilder.build()).thenReturn(chatClient);
-        aiService = new AiServiceImpl(chatClientBuilder);
+        aiService = new AiServiceImpl(chatClient, aiLogRepository);
     }
 
     @Test
