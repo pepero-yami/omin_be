@@ -1,8 +1,8 @@
 package com.sparta.omin.app.model.user.service;
 
-import com.sparta.omin.app.model.user.dto.RegisterUser;
+import com.sparta.omin.app.model.user.dto.UserRegister;
 import com.sparta.omin.app.model.user.dto.UserDto;
-import com.sparta.omin.app.model.user.dto.request.LoginUser;
+import com.sparta.omin.app.model.user.dto.request.UserLoginRequest;
 import com.sparta.omin.app.model.user.dto.response.TokenResponse;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
@@ -29,7 +29,7 @@ public class UserAuthService implements UserDetailsService {
 	private final JwtUtil jwtUtil;
 
 	@Transactional
-	public UserDto register(RegisterUser.Request request) {
+	public UserDto register(UserRegister.Request request) {
 		if (userRepository.existsByEmail(request.email())) {
 			throw new ApiException(ErrorCode.ALREADY_EMAIL_EXIST);
 		}
@@ -41,7 +41,7 @@ public class UserAuthService implements UserDetailsService {
 			.build()));
 	}
 
-	public TokenResponse login(LoginUser request) {
+	public TokenResponse login(UserLoginRequest request) {
 		User user = userRepository.findByEmailAndIsDeletedFalse(request.email()).orElseThrow(
 			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 		);

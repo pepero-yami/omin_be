@@ -1,6 +1,6 @@
 package com.sparta.omin.app.controller.user;
 
-import com.sparta.omin.app.model.user.dto.request.EditUserInfoRequest;
+import com.sparta.omin.app.model.user.dto.request.UserInfoEditRequest;
 import com.sparta.omin.app.model.user.dto.response.UserInfo;
 import com.sparta.omin.app.model.user.service.UserReadService;
 import com.sparta.omin.app.model.user.service.UserWriteService;
@@ -32,7 +32,7 @@ public class UserController {
 
 	@PutMapping
 	public ResponseEntity<UserInfo> editUserInfo(Principal principal,
-		@RequestBody EditUserInfoRequest request) {
+		@RequestBody UserInfoEditRequest request) {
 		return ResponseEntity.ok().body(
 			UserInfo.from(userWriteService.editInfo(principal.getName(),
 				request.nickname(),

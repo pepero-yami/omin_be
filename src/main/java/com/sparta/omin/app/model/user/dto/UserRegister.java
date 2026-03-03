@@ -6,9 +6,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
-public class RegisterUser {
+public class UserRegister {
 
-	private RegisterUser() {
+	private UserRegister() {
 	}
 
 	public record Request(

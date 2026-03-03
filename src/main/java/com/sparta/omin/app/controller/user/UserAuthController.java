@@ -1,7 +1,7 @@
 package com.sparta.omin.app.controller.user;
 
-import com.sparta.omin.app.model.user.dto.RegisterUser;
-import com.sparta.omin.app.model.user.dto.request.LoginUser;
+import com.sparta.omin.app.model.user.dto.UserRegister;
+import com.sparta.omin.app.model.user.dto.request.UserLoginRequest;
 import com.sparta.omin.app.model.user.dto.response.TokenResponse;
 import com.sparta.omin.app.model.user.service.UserAuthService;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +21,13 @@ public class UserAuthController {
 	private final UserAuthService userAuthService;
 
 	@PostMapping("/auth")
-	public ResponseEntity<RegisterUser.Response> signUp(@RequestBody RegisterUser.Request request) {
+	public ResponseEntity<UserRegister.Response> signUp(@RequestBody UserRegister.Request request) {
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(RegisterUser.Response.from(userAuthService.register(request)));
+			.body(UserRegister.Response.from(userAuthService.register(request)));
 	}
 
 	@PutMapping("/auth")
-	public ResponseEntity<TokenResponse> signIn(@RequestBody LoginUser request) {
+	public ResponseEntity<TokenResponse> signIn(@RequestBody UserLoginRequest request) {
 		return ResponseEntity.status(HttpStatus.OK)
 			.body(userAuthService.login(request));
 	}
