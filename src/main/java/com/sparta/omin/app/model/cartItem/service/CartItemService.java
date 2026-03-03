@@ -6,6 +6,8 @@ import com.sparta.omin.app.model.cartItem.dto.CartItemResponse;
 import com.sparta.omin.app.model.cartItem.dto.CartItemUpdateRequest;
 import com.sparta.omin.app.model.cartItem.entity.CartItem;
 import com.sparta.omin.app.model.cartItem.repos.CartItemRepository;
+import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,35 +23,49 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public CartItemResponse create(UUID cartId, CartItemUpdateRequest request) {
-        Cart cart = cartRepository.findById(cartId)
-                .orElseThrow(() -> new IllegalArgumentException("조회 가능한 카트가 없습니다."));
+    public CartItemResponse create(String userId, UUID cartId, CartItemUpdateRequest request) {
+        Cart cart = getActiveCart(toUuid(userId));
 
         // 같은 가게 상품인지 검증. 일단은 다른 가게일 경우 return
         if (!cart.getStoreId().equals(request.storeId())) {
-            throw new IllegalArgumentException("다른 가게의 상품은 담을 수 없습니다.");
+            throw new ApiException(ErrorCode.STORE_MISMATCH);
         }
 
-        // TODO 만약 같은 가게의 음식을 추후에 추가한다면? insert가 아니라 update가 필요하지않을까?
-        getCartItem(cartId, request.productId());
-
-        CartItem cartItem = CartItem.create(cart, request.productId(), request.quantity());
-        cartItemRepository.save(cartItem);
+        // 새 상품이면 insert, 이미 있다면 수량 추가 후 update
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
+                .map(item -> {
+                    item.update(item.getQuantity() + request.quantity());
+                    return cartItemRepository.save(item);
+                })
+                .orElseGet(() -> cartItemRepository.save(
+                        CartItem.create(cart, request.productId(), request.quantity())
+                ));
 
         return CartItemResponse.from(cartItem);
     }
 
     @Transactional
-    public CartItemResponse update(UUID cartId, CartItemUpdateRequest request) {
-        CartItem cartItem = getCartItem(cartId, request.productId());
+    public CartItemResponse updateQuantity(String userId, UUID cartId, CartItemUpdateRequest request) {
+        Cart cart = getActiveCart(toUuid(userId));
+        CartItem cartItem = getCartItem(cart.getId(), request.productId());
+
         cartItem.update(request.quantity());
 
         return CartItemResponse.from(cartItem);
     }
 
     //===== helper method =====
+    private Cart getActiveCart(UUID userId) {
+        return cartRepository.findByUserIdAndIsDeletedFalseWithItems(userId)
+                .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
+    }
+
     private CartItem getCartItem(UUID cartId, UUID productId) {
-        return cartItemRepository.findByIdAndProductId(cartId, productId)
-                .orElseThrow(() -> new IllegalArgumentException("카트가 존재하지 않습니다."));
+        return cartItemRepository.findByCartIdAndProductId(cartId, productId)
+                .orElseThrow(() -> new ApiException(ErrorCode.CART_ITEM_NOT_FOUND));
+    }
+
+    private static UUID toUuid(String userId) {
+        return UUID.fromString(userId);
     }
 }
