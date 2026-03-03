@@ -1,7 +1,6 @@
 package com.sparta.omin.app.model.cartItem.entity;
 
 import com.sparta.omin.app.model.cart.entity.Cart;
-import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
