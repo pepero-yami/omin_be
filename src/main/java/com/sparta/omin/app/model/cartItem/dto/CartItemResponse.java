@@ -9,7 +9,7 @@ public record CartItemResponse(UUID cartItemId, UUID productId, int quantity) {
     public static CartItemResponse from(CartItem cartItem) {
         return new CartItemResponse(
                 cartItem.getId(),
-                cartItem.getProductId(),
+                cartItem.getProduct().getId(),
                 cartItem.getQuantity()
         );
     }
