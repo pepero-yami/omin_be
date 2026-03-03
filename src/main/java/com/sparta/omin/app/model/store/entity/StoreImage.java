@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.store.entity;
 
-import com.sparta.omin.common.entity.BaseEntity;
+import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_store_image")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreImage extends BaseEntity {
+public class StoreImage extends BaseTimeEntity {
     @Id
     @UuidGenerator
     @Column(name = "id", nullable = false)
