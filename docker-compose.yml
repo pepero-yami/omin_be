@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:latest           # 버전
+    container_name: omin-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: omindb
+      POSTGRES_USER: omin_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}  # .env 파일에서 불러옴
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
