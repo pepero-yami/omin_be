@@ -25,10 +25,13 @@ public class CartItemService {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new IllegalArgumentException("조회 가능한 카트가 없습니다."));
 
-        // 같은 가게 상품인지 검증. 일단은 다른 가게일 경우 return º
+        // 같은 가게 상품인지 검증. 일단은 다른 가게일 경우 return
         if (!cart.getStoreId().equals(request.storeId())) {
             throw new IllegalArgumentException("다른 가게의 상품은 담을 수 없습니다.");
         }
+
+        // TODO 만약 같은 가게의 음식을 추후에 추가한다면? insert가 아니라 update가 필요하지않을까?
+        getCartItem(cartId, request.productId());
 
         CartItem cartItem = CartItem.create(cart, request.productId(), request.quantity());
         cartItemRepository.save(cartItem);
