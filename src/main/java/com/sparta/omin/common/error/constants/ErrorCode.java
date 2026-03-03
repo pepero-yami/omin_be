@@ -15,7 +15,17 @@ public enum ErrorCode {
 	PASSWORD_POLICY_VIOLATION(HttpStatus.BAD_REQUEST, "패스워드 정책 위반"),
 
 	//서버 에러
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러")
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+
+	// AI - 요청/검증 (400)
+	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+
+	// AI - 외부 의존성(OpenAI) (502/503/504/429)
+	AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
+	AI_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "AI request timeout"),
+	AI_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "AI rate limited"),
+	AI_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "AI service unavailable"),
+	AI_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, "Empty AI response"),
 	;
 	private final HttpStatus status;
 	private final String description;
