@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_user")
 public class User extends BaseTimeEntity implements UserDetails {
 
