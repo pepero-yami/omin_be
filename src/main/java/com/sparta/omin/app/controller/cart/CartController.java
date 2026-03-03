@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.UUID;
 
 @RestController
@@ -28,26 +29,23 @@ public class CartController {
      * 주문 완료 → 카트 삭제 (or 비우기)
      */
     @PostMapping("/cart")
-    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(request));
+    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request, Principal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(principal.getName(), request));
     }
 
-    /**
-     * TODO 인증 구현시 변경
-     */
-    @GetMapping("/cart/{userId}")
-    public ResponseEntity<CartResponse> get(@PathVariable UUID userId) {
-        return ResponseEntity.ok(cartService.get(userId));
+    @GetMapping("/cart")
+    public ResponseEntity<CartResponse> getCart(Principal principal) {
+        return ResponseEntity.ok(cartService.getCart(principal.getName()));
     }
 
-    // TODO create 메서드와 통합시켜야함 - - 완료 API 명세서에 따라 일단 유지
+    // TODO (create 메서드와 통합시켜야함 - 완료)  유지사유 : API 명세서와의 통일성 위해 일단 유지
     @PostMapping("/cart/{cartId}")
-    public ResponseEntity<CartItemResponse> addCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request) {
-        return ResponseEntity.ok(cartItemService.create(cartId, request));
+    public ResponseEntity<CartItemResponse> addCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
+        return ResponseEntity.ok(cartItemService.create(principal.getName(), cartId, request));
     }
 
     @PatchMapping("/cart/{cartId}")
-    public ResponseEntity<CartItemResponse> updateCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request) {
-        return ResponseEntity.ok(cartItemService.update(cartId, request));
+    public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
+        return ResponseEntity.ok(cartItemService.updateQuantity(principal.getName(), cartId, request));
     }
 }
