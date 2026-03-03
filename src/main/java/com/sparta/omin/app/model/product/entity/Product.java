@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.product.entity;
 
 import com.sparta.omin.app.model.product.code.ProductStatus;
+import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,7 +18,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Getter
 @NoArgsConstructor
 @Table(name="p_product")
-public class Product {
+public class Product extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
