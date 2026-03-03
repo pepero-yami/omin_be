@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,8 +20,9 @@ import java.util.UUID;
 public class Cart extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "cart_id", nullable = false)
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "id", nullable = false)
     private UUID id;
 
 //    @ManyToOne

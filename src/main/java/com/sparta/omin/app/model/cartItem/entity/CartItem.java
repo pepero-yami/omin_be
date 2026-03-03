@@ -1,12 +1,13 @@
 package com.sparta.omin.app.model.cartItem.entity;
 
 import com.sparta.omin.app.model.cart.entity.Cart;
-import com.sparta.omin.app.model.cartItem.dto.CartItemUpdateRequest;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -18,21 +19,18 @@ import java.util.UUID;
 public class CartItem extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "cart_item_id", nullable = false)
+    @GeneratedValue
+    @UuidGenerator
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
-//    @ManyToOne
-//    @JoinColumn(name = "product_id")
-//    private Product product;
-
-    //임시
-    @Column(name = "product_id", nullable = false)
-    private UUID productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
@@ -52,11 +50,11 @@ public class CartItem extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
-    public static CartItem create(Cart cart, UUID productId, int quantity) {
+    public static CartItem create(Cart cart, Product product, int quantity) {
         CartItem cartItem = new CartItem();
 
         cartItem.cart = cart;
-        cartItem.productId = productId;
+        cartItem.product = product;
         cartItem.quantity = quantity;
         cartItem.createdBy = cart.getUserId();
         cartItem.updatedBy = cart.getUserId();
