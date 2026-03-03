@@ -23,16 +23,16 @@ public class Cart extends BaseTimeEntity {
     @UuidGenerator
     @Column(name = "id", nullable = false)
     private UUID id;
-
+//
 //    @ManyToOne
 //    @JoinColumn(name = "user_id")
 //    private User user;
-//
+
 //    @ManyToOne
 //    @JoinColumn(name = "store_id")
-//    private Store store;
+//    private Store store
 
-    //임시
+    // TODO 연관관계설정에 있어서 고민해보기
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 

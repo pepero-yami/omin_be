@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -41,12 +40,6 @@ public class CartItem extends BaseTimeEntity {
 
     @Column(name = "updated_by", nullable = false)
     private UUID updatedBy;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    @Column(name = "deleted_by")
-    private UUID deletedBy;
 
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
