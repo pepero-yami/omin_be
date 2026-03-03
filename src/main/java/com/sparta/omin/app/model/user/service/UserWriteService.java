@@ -7,6 +7,7 @@ import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,13 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserWriteService {
 
 	private final UserRepository userRepository;
+	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
 	public UserDto editInfo(String userId, String nickname, String password) {
 		User user = userRepository.findByIdAndIsDeletedFalse(UUID.fromString(userId)).orElseThrow(
 			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 		);
-		user.edit(nickname, password);
+		user.edit(nickname, password, passwordEncoder);
 		return UserDto.from(user);
 	}
 

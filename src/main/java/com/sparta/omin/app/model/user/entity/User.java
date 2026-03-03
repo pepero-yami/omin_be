@@ -23,6 +23,7 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Entity
 @Getter
@@ -80,10 +81,10 @@ public class User extends BaseTimeEntity implements UserDetails {
 		this.role = Role.CUSTOMER;
 	}
 
-	public void edit(String nickname, String password) {
+	public void edit(String nickname, String password, PasswordEncoder passwordEncoder) {
 		validateCheckEditRequest(nickname, password);
 		this.nickname = nickname != null && !nickname.isBlank() ? nickname : this.nickname;
-		this.password = password != null && !password.isBlank() ? password : this.password;
+		this.password = password != null && !password.isBlank() ? passwordEncoder.encode(password) : this.password;
 	}
 
 	private void validateCheckEditRequest(String nickname, String password) {
