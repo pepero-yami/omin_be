@@ -28,9 +28,11 @@ public class CartItem extends BaseTimeEntity {
     @JoinColumn(name = "cart_id")
     private Cart cart;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+//    @ManyToOne
+//    @JoinColumn(name = "product_id")
+//    private Product product;
+
+    private UUID productId;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
@@ -50,11 +52,12 @@ public class CartItem extends BaseTimeEntity {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted;
 
-    public static CartItem create(Cart cart, Product product, int quantity) {
+    public static CartItem create(Cart cart, UUID productId, int quantity) {
         CartItem cartItem = new CartItem();
 
         cartItem.cart = cart;
-        cartItem.product = product;
+//        cartItem.product = product; todo
+        cartItem.productId = productId;
         cartItem.quantity = quantity;
         cartItem.createdBy = cart.getUserId();
         cartItem.updatedBy = cart.getUserId();
