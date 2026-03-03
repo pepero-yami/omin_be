@@ -1,7 +1,6 @@
 package com.sparta.omin.app.model.user.constants;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -16,8 +15,7 @@ public enum Role {
 	private final List<String> roles;
 
 	public List<String> getAuthorities() {
-		return roles.stream()
-			.map(role -> "ROLE_" + role.replace("ROLE_", ""))
-			.collect(Collectors.toList());
+		return roles;
+//			.map(role -> "ROLE_" + role.replace("ROLE_", ""))
 	}
 }
