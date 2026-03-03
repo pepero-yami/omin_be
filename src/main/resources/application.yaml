@@ -15,6 +15,16 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  # OPEN AI
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          max-tokens: 256
+          model: gpt-5-nano
+
 app:
   seed:
     enabled: true  # TODO(prod): 운영에서는 반드시 false 또는 local 프로필로 제한할 것
