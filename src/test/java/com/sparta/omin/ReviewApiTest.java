@@ -5,7 +5,8 @@ import com.sparta.omin.app.controller.review.ReviewController;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
 import com.sparta.omin.app.model.review.service.ReviewService;
-import com.sparta.omin.common.config.SecurityConfig;
+import com.sparta.omin.app.security.config.SecurityConfig;
+import com.sparta.omin.app.security.jwt.JwtUtil;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
 @WebMvcTest(ReviewController.class)
 @Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class ReviewControllerTest {
@@ -37,6 +39,9 @@ class ReviewControllerTest {
 
     @MockitoBean
     ReviewService reviewService;
+
+    @MockitoBean
+    JwtUtil jwtUtil;
 
     @Test
     @DisplayName("리뷰 생성 성공 시 201 반환")
