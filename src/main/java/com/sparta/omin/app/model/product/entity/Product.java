@@ -4,6 +4,8 @@ import com.sparta.omin.app.model.product.code.ProductStatus;
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -36,6 +38,7 @@ public class Product extends BaseTimeEntity {
     private double price;
 
     @Column(name="status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private ProductStatus status =  ProductStatus.ON_SALE;
 
     // TODO : Store Entity 작성 완료시 활성화 시킬 것.
