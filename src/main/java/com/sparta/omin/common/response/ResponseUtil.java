@@ -1,6 +1,6 @@
 package com.sparta.omin.common.response;
 
-import com.sparta.omin.common.error.ErrorResponse;
+import com.sparta.omin.common.error.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
