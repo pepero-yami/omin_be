@@ -16,7 +16,7 @@ public enum ErrorCode {
 
 	//카트 에러
 	CART_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 카트가 없습니다."),
-	STORE_MISMATCH(HttpStatus.NOT_FOUND, "다른 가게의 상품은 담을 수 없습니다."),
+	STORE_MISMATCH(HttpStatus.CONFLICT, "다른 가게의 상품은 담을 수 없습니다."),
 	CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카트에 조회 가능한 상품이 없습니다."),
 
 	//서버 에러
