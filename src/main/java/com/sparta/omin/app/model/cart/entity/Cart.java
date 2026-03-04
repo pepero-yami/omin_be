@@ -42,6 +42,9 @@ public class Cart extends BaseEntity {
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CartItem> cartItems = new ArrayList<>();
 
+    @Column(name = "total_price", nullable = false)
+    private int totalPrice;
+
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
 
