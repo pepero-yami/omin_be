@@ -29,9 +29,10 @@ public class UserWriteService {
 
 	@Transactional
 	public void deleteUser(String email) {
+		//FIXME @순식님 userId가 없어서 누가 삭제(최종 수정)했는지 반영이 어려워요
 		User user = userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(
 			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 		);
-		user.softDelete(user.getId());
+		user.softDelete(user.getId()); //FIXME 여기서 관리자 삭제라도 해당유저 아이디가 최종수정자로 들어감
 	}
 }
