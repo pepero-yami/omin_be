@@ -23,7 +23,7 @@ public class ReviewController {
 
     @PostMapping("/reviews")
     public ResponseEntity<ReviewResponse> create(@AuthenticationPrincipal UserDetails userDetails,
-                                                 @Valid @RequestPart ReviewCreateRequest request,
+                                                 @Valid ReviewCreateRequest request,
                                                  @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         ReviewResponse response =
                 reviewService.createReview(userDetails.getUsername(), request, images);
