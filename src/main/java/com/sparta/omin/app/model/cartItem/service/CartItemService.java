@@ -23,8 +23,8 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public CartItemResponse create(String userId, UUID cartId, CartItemUpdateRequest request) {
-        Cart cart = getActiveCart(toUuid(userId));
+    public CartItemResponse create(UUID userId, UUID cartId, CartItemUpdateRequest request) {
+        Cart cart = getActiveCart(userId);
 
         // 같은 가게 상품인지 검증. 일단은 다른 가게일 경우 return
         if (!cart.getStoreId().equals(request.storeId())) {
@@ -45,8 +45,8 @@ public class CartItemService {
     }
 
     @Transactional
-    public CartItemResponse updateQuantity(String userId, UUID cartId, CartItemUpdateRequest request) {
-        Cart cart = getActiveCart(toUuid(userId));
+    public CartItemResponse updateQuantity(UUID userId, UUID cartId, CartItemUpdateRequest request) {
+        Cart cart = getActiveCart(userId);
         CartItem cartItem = getCartItem(cart.getId(), request.productId());
 
         cartItem.update(request.quantity());
@@ -63,9 +63,5 @@ public class CartItemService {
     private CartItem getCartItem(UUID cartId, UUID productId) {
         return cartItemRepository.findByCartIdAndProductId(cartId, productId)
                 .orElseThrow(() -> new ApiException(ErrorCode.CART_ITEM_NOT_FOUND));
-    }
-
-    private static UUID toUuid(String userId) {
-        return UUID.fromString(userId);
     }
 }

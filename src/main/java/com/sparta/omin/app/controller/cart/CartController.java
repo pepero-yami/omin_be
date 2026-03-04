@@ -6,10 +6,12 @@ import com.sparta.omin.app.model.cart.service.CartService;
 import com.sparta.omin.app.model.cartItem.dto.CartItemResponse;
 import com.sparta.omin.app.model.cartItem.dto.CartItemUpdateRequest;
 import com.sparta.omin.app.model.cartItem.service.CartItemService;
+import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -31,23 +33,25 @@ public class CartController {
     @PostMapping("/cart")
     public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request,
                                                   @RequestParam(defaultValue = "false") boolean force,
-                                                  Principal principal) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(principal.getName(), request, force));
+                                                  @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(user.getId(), request, force));
     }
 
     @GetMapping("/cart")
-    public ResponseEntity<CartResponse> getCart(Principal principal) {
-        return ResponseEntity.ok(cartService.getCart(principal.getName()));
+    public ResponseEntity<CartResponse> getCart(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(cartService.getCart(user.getId()));
     }
 
     @PatchMapping("/cart/{cartId}")
-    public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
-        return ResponseEntity.ok(cartItemService.updateQuantity(principal.getName(), cartId, request));
+    public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable UUID cartId,
+                                                           @RequestBody CartItemUpdateRequest request,
+                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(cartItemService.updateQuantity(user.getId(), cartId, request));
     }
 
     @DeleteMapping("/cart/{cartId}")
-    public ResponseEntity<Void> deleteCart(@PathVariable UUID cartId, Principal principal) {
-        cartService.deleteCart(principal.getName(), cartId);
+    public ResponseEntity<Void> deleteCart(@PathVariable UUID cartId, @AuthenticationPrincipal User user) {
+        cartService.deleteCart(user.getId(), cartId);
         return ResponseEntity.noContent().build();
     }
 }

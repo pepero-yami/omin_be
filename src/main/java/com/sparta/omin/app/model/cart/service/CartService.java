@@ -23,25 +23,25 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public CartResponse addToCart(String userId, CartCreateRequest request, boolean force) {
-        Cart cart = getOrCreateCart(toUuid(userId), request.storeId(), force);
+    public CartResponse addToCart(UUID userId, CartCreateRequest request, boolean force) {
+        Cart cart = getOrCreateCart(userId, request.storeId(), force);
         upsertCartItem(cart, request);
 
-        Cart refreshedCart = getActiveCart(toUuid(userId));
+        Cart refreshedCart = getActiveCart(userId);
         return CartResponse.from(refreshedCart);
     }
 
-    public CartResponse getCart(String userId) {
-        return cartRepository.findByUserIdAndIsDeletedFalseWithItems(toUuid(userId))
+    public CartResponse getCart(UUID userId) {
+        return cartRepository.findByUserIdAndIsDeletedFalseWithItems(userId)
                 .map(CartResponse::from)
                 .orElse(null);
     }
 
     @Transactional
-    public void deleteCart(String userId, UUID cartId) {
-        Cart cart = cartRepository.findByIdAndUserIdAndIsDeletedFalse(cartId, toUuid(userId))
+    public void deleteCart(UUID userId, UUID cartId) {
+        Cart cart = cartRepository.findByIdAndUserIdAndIsDeletedFalse(cartId, userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
-        cart.delete(toUuid(userId));
+        cart.delete(userId);
     }
 
     //===== helper method =====
@@ -77,10 +77,4 @@ public class CartService {
                         )
                 );
     }
-
-    private static UUID toUuid(String userId) {
-        return UUID.fromString(userId);
-    }
-
-
 }
