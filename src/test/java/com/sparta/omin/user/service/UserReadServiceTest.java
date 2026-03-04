@@ -12,7 +12,6 @@ import com.sparta.omin.app.model.user.service.UserReadService;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,15 +32,15 @@ class UserReadServiceTest {
 	@DisplayName("사용자 정보 조회 성공")
 	void getUserInfo_Success() {
 		// given
-		UUID userId = UUID.randomUUID();
+		String email = "ss@ss";
 		User user = mock(User.class); // 엔티티 모킹
 
 		given(user.getEmail()).willReturn("test@sparta.com");
 		given(user.getNickname()).willReturn("오민테스터");
-		given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.of(user));
+		given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user));
 
 		// when
-		UserDto result = userReadService.getUserInfo(userId.toString());
+		UserDto result = userReadService.getUserInfo(email);
 
 		// then
 		assertThat(result.email()).isEqualTo("test@sparta.com");
@@ -52,23 +51,12 @@ class UserReadServiceTest {
 	@DisplayName("존재하지 않는 사용자 조회 시 USER_NOT_FOUND 예외 발생")
 	void getUserInfo_UserNotFound() {
 		// given
-		UUID userId = UUID.randomUUID();
-		given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.empty());
+		String email = "ss@ss";
+		given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> userReadService.getUserInfo(userId.toString()))
+		assertThatThrownBy(() -> userReadService.getUserInfo(email))
 			.isInstanceOf(ApiException.class)
 			.hasMessageContaining(ErrorCode.USER_NOT_FOUND.getDescription());
-	}
-
-	@Test
-	@DisplayName("잘못된 UUID 형식의 ID 전달 시 IllegalArgumentException 발생")
-	void getUserInfo_InvalidUuidFormat() {
-		// given
-		String invalidId = "not-a-uuid-format";
-
-		// when & then
-		assertThatThrownBy(() -> userReadService.getUserInfo(invalidId))
-			.isInstanceOf(IllegalArgumentException.class);
 	}
 }
