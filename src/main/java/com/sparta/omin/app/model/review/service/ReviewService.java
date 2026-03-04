@@ -12,11 +12,15 @@ import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
+import com.sparta.omin.common.util.ImageUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,9 +31,10 @@ public class ReviewService {
     private final StoreRatingStatRepository statRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final ImageUploader imageUploader;
 
     @Transactional
-    public ReviewResponse createReview(String email, ReviewCreateRequest request) {
+    public ReviewResponse createReview(String email, ReviewCreateRequest request, List<MultipartFile> images) {
 
         // 주문 조회
         Order order = orderRepository.findById(request.orderId())
@@ -56,7 +61,6 @@ public class ReviewService {
         // 요청에 해당하는 유저 정보 조회
         User user = userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         UUID userId = user.getId();
-        String nickName = user.getNickname();
 
         // Review 생성
         Review newReview = Review.create(
@@ -64,8 +68,18 @@ public class ReviewService {
                 request.orderId(),
                 request.rating(),
                 request.comment()
-                // TODO: image
         );
+
+        // 2. 이미지 처리 (이미지가 있을 경우에만)
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            List<String> uploadedUrls = images.stream()
+                    .filter(file -> !file.isEmpty())
+                    .map(imageUploader::uploadReviewImage)
+                    .toList();
+
+            newReview.addImages(uploadedUrls); // 순서대로 들어간 리스트 전달
+        }
         reviewRepository.save(newReview);
 
         // 해당 가게에 기존 평점 통계가 존재하는지 확인
@@ -77,6 +91,8 @@ public class ReviewService {
             statRepository.save(StoreRatingStat.create(order.getStoreId(), request.rating()));
         }
         // 단일 응답 생성
+        String nickName = user.getNickname();
         return ReviewResponse.of(newReview, nickName);
     }
+
 }

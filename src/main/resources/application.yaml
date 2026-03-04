@@ -15,6 +15,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  servlet:
+    multipart: # 파일 용량을 지정
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 app:
   seed:
     enabled: true  # TODO(prod): 운영에서는 반드시 false 또는 local 프로필로 제한할 것

@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -35,14 +37,8 @@ public class Review extends BaseAuditEntity {
     @Column(name = "review_comment", length = 300)
     private String comment;
 
-    // TODO: 리뷰 이미지 연관
-/*    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
-
-    public void addImage(ReviewImage image) {
-        images.add(image);
-        image.setReview(this);
-    }*/
 
     public static Review create(
             UUID userId,
@@ -62,13 +58,6 @@ public class Review extends BaseAuditEntity {
         return review;
     }
 
-    // 도메인 규칙 : 별점
-    private static void validRating(double rating) {
-        if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("rating must be between 1 and 5");
-        }
-    }
-
     public void updateReview(double newRating, String newComment, UUID actorId) {
         this.rating = newRating;
         this.comment = newComment;
@@ -77,6 +66,21 @@ public class Review extends BaseAuditEntity {
 
     public void softDelete(UUID actorId, LocalDateTime now) {
         markDeleted(actorId, now);
+    }
+
+    public void addImages(List<String> imageUrls) {
+        this.images.clear();
+        for (int i = 0; i < imageUrls.size(); i++) {
+            ReviewImage.create(this, imageUrls.get(i), i*1000);
+            // sequence = i * 1000: 중간 이미지를 수정/삭제 되었을 때도 다시 sequence 계산 안해도 됨
+        }
+    }
+
+    // 도메인 규칙 : 별점
+    private static void validRating(double rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("rating must be between 1 and 5");
+        }
     }
 
 }
