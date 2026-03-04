@@ -22,7 +22,7 @@ public class RegionService {
     private final KakaoAddressClient kakaoAddressClient;
 
     @Transactional
-    public RegionResponse createRegion(RegionCreateRequest request, UUID actorId) {
+    public RegionResponse createRegion(RegionCreateRequest request) {
         String rawAddress = request.address().trim();
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
@@ -30,9 +30,7 @@ public class RegionService {
             throw new IllegalStateException("이미 존재하는 지역(address)입니다.");
         }
 
-        Region region = Region.create(address, actorId);
-        Region saved = regionRepository.save(region);
-
+        Region saved = regionRepository.save(Region.create(address));
         return RegionResponse.of(saved.getId(), saved.getAddress());
     }
 
@@ -44,7 +42,7 @@ public class RegionService {
     }
 
     @Transactional
-    public RegionResponse updateRegion(UUID regionId, RegionUpdateRequest request, UUID actorId) {
+    public RegionResponse updateRegion(UUID regionId, RegionUpdateRequest request) {
         String rawAddress = request.address().trim();
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
@@ -55,18 +53,16 @@ public class RegionService {
             throw new IllegalStateException("이미 존재하는 지역(address)입니다.");
         }
 
-        region.updateAddress(address, actorId);
-
+        region.updateAddress(address);
         return RegionResponse.of(region.getId(), region.getAddress());
     }
 
     @Transactional
-    public void deleteRegion(UUID regionId, UUID actorId) {
+    public void deleteRegion(UUID regionId) {
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
 
-        // deleted_at/deleted_by는 제거됨. 삭제자는 updatedBy로 대체.
-        region.softDelete(actorId);
+        region.softDelete();
     }
 
     public List<RegionResponse> getRegions() {

@@ -2,11 +2,12 @@ package com.sparta.omin.app.model.region.entity;
 
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
+
+import java.util.UUID;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,24 +24,18 @@ public class Region extends BaseTimeEntity {
     @Column(name = "address", length = 100, nullable = false)
     private String address;
 
-    public static Region create(String address, UUID actorId) {
+    public static Region create(String address) {
         Region region = new Region();
         region.address = address;
-
-        region.createdBy = actorId;
-        region.updatedBy = actorId;
         region.isDeleted = false;
-
         return region;
     }
 
-    public void updateAddress(String newAddress, UUID actorId) {
+    public void updateAddress(String newAddress) {
         this.address = newAddress;
-        this.updatedBy = actorId;
     }
 
-    public void softDelete(UUID actorId) {
+    public void softDelete() {
         this.isDeleted = true;
-        this.updatedBy = actorId;
     }
 }

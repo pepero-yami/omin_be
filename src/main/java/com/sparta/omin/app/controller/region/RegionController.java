@@ -4,11 +4,10 @@ import com.sparta.omin.app.model.region.dto.RegionCreateRequest;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,25 +15,14 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/regions")
+@RequiredArgsConstructor
 public class RegionController {
 
-    // 조회(address에서 사용!)를 제외한 나머지는 다 마스터 권한 필요
     private final RegionService regionService;
 
-    public RegionController(RegionService regionService) {
-        this.regionService = regionService;
-    }
-
     @PostMapping
-    public ResponseEntity<RegionResponse> create(
-            @AuthenticationPrincipal User user,
-            @Valid @RequestBody RegionCreateRequest request
-    ) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        RegionResponse created = regionService.createRegion(request, user.getId());
+    public ResponseEntity<RegionResponse> create(@Valid @RequestBody RegionCreateRequest request) {
+        RegionResponse created = regionService.createRegion(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -45,27 +33,15 @@ public class RegionController {
 
     @PutMapping("/{regionId}")
     public ResponseEntity<RegionResponse> update(
-            @AuthenticationPrincipal User user,
             @PathVariable UUID regionId,
             @Valid @RequestBody RegionUpdateRequest request
     ) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        return ResponseEntity.ok(regionService.updateRegion(regionId, request, user.getId()));
+        return ResponseEntity.ok(regionService.updateRegion(regionId, request));
     }
 
     @DeleteMapping("/{regionId}")
-    public ResponseEntity<Void> delete(
-            @AuthenticationPrincipal User user,
-            @PathVariable UUID regionId
-    ) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        regionService.deleteRegion(regionId, user.getId());
+    public ResponseEntity<Void> delete(@PathVariable UUID regionId) {
+        regionService.deleteRegion(regionId);
         return ResponseEntity.noContent().build();
     }
 
