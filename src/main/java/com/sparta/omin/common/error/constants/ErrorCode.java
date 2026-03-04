@@ -41,7 +41,7 @@ public enum ErrorCode {
     //주문 - 리뷰 에러
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문이 존재하지 않습니다."),
     ORDER_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "주문 완료 후에만 리뷰 작성이 가능합니다."),
-    ;
+    ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다."); // 403?
     private final HttpStatus status;
     private final String description;
 }

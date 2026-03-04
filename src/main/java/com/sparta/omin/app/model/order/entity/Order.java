@@ -4,6 +4,7 @@ import com.sparta.omin.common.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -14,7 +15,10 @@ import java.util.UUID;
 // 임시 Stub입니다. 이 파일을 무시해주세요.
 public class Order extends BaseAuditEntity {
     @Id
+    @GeneratedValue
+    @UuidGenerator
     private UUID id;
+    private UUID userId;
     private UUID storeId;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;

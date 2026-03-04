@@ -8,6 +8,7 @@ import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.app.model.review.repos.ReviewRepository;
 import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.repos.StoreRatingStatRepository;
+import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
@@ -33,14 +34,19 @@ public class ReviewService {
     @Transactional
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
         // 이미지 개수 초과 예외
-        if (images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+        if (images != null && images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
         // 주문 조회
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
+        // 자신의 주문이 아니라면 예외
+        if (!order.getUserId().equals(user.getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
+        // TODO: 사장님이 본인 가게 리뷰 작성하는지 검증
+        /*if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(user.getId())) {
+            throw new ApiException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
+        }*/
         // 주문 상태 COMPLETED 아니면 예외
-        if (!order.isCompleted()) {
-            throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
-        }
+        if (!order.isCompleted()) throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
+
         // 주문일 + 2일 초과면 예외
         if (order.getCreatedAt().
                 plusDays(2).
@@ -50,9 +56,7 @@ public class ReviewService {
         }
         // 이미 리뷰 작성했으면 예외
         Optional<Review> oldReview = reviewRepository.findByOrderIdAndIsDeletedFalse(request.orderId());
-        if (oldReview.isPresent()) {
-            throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
-        }
+        if (oldReview.isPresent()) throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
 
         // 요청에 해당하는 유저 정보 조회
         UUID userId = user.getId();
