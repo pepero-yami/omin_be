@@ -67,4 +67,8 @@ public class Cart extends BaseTimeEntity {
         this.isDeleted = true;
         this.updatedBy = userId;
     }
+
+    public void addItem(CartItem item) {
+        this.cartItems.add(item);
+    }
 }

@@ -26,9 +26,7 @@ public class CartService {
     public CartResponse addToCart(UUID userId, CartCreateRequest request, boolean force) {
         Cart cart = getOrCreateCart(userId, request.storeId(), force);
         upsertCartItem(cart, request);
-
-        Cart refreshedCart = getActiveCart(userId);
-        return CartResponse.from(refreshedCart);
+        return CartResponse.from(cart);
     }
 
     public CartResponse getCart(UUID userId) {
@@ -72,9 +70,12 @@ public class CartService {
         cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
                 .ifPresentOrElse(
                         item -> item.update(item.getQuantity() + request.quantity()),
-                        () -> cartItemRepository.save(
-                                CartItem.create(cart, request.productId(), request.quantity())
-                        )
+                        () -> {
+                            CartItem newItem = cartItemRepository.save(
+                                    CartItem.create(cart, request.productId(), request.quantity())
+                            );
+                            cart.addItem(newItem);
+                        }
                 );
     }
 }
