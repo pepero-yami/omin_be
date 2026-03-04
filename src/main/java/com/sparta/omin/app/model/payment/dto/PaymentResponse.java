@@ -18,6 +18,7 @@ public record PaymentResponse(
     public static PaymentResponse from(Payment payment) {
         return new PaymentResponse(
                 payment.getId(),
+//                payment.getOrder().getId(); TODO
                 payment.getOrderId(),
                 payment.getPaymentMethod(),
                 payment.getTotalPrice(),
