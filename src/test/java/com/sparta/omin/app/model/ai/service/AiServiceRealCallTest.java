@@ -16,7 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @Tag("external")
 @Timeout(value=60, unit = TimeUnit.SECONDS)
 @EnabledIfEnvironmentVariable(named="OPENAI_API_KEY", matches=".+")
-class AiServiceRealCallSmokeTest {
+class AiServiceRealCallTest {
 
     @Autowired
     private AiServiceImpl aiService;
