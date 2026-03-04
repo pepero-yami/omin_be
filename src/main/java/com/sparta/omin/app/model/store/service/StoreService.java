@@ -2,7 +2,9 @@ package com.sparta.omin.app.model.store.service;
 
 import com.sparta.omin.app.model.store.dto.StoreCreateRequest;
 import com.sparta.omin.app.model.store.dto.StoreResponse;
+import com.sparta.omin.app.model.store.dto.StoreStatusUpdateRequest;
 import com.sparta.omin.app.model.store.dto.StoreUpdateRequest;
+import com.sparta.omin.app.model.store.entity.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.entity.StoreImage;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
@@ -35,14 +37,14 @@ public class StoreService {
     //조회
     public StoreResponse findStore(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 점포를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
         return StoreResponse.of(store);
     }
 
     @Transactional
     public StoreResponse modifyStore(StoreUpdateRequest storeUpdateRequest, UUID storeId) {
         Store savedStore = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 점포를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
         savedStore.updateStore(storeUpdateRequest);
         //이미지 삭제요청 처리
         List<StoreUpdateRequest.StoreImageRequest> imageRequests = storeUpdateRequest.images();
@@ -58,6 +60,35 @@ public class StoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("삭제할 가게가 없습니다."));
         storeRepository.delete(store); // entity의 update 쿼리가 대신 실행
+    }
+
+    //점포 승인대기 -> 승인완료 상태(PENDING)->(CLOSE)
+    @Transactional
+    public StoreResponse modifyStoreStatusToClose(UUID storeId){
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+        if (store.getStatus() != Status.PENDING){
+            throw new IllegalArgumentException("가게가 승인대기 상태가 아닙니다.");
+        }
+        store.updateStatus(Status.CLOSED);
+        return StoreResponse.of(store);
+    }
+
+    //점포 상태 (CLOSED) -> (OPENED)
+    @Transactional
+    public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+        //사용자가 가게 소유주인지 확인
+//        if (!store.getId().equals(유저아이디)){
+//
+//        }
+        //가게 상태가 PENDING 일 때 예외발생
+        if (store.getStatus() == Status.PENDING){
+            throw new IllegalStateException("승인 대기 중인 가게의 상태는 변경 불가합니다.");
+        }
+        store.updateStatus(storeStatusUpdateRequest.status());
+        return StoreResponse.of(store);
     }
 
     private static void handleDeleteImgRequest(

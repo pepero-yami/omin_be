@@ -82,6 +82,10 @@ public class Store extends BaseTimeEntity {
         this.longitude = storeUpdateRequest.longitude();
     }
 
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
+
     @Builder
     public Store(UUID ownerId, UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
         this.ownerId = ownerId;
