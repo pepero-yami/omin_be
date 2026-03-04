@@ -64,7 +64,7 @@ public class Review extends BaseAuditEntity {
 
     // 도메인 규칙 : 별점
     private static void validRating(double rating) {
-        if (rating <= 1 || rating > 5) {
+        if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("rating must be between 1 and 5");
         }
     }
