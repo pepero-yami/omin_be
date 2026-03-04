@@ -15,6 +15,7 @@ import com.sparta.omin.app.model.user.dto.UserRegister;
 import com.sparta.omin.app.model.user.dto.request.UserLoginRequest;
 import com.sparta.omin.app.model.user.dto.response.TokenResponse;
 import com.sparta.omin.app.model.user.service.UserAuthService;
+import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.jwt.JwtUtil;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +38,9 @@ class UserAuthControllerTest {
 
 	@MockBean
 	private UserAuthService userAuthService;
+
+	@MockBean
+	private UserDetailsServiceImpl userDetailsService;
 
 	@MockBean
 	private JwtUtil jwtUtil;
