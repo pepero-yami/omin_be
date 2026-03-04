@@ -16,12 +16,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
 
     public PaymentResponse getPayment(UUID orderId, UUID userId) {
         Payment payment = paymentRepository.findByOrderIdAndUserIdAndIsDeletedFalse(orderId, userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
-
         return PaymentResponse.from(payment);
     }
 
@@ -33,11 +32,19 @@ public class PaymentService {
         return null;
     }
 
-    public Page<PaymentResponse> getPaymentList(UUID customerId, Pageable pageable) {
-        return null;
+
+    /**
+     * 관리자
+     * TODO 삭제된 데이터는 볼 수 없도록 처리 (정책에 따라 수정가능)
+     */
+    public Page<PaymentResponse> getPayments(UUID customerId, Pageable pageable) {
+        return paymentRepository.findByUserIdAndIsDeletedFalse(customerId, pageable)
+                .map(PaymentResponse::from);
     }
 
     public PaymentResponse getPaymentByAdmin(UUID paymentId) {
-        return null;
+        Payment payment = paymentRepository.findByIdAndIsDeletedFalse(paymentId)
+                .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
+        return PaymentResponse.from(payment);
     }
 }
