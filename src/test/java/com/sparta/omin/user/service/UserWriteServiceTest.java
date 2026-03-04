@@ -12,7 +12,6 @@ import com.sparta.omin.app.model.user.service.UserWriteService;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ class UserWriteServiceTest {
 		@DisplayName("닉네임과 비밀번호 수정 성공")
 		void editInfo_Success() {
 			// given
-			UUID userId = UUID.randomUUID();
+			String email = "ss@ss";
 			String newNickname = "새닉네임";
 			String newRawPassword = "NewPassword123!";
 			String encodedPassword = "encoded_new_password";
@@ -52,11 +51,11 @@ class UserWriteServiceTest {
 				.password("old_password")
 				.build());
 
-			given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.of(user));
+			given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user));
 			given(passwordEncoder.encode(newRawPassword)).willReturn(encodedPassword);
 
 			// when
-			UserDto result = userWriteService.editInfo(userId.toString(), newNickname, newRawPassword);
+			UserDto result = userWriteService.editInfo(email, newNickname, newRawPassword);
 
 			// then
 			assertThat(result.nickname()).isEqualTo(newNickname);
@@ -68,14 +67,14 @@ class UserWriteServiceTest {
 		@DisplayName("수정 시 비밀번호 정책 위반하면 예외 발생")
 		void editInfo_PasswordPolicyViolation() {
 			// given
-			UUID userId = UUID.randomUUID();
+			String email = "ss@ss";
 			String invalidPassword = "123"; // 정책 위반 (짧음)
 			User user = User.builder().nickname("기존").password("old").build();
 
-			given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.of(user));
+			given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user));
 
 			// when & then
-			assertThatThrownBy(() -> userWriteService.editInfo(userId.toString(), "새닉네임", invalidPassword))
+			assertThatThrownBy(() -> userWriteService.editInfo(email, "새닉네임", invalidPassword))
 				.isInstanceOf(ApiException.class)
 				.hasMessageContaining(ErrorCode.PASSWORD_POLICY_VIOLATION.getDescription());
 		}
@@ -88,27 +87,28 @@ class UserWriteServiceTest {
 		@DisplayName("사용자 삭제 성공")
 		void deleteUser_Success() {
 			// given
-			UUID userId = UUID.randomUUID();
-			User user = spy(User.builder().build());
-			given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.of(user));
+			String email = "ss@ss";
+			User user = spy(User.builder().email(email).build());
+			given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.of(user));
 
 			// when
-			userWriteService.deleteUser(userId.toString());
+			userWriteService.deleteUser(email);
+			user.softDelete(user.getId());
 
 			// then
 			assertThat(user.isDeleted()).isTrue();
-			assertThat(user.getDeletedBy()).isEqualTo(userId);
+			assertThat(user.getDeletedBy()).isEqualTo(user.getId());
 		}
 
 		@Test
 		@DisplayName("삭제하려는 사용자가 없으면 예외 발생")
 		void deleteUser_UserNotFound() {
 			// given
-			UUID userId = UUID.randomUUID();
-			given(userRepository.findByIdAndIsDeletedFalse(userId)).willReturn(Optional.empty());
+			String email = "ss@ss";
+			given(userRepository.findByEmailAndIsDeletedFalse(email)).willReturn(Optional.empty());
 
 			// when & then
-			assertThatThrownBy(() -> userWriteService.deleteUser(userId.toString()))
+			assertThatThrownBy(() -> userWriteService.deleteUser(email))
 				.isInstanceOf(ApiException.class)
 				.hasMessageContaining(ErrorCode.USER_NOT_FOUND.getDescription());
 		}
