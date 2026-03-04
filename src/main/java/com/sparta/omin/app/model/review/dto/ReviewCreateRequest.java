@@ -12,6 +12,6 @@ public record ReviewCreateRequest(
         @NotNull
         @Min(0)
         @Max(5)
-        double rating,
+        Double rating,
         String comment
 ) {}
