@@ -43,16 +43,6 @@ public class CartService {
     }
 
     //===== helper method =====
-    private Cart getActiveCart(UUID userId) {
-        return cartRepository.findByUserIdAndIsDeletedFalseWithItems(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
-    }
-
-    private CartItem addCartItem(Cart cart, CartCreateRequest request) {
-        // todo productId 임시 주입
-        return cartItemRepository.save(CartItem.create(cart, request.productId(), request.quantity()));
-    }
-
     private Cart getOrCreateCart(UUID userId, UUID storeId, boolean force) {
         return cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .map(cart -> {

@@ -23,28 +23,6 @@ public class CartItemService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public CartItemResponse create(UUID userId, UUID cartId, CartItemUpdateRequest request) {
-        Cart cart = getActiveCart(userId);
-
-        // 같은 가게 상품인지 검증. 일단은 다른 가게일 경우 return
-        if (!cart.getStoreId().equals(request.storeId())) {
-            throw new ApiException(ErrorCode.STORE_MISMATCH);
-        }
-
-        // 새 상품이면 insert, 이미 있다면 수량 추가 후 update
-        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
-                .map(item -> {
-                    item.update(item.getQuantity() + request.quantity());
-                    return cartItemRepository.save(item);
-                })
-                .orElseGet(() -> cartItemRepository.save(
-                        CartItem.create(cart, request.productId(), request.quantity())
-                ));
-
-        return CartItemResponse.from(cartItem);
-    }
-
-    @Transactional
     public CartItemResponse updateQuantity(UUID userId, UUID cartId, CartItemUpdateRequest request) {
         Cart cart = getActiveCart(userId);
 
