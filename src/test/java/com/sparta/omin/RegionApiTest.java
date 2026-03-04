@@ -18,7 +18,9 @@ import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.jwt.JwtUtil;
+import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -58,11 +60,13 @@ class RegionApiTest {
         mockMvc.perform(post("/api/v1/regions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"address":"서울"}
-                                """))
+						{"address":"서울"}
+						"""))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.uuid").value(id.toString()))
+                .andExpect(jsonPath("$.address").value("서울"));
     }
 
     @Test
@@ -70,39 +74,45 @@ class RegionApiTest {
         mockMvc.perform(post("/api/v1/regions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"address":""}
-                                """))
+						{"address":""}
+						"""))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.details.address").exists());
     }
 
     @Test
     void get_regions_id_notFound_returns404() throws Exception {
         UUID id = UUID.randomUUID();
-        given(regionService.getRegion(id)).willThrow(new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
+        given(regionService.getRegion(id))
+                .willThrow(new ApiException(ErrorCode.REGION_NOT_FOUND));
 
         mockMvc.perform(get("/api/v1/regions/{regionId}", id))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").value("존재하지 않는 지역(regionId)입니다."));
+                .andExpect(jsonPath("$.error").value("REGION_NOT_FOUND"))
+                .andExpect(jsonPath("$.details").value("존재하지 않는 지역(regionId)입니다."));
     }
 
     @Test
     void put_regions_id_conflict_returns409() throws Exception {
         UUID id = UUID.randomUUID();
         given(regionService.updateRegion(eq(id), any()))
-                .willThrow(new IllegalStateException("이미 존재하는 지역(address)입니다."));
+                .willThrow(new ApiException(ErrorCode.REGION_ALREADY_EXISTS));
 
         mockMvc.perform(put("/api/v1/regions/{regionId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"address":"서울"}
-                                """))
+						{"address":"서울"}
+						"""))
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.message").value("이미 존재하는 지역(address)입니다."));
+                .andExpect(jsonPath("$.error").value("REGION_ALREADY_EXISTS"))
+                .andExpect(jsonPath("$.details").value("이미 존재하는 지역(address)입니다."));
     }
 
     @Test
