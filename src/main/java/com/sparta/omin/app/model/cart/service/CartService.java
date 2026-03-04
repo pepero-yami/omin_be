@@ -49,8 +49,9 @@ public class CartService {
     }
 
     public CartResponse getCart(String userId) {
-        Cart cart = getActiveCart(toUuid(userId));
-        return CartResponse.from(cart);
+        return cartRepository.findByUserIdAndIsDeletedFalseWithItems(toUuid(userId))
+                .map(CartResponse::from)
+                .orElse(null);
     }
 
     //===== helper method =====
