@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @MappedSuperclass
@@ -22,4 +23,13 @@ public abstract class BaseTimeEntity {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     protected LocalDateTime updatedAt;
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    protected UUID createdBy;
+
+    @Column(name = "updated_by", nullable = false)
+    protected UUID updatedBy;
+
+    @Column(name = "is_deleted", nullable = false)
+    protected boolean isDeleted;
 }
