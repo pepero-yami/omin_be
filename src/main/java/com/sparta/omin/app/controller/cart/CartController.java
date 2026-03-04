@@ -29,8 +29,10 @@ public class CartController {
      * 주문 완료 → 카트 삭제 (or 비우기)
      */
     @PostMapping("/cart")
-    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request, Principal principal) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(principal.getName(), request));
+    public ResponseEntity<CartResponse> addToCart(@Valid @RequestBody CartCreateRequest request,
+                                                  @RequestParam(defaultValue = "false") boolean force,
+                                                  Principal principal) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addToCart(principal.getName(), request, force));
     }
 
     @GetMapping("/cart")
