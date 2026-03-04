@@ -2,6 +2,7 @@ package com.sparta.omin.common.error;
 
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.dto.ErrorResponse;
+import com.sparta.omin.common.error.exceptions.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,5 +78,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "internal server error"));
+    }
+
+    @ExceptionHandler(CommonException.class)
+    public ResponseEntity<ErrorResponse> handleCommonException(CommonException e) {
+        ErrorCode errorCode = e.getErrorCode();
+
+        log.error("[ERROR] CommonException occurred. code={}, status={}, desc={}",
+            errorCode.name(),
+            errorCode.getStatus(),
+            errorCode.getDescription(),
+            e
+        );
+
+        return ResponseEntity
+            .status(errorCode.getStatus())
+            .body(ErrorResponse.of(errorCode.getDescription()));
     }
 }
