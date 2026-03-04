@@ -2,6 +2,7 @@ package com.sparta.omin.app.model.region.entity;
 
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,12 +18,12 @@ public class Region extends BaseTimeEntity {
     @GeneratedValue
     @UuidGenerator
     @Column(name = "id", updatable = false, nullable = false)
-    private java.util.UUID id;
+    private UUID id;
 
     @Column(name = "address", length = 100, nullable = false)
     private String address;
 
-    public static Region create(String address, java.util.UUID actorId) {
+    public static Region create(String address, UUID actorId) {
         Region region = new Region();
         region.address = address;
 
@@ -33,12 +34,12 @@ public class Region extends BaseTimeEntity {
         return region;
     }
 
-    public void updateAddress(String newAddress, java.util.UUID actorId) {
+    public void updateAddress(String newAddress, UUID actorId) {
         this.address = newAddress;
         this.updatedBy = actorId;
     }
 
-    public void softDelete(java.util.UUID actorId) {
+    public void softDelete(UUID actorId) {
         this.isDeleted = true;
         this.updatedBy = actorId;
     }

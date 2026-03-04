@@ -18,7 +18,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/regions")
 public class RegionController {
 
-    //조회(address에서 사용!)를 제외한 나머지는 다 마스터 권한 필요
+    // 조회(address에서 사용!)를 제외한 나머지는 다 마스터 권한 필요
     private final RegionService regionService;
 
     public RegionController(RegionService regionService) {
@@ -30,6 +30,10 @@ public class RegionController {
             @AuthenticationPrincipal User user,
             @Valid @RequestBody RegionCreateRequest request
     ) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         RegionResponse created = regionService.createRegion(request, user.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -45,6 +49,10 @@ public class RegionController {
             @PathVariable UUID regionId,
             @Valid @RequestBody RegionUpdateRequest request
     ) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         return ResponseEntity.ok(regionService.updateRegion(regionId, request, user.getId()));
     }
 
@@ -53,6 +61,10 @@ public class RegionController {
             @AuthenticationPrincipal User user,
             @PathVariable UUID regionId
     ) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         regionService.deleteRegion(regionId, user.getId());
         return ResponseEntity.noContent().build();
     }
