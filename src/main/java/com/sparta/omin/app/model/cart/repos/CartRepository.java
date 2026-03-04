@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CartRepository extends JpaRepository<Cart, UUID> {
-    Optional<Cart> findAllByIsDeletedFalse();
     @Query("SELECT c FROM Cart c LEFT JOIN FETCH c.cartItems ci WHERE c.userId = :userId AND c.isDeleted = false")
     Optional<Cart> findByUserIdAndIsDeletedFalseWithItems(@Param("userId") UUID userId);
     Optional<Cart> findByUserIdAndIsDeletedFalse(UUID uuid);
