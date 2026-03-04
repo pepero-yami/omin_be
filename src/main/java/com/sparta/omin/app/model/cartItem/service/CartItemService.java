@@ -45,9 +45,8 @@ public class CartItemService {
     }
 
     @Transactional
-    public CartItemResponse updateQuantity(UUID userId, UUID cartId, CartItemUpdateRequest request) {
-        Cart cart = getActiveCart(userId);
-        CartItem cartItem = getCartItem(cart.getId(), request.productId());
+    public CartItemResponse updateQuantity(UUID cartId, CartItemUpdateRequest request) {
+        CartItem cartItem = getCartItem(cartId, request.productId());
 
         cartItem.update(request.quantity());
 
