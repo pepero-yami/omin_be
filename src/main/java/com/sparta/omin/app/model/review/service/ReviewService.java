@@ -51,7 +51,7 @@ public class ReviewService {
             throw new ApiException(ErrorCode.REVIEW_PERIOD_EXPIRED);
         }
         // 이미 리뷰 작성했으면 예외
-        Optional<Review> oldReview = reviewRepository.findByUserIdAndIsDeletedFalse(request.orderId());
+        Optional<Review> oldReview = reviewRepository.findByOrderIdAndIsDeletedFalse(request.orderId());
         if (oldReview.isPresent()) {
             throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
         }
