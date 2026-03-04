@@ -9,7 +9,6 @@ import com.sparta.omin.app.model.review.repos.ReviewRepository;
 import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.repos.StoreRatingStatRepository;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
@@ -29,11 +28,10 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final StoreRatingStatRepository statRepository;
     private final OrderRepository orderRepository;
-    private final UserRepository userRepository;
     private final ImageUploader imageUploader;
 
     @Transactional
-    public ReviewResponse createReview(String email, ReviewCreateRequest request, List<MultipartFile> images) {
+    public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
         // 이미지 개수 초과 예외
         if (images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
         // 주문 조회
@@ -57,7 +55,6 @@ public class ReviewService {
         }
 
         // 요청에 해당하는 유저 정보 조회
-        User user = userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
         UUID userId = user.getId();
 
         // Review 생성
