@@ -40,20 +40,14 @@ public class CartController {
         return ResponseEntity.ok(cartService.getCart(principal.getName()));
     }
 
-    // TODO (create 메서드와 통합시켜야함 - 완료)  유지사유 : API 명세서와의 통일성 위해 일단 유지
-    @PostMapping("/cart/{cartId}")
-    public ResponseEntity<CartItemResponse> addCartItem(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
-        return ResponseEntity.ok(cartItemService.create(principal.getName(), cartId, request));
-    }
-
     @PatchMapping("/cart/{cartId}")
     public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
         return ResponseEntity.ok(cartItemService.updateQuantity(principal.getName(), cartId, request));
     }
 
     @DeleteMapping("/cart/{cartId}")
-    public ResponseEntity<Void> deleteCart(Principal principal) {
-        cartService.deleteCart(principal.getName());
+    public ResponseEntity<Void> deleteCart(@PathVariable UUID cartId, Principal principal) {
+        cartService.deleteCart(principal.getName(), cartId);
         return ResponseEntity.noContent().build();
     }
 }
