@@ -5,7 +5,6 @@ import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

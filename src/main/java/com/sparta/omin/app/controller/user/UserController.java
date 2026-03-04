@@ -4,7 +4,6 @@ import com.sparta.omin.app.model.user.dto.request.UserInfoEditRequest;
 import com.sparta.omin.app.model.user.dto.response.UserInfo;
 import com.sparta.omin.app.model.user.service.UserReadService;
 import com.sparta.omin.app.model.user.service.UserWriteService;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
