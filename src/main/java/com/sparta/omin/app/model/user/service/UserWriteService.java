@@ -20,8 +20,8 @@ public class UserWriteService {
 	private final PasswordEncoder passwordEncoder;
 
 	@Transactional
-	public UserDto editInfo(String userId, String nickname, String password) {
-		User user = userRepository.findByIdAndIsDeletedFalse(UUID.fromString(userId)).orElseThrow(
+	public UserDto editInfo(String email, String nickname, String password) {
+		User user = userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(
 			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 		);
 		user.edit(nickname, password, passwordEncoder);
@@ -29,11 +29,10 @@ public class UserWriteService {
 	}
 
 	@Transactional
-	public void deleteUser(String userId) {
-		UUID id = UUID.fromString(userId);
-		User user = userRepository.findByIdAndIsDeletedFalse(id).orElseThrow(
+	public void deleteUser(String email) {
+		User user = userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(
 			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 		);
-		user.softDelete(id);
+		user.softDelete(user.getId());
 	}
 }

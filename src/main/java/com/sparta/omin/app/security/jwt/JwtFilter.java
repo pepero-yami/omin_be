@@ -1,7 +1,7 @@
 package com.sparta.omin.app.security.jwt;
 
 import com.sparta.omin.app.model.user.constants.Role;
-import io.jsonwebtoken.Claims;
+import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -26,6 +27,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
+	private final UserDetailsServiceImpl userDetailsService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -33,46 +35,30 @@ public class JwtFilter extends OncePerRequestFilter {
 		String tokenValue = resolveToken(request);
 
 		if (StringUtils.hasText(tokenValue)) {
-			try {
-				if (!jwtUtil.validateToken(tokenValue)) {
-					log.error("Invalid JWT token: {}", tokenValue);
-					filterChain.doFilter(request, response);
-					return;
-				}
-			} catch (Exception e) {
-				log.error(e.getMessage());
+			if (!jwtUtil.validateToken(tokenValue)) {
+				log.error("Invalid JWT token: {}", tokenValue);
+				filterChain.doFilter(request, response);
 				return;
 			}
-
-			Claims info = jwtUtil.getClaims(tokenValue);
+			String username = jwtUtil.getEmail(tokenValue);
 
 			try {
-				setAuthentication(info.getSubject(), info.get("roles", String.class));
+				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+				UsernamePasswordAuthenticationToken authentication =
+					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+				SecurityContext context = SecurityContextHolder.createEmptyContext();
+				context.setAuthentication(authentication);
+				SecurityContextHolder.setContext(context);
+
 			} catch (Exception e) {
-				log.error(e.getMessage());
+				log.error("Security Context에 유저 정보를 설정할 수 없습니다: {}", e.getMessage());
 				return;
 			}
 		}
 
 		filterChain.doFilter(request, response);
-	}
-
-	public void setAuthentication(String userId, String roleName) {
-		SecurityContext context = SecurityContextHolder.createEmptyContext();
-		Authentication authentication = createAuthentication(userId, roleName);
-		context.setAuthentication(authentication);
-
-		SecurityContextHolder.setContext(context);
-	}
-
-	private Authentication createAuthentication(String userId, String roleName) {
-		Role role = Role.valueOf(roleName);
-
-		List<SimpleGrantedAuthority> authorities = role.getRoles().stream()
-			.map(SimpleGrantedAuthority::new)
-			.collect(Collectors.toList());
-
-		return new UsernamePasswordAuthenticationToken(userId, null, authorities);
 	}
 
 	private String resolveToken(HttpServletRequest request) {

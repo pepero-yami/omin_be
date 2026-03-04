@@ -18,9 +18,9 @@ public class UserReadService {
 
 	private final UserRepository userRepository;
 
-	public UserDto getUserInfo(String userId) {
+	public UserDto getUserInfo(String email) {
 		return UserDto.from(
-			userRepository.findByIdAndIsDeletedFalse(UUID.fromString(userId)).orElseThrow(
+			userRepository.findByEmailAndIsDeletedFalse(email).orElseThrow(
 				() -> new ApiException(ErrorCode.USER_NOT_FOUND)
 			));
 	}

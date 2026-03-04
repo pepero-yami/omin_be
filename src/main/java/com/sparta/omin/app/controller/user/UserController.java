@@ -8,6 +8,8 @@ import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,24 +27,27 @@ public class UserController {
 	private final UserWriteService userWriteService;
 
 	@GetMapping
-	public ResponseEntity<UserInfo> getUserInfo(Principal principal) {
+	public ResponseEntity<UserInfo> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
+		log.info("userDetails: {}", userDetails);
+		log.info("userDetails.getUsername(): {}", userDetails.getUsername());
+		log.info("userRoles: {}", userDetails.getAuthorities());
 		return ResponseEntity.ok()
-			.body(UserInfo.from(userReadService.getUserInfo(principal.getName())));
+			.body(UserInfo.from(userReadService.getUserInfo(userDetails.getUsername())));
 	}
 
 	@PutMapping
-	public ResponseEntity<UserInfo> editUserInfo(Principal principal,
+	public ResponseEntity<UserInfo> editUserInfo(@AuthenticationPrincipal UserDetails userDetails,
 		@RequestBody UserInfoEditRequest request) {
 		return ResponseEntity.ok().body(
-			UserInfo.from(userWriteService.editInfo(principal.getName(),
+			UserInfo.from(userWriteService.editInfo(userDetails.getUsername(),
 				request.nickname(),
 				request.password()))
 		);
 	}
 
 	@DeleteMapping
-	public ResponseEntity<Void> deleteUser(Principal principal) {
-		userWriteService.deleteUser(principal.getName());
+	public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal UserDetails userDetails) {
+		userWriteService.deleteUser(userDetails.getUsername());
 		return ResponseEntity.noContent().build();
 	}
 
