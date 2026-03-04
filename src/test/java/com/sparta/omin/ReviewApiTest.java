@@ -5,15 +5,19 @@ import com.sparta.omin.app.controller.review.ReviewController;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
 import com.sparta.omin.app.model.review.service.ReviewService;
+import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.config.SecurityConfig;
 import com.sparta.omin.app.security.jwt.JwtUtil;
+import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,39 +32,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(ReviewController.class)
+@WithMockUser(username = "user@email.com")
 @Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class ReviewControllerTest {
 
+    private final String BASE_URL = "/api/v1/reviews";
     @Autowired
     MockMvc mockMvc;
-
     @Autowired
     ObjectMapper objectMapper;
-
     @MockitoBean
     ReviewService reviewService;
-
     @MockitoBean
     JwtUtil jwtUtil;
+    @MockitoBean
+    UserDetailsServiceImpl userDetailsService;
+
+    // given
+    UUID reviewId = UUID.randomUUID();
+    UUID orderId = UUID.randomUUID();
+    UUID userId = UUID.randomUUID();
+    String nickName = "오민 최고";
+
+    Double reqRating = 5.0;
+    String reqComment = "맛있어요!";
 
     @Test
+
     @DisplayName("리뷰 생성 성공 시 201 반환")
     void createReview_success() throws Exception {
-        // given
-        UUID reviewId = UUID.randomUUID();
-        UUID orderId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
 
         ReviewCreateRequest request =
-                new ReviewCreateRequest(orderId, 5, "맛있어요!");
+                new ReviewCreateRequest(orderId, reqRating, reqComment);
 
         ReviewResponse response =
                 new ReviewResponse(
                         reviewId,
                         orderId,
                         userId,
-                        5,
-                        "맛있어요!",
+                        nickName,
+                        reqRating,
+                        reqComment,
                         LocalDateTime.now(),
                         LocalDateTime.now()
                 );
@@ -69,7 +81,7 @@ class ReviewControllerTest {
                 .willReturn(response);
 
         // when & then
-        mockMvc.perform(post("/api/v1/reviews")
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -79,8 +91,8 @@ class ReviewControllerTest {
                 .andExpect(jsonPath("$.reviewId").value(reviewId.toString()))
                 .andExpect(jsonPath("$.orderId").value(orderId.toString()))
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.rating").value(5))
-                .andExpect(jsonPath("$.comment").value("맛있어요!"))
+                .andExpect(jsonPath("$.rating").value(reqRating))
+                .andExpect(jsonPath("$.comment").value(reqComment))
                 .andExpect(jsonPath("$.createdAt").exists())
                 .andExpect(jsonPath("$.updatedAt").exists());
     }
@@ -97,7 +109,7 @@ class ReviewControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/v1/reviews")
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
                 .andDo(print())
@@ -112,16 +124,17 @@ class ReviewControllerTest {
         UUID orderId = UUID.randomUUID();
 
         ReviewCreateRequest request =
-                new ReviewCreateRequest(orderId, 5, "맛있어요!");
+                new ReviewCreateRequest(orderId, reqRating, reqComment);
 
         given(reviewService.createReview(any(), any()))
-                .willThrow(new IllegalStateException("이미 해당 주문 건으로 작성된 리뷰가 있습니다."));
+                .willThrow(new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS));
 
-        mockMvc.perform(post("/api/v1/reviews")
+        mockMvc.perform(post(BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("CONFLICT"));
+                .andExpect(jsonPath("$.error").value("이미 해당 주문 건으로 작성된 리뷰가 있습니다."));
     }
+
 }

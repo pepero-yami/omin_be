@@ -11,16 +11,18 @@ public record ReviewResponse(
         UUID reviewId,
         UUID orderId,
         UUID userId,
+        String nickname,
         double rating,
         String comment,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static ReviewResponse from(Review review) {
+    public static ReviewResponse of(Review review, String nickname) {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .orderId(review.getOrderId())
                 .userId(review.getUserId())
+                .nickname(nickname)
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
