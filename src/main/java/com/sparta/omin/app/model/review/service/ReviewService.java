@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,9 +50,8 @@ public class ReviewService {
         ) {
             throw new ApiException(ErrorCode.REVIEW_PERIOD_EXPIRED);
         }
-
         // 이미 리뷰 작성했으면 예외
-        Optional<Review> oldReview = reviewRepository.findByOrderId(request.orderId());
+        Optional<Review> oldReview = reviewRepository.findByUserIdAndIsDeletedFalse(request.orderId());
         if (oldReview.isPresent()) {
             throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
         }
@@ -70,8 +68,7 @@ public class ReviewService {
                 request.comment()
         );
 
-        // 2. 이미지 처리 (이미지가 있을 경우에만)
-        List<String> imageUrls = new ArrayList<>();
+        // 이미지 처리 (이미지가 있을 경우에만)
         if (images != null && !images.isEmpty()) {
             List<String> uploadedUrls = images.stream()
                     .filter(file -> !file.isEmpty())
@@ -82,9 +79,8 @@ public class ReviewService {
         }
         reviewRepository.save(newReview);
 
-        // 해당 가게에 기존 평점 통계가 존재하는지 확인
+        // 해당 가게에 기존 평점 통계가 존재하는지 확인 후 평점 생성 / 업데이트
         Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreId((order.getStoreId()));
-
         if (oldStoreRatingStat.isPresent()) {
             oldStoreRatingStat.get().increase(request.rating());
         } else {
