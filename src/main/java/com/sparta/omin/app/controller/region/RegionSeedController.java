@@ -1,7 +1,9 @@
 package com.sparta.omin.app.controller.region;
 
 import com.sparta.omin.app.model.region.service.RegionSeedService;
+import com.sparta.omin.app.model.region.service.RegionSeedService.RegionSeedResult;
 import com.sparta.omin.app.model.user.entity.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +20,10 @@ public class RegionSeedController {
 
     @PostMapping("/region-seeds")
     public ResponseEntity<RegionSeedResponse> seed(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         RegionSeedResult result = regionSeedService.seedRegions(user.getId());
         return ResponseEntity.ok(RegionSeedResponse.from(result));
     }
@@ -27,6 +33,4 @@ public class RegionSeedController {
             return new RegionSeedResponse(r.insertedCount(), r.skippedCount());
         }
     }
-
-    public record RegionSeedResult(int insertedCount, int skippedCount) {}
 }

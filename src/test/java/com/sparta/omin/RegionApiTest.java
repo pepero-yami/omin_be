@@ -15,7 +15,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sparta.omin.app.controller.region.RegionController;
 import com.sparta.omin.app.controller.region.RegionSeedController;
-import com.sparta.omin.app.controller.region.RegionSeedController.RegionSeedResult;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionService;
@@ -182,7 +181,8 @@ class RegionApiTest {
         UUID actorId = UUID.randomUUID();
         setAuthentication(actorId);
 
-        given(regionSeedService.seedRegions(eq(actorId))).willReturn(new RegionSeedResult(3, 10));
+        given(regionSeedService.seedRegions(eq(actorId)))
+                .willReturn(new RegionSeedService.RegionSeedResult(3, 10));
 
         mockMvc.perform(post("/api/v1/region-seeds")
                         .contentType(MediaType.APPLICATION_JSON))

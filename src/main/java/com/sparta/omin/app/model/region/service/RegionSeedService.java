@@ -1,6 +1,5 @@
 package com.sparta.omin.app.model.region.service;
 
-import com.sparta.omin.app.controller.region.RegionSeedController.RegionSeedResult;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
 import java.util.ArrayList;
@@ -8,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +27,6 @@ public class RegionSeedService {
         // seed 데이터(카카오 normalize 결과와 "동일한 문자열"임을 전제로 함)
         // - seed에서는 Kakao API 호출을 하지 않는다(대량 호출/레이트리밋/속도 이슈 방지)
         // - 대신 address 문자열을 최소 정리(trim + 연속 공백 제거)만 수행한다.
-        // - 중복은 existsByAddressAndIsDeletedFalse(address)로 스킵한다.
         List<String> regionAddresses = List.of(
                 "서울 종로구 청운동", "서울 종로구 신교동", "서울 종로구 궁정동", "서울 종로구 효자동", "서울 종로구 창성동", "서울 종로구 통의동", "서울 종로구 적선동", "서울 종로구 통인동", "서울 종로구 누상동", "서울 종로구 누하동", "서울 종로구 옥인동", "서울 종로구 체부동", "서울 종로구 필운동", "서울 종로구 내자동", "서울 종로구 사직동", "서울 종로구 도렴동", "서울 종로구 당주동", "서울 종로구 내수동", "서울 종로구 세종로", "서울 종로구 신문로1가", "서울 종로구 신문로2가", "서울 종로구 청진동", "서울 종로구 서린동", "서울 종로구 수송동", "서울 종로구 중학동", "서울 종로구 종로1가", "서울 종로구 공평동", "서울 종로구 관훈동", "서울 종로구 견지동", "서울 종로구 와룡동", "서울 종로구 권농동", "서울 종로구 운니동", "서울 종로구 익선동", "서울 종로구 경운동", "서울 종로구 관철동", "서울 종로구 인사동", "서울 종로구 낙원동", "서울 종로구 종로2가", "서울 종로구 팔판동", "서울 종로구 삼청동", "서울 종로구 안국동", "서울 종로구 소격동", "서울 종로구 화동", "서울 종로구 사간동", "서울 종로구 송현동", "서울 종로구 가회동", "서울 종로구 재동", "서울 종로구 계동", "서울 종로구 원서동", "서울 종로구 훈정동", "서울 종로구 묘동", "서울 종로구 봉익동", "서울 종로구 돈의동", "서울 종로구 장사동", "서울 종로구 관수동", "서울 종로구 종로3가", "서울 종로구 인의동", "서울 종로구 예지동", "서울 종로구 원남동", "서울 종로구 연지동", "서울 종로구 종로4가", "서울 종로구 효제동", "서울 종로구 종로5가", "서울 종로구 종로6가", "서울 종로구 이화동", "서울 종로구 연건동", "서울 종로구 충신동", "서울 종로구 동숭동", "서울 종로구 혜화동", "서울 종로구 명륜1가", "서울 종로구 명륜2가", "서울 종로구 명륜4가", "서울 종로구 명륜3가", "서울 종로구 창신동", "서울 종로구 숭인동", "서울 종로구 교남동", "서울 종로구 평동", "서울 종로구 송월동", "서울 종로구 홍파동", "서울 종로구 교북동", "서울 종로구 행촌동", "서울 종로구 구기동", "서울 종로구 평창동", "서울 종로구 부암동", "서울 종로구 홍지동", "서울 종로구 신영동", "서울 종로구 무악동",
                 "서울 중구 무교동", "서울 중구 다동", "서울 중구 태평로1가", "서울 중구 을지로1가", "서울 중구 을지로2가", "서울 중구 남대문로1가", "서울 중구 삼각동", "서울 중구 수하동", "서울 중구 장교동", "서울 중구 수표동", "서울 중구 소공동", "서울 중구 북창동", "서울 중구 태평로2가", "서울 중구 남대문로2가", "서울 중구 남대문로3가", "서울 중구 남대문로4가", "서울 중구 남대문로5가", "서울 중구 봉래동1가", "서울 중구 봉래동2가", "서울 중구 회현동1가", "서울 중구 회현동2가", "서울 중구 회현동3가", "서울 중구 충무로1가", "서울 중구 충무로2가", "서울 중구 명동1가", "서울 중구 명동2가", "서울 중구 남산동1가", "서울 중구 남산동2가", "서울 중구 남산동3가", "서울 중구 저동1가", "서울 중구 충무로4가", "서울 중구 충무로5가", "서울 중구 인현동2가", "서울 중구 예관동", "서울 중구 묵정동", "서울 중구 필동1가", "서울 중구 필동2가", "서울 중구 필동3가", "서울 중구 남학동", "서울 중구 주자동", "서울 중구 예장동", "서울 중구 장충동1가", "서울 중구 장충동2가", "서울 중구 광희동1가", "서울 중구 광희동2가", "서울 중구 쌍림동", "서울 중구 을지로3가", "서울 중구 을지로4가", "서울 중구 을지로5가", "서울 중구 주교동", "서울 중구 방산동", "서울 중구 오장동", "서울 중구 을지로6가", "서울 중구 을지로7가", "서울 중구 을지로2가", "서울 중구 입정동", "서울 중구 산림동", "서울 중구 초동", "서울 중구 인현동1가", "서울 중구 저동2가", "서울 중구 신당동", "서울 중구 흥인동", "서울 중구 무학동", "서울 중구 황학동", "서울 중구 서소문동", "서울 중구 정동", "서울 중구 순화동", "서울 중구 의주로1가", "서울 중구 의주로2가", "서울 중구 중림동", "서울 중구 만리동1가", "서울 중구 만리동2가",
@@ -80,11 +79,18 @@ public class RegionSeedService {
             }
         }
 
+        List<String> normalizedList = new ArrayList<>(normalizedUnique);
+
+        // N+1 제거: 한 번에 현재 존재하는 주소들 조회
+        Set<String> existing = regionRepository.findAllByAddressInAndIsDeletedFalse(normalizedList).stream()
+                .map(Region::getAddress)
+                .collect(Collectors.toSet());
+
         int skipped = 0;
         List<Region> toInsert = new ArrayList<>();
 
-        for (String address : normalizedUnique) {
-            if (regionRepository.existsByAddressAndIsDeletedFalse(address)) {
+        for (String address : normalizedList) {
+            if (existing.contains(address)) {
                 skipped++;
                 continue;
             }
@@ -95,4 +101,6 @@ public class RegionSeedService {
 
         return new RegionSeedResult(toInsert.size(), skipped);
     }
+
+    public record RegionSeedResult(int insertedCount, int skippedCount) {}
 }
