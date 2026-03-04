@@ -6,6 +6,7 @@ import com.sparta.omin.app.model.review.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +23,7 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/reviews")
-    public ResponseEntity<ReviewResponse> create(@Valid @RequestBody ReviewCreateRequest request) {
-        UUID userId = UUID.randomUUID(); // 지금은 임시값 (시큐리티 붙으면 교체)
+    public ResponseEntity<ReviewResponse> create(@AuthenticationPrincipal UUID userId, @Valid @RequestBody ReviewCreateRequest request) {
         ReviewResponse response =
                 reviewService.createReview(userId, request);
         URI uri = ServletUriComponentsBuilder
