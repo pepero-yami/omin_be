@@ -23,27 +23,10 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
 
     @Transactional
-    public CartResponse addToCart(String userId, CartCreateRequest request) {
-        Cart cart = cartRepository.findByUserIdAndIsDeletedFalse(toUuid(userId))
-                .orElseGet(() -> cartRepository.save(
-                        Cart.create(toUuid(userId), request.storeId())
-                ));
+    public CartResponse addToCart(String userId, CartCreateRequest request, boolean force) {
+        Cart cart = getOrCreateCart(toUuid(userId), request.storeId(), force);
+        upsertCartItem(cart, request);
 
-        // 같은 가게 상품인지 검증
-        if (!cart.getStoreId().equals(request.storeId())) {
-            throw new ApiException(ErrorCode.STORE_MISMATCH);
-        }
-
-        // 있으면 수량 업데이트, 없으면 insert
-        cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
-                .ifPresentOrElse(
-                        item -> item.update(item.getQuantity() + request.quantity()),
-                        () -> cartItemRepository.save(
-                                CartItem.create(cart, request.productId(), request.quantity())
-                        )
-                );
-
-        // 저장 후 cartItems가 채워진 상태로 다시 조회
         Cart refreshedCart = getActiveCart(toUuid(userId));
         return CartResponse.from(refreshedCart);
     }
@@ -52,6 +35,13 @@ public class CartService {
         return cartRepository.findByUserIdAndIsDeletedFalseWithItems(toUuid(userId))
                 .map(CartResponse::from)
                 .orElse(null);
+    }
+
+    @Transactional
+    public void deleteCart(String userId, UUID cartId) {
+        Cart cart = cartRepository.findByIdAndUserIdAndIsDeletedFalse(cartId, toUuid(userId))
+                .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
+        cart.delete(toUuid(userId));
     }
 
     //===== helper method =====
@@ -65,7 +55,32 @@ public class CartService {
         return cartItemRepository.save(CartItem.create(cart, request.productId(), request.quantity()));
     }
 
+    private Cart getOrCreateCart(UUID userId, UUID storeId, boolean force) {
+        return cartRepository.findByUserIdAndIsDeletedFalse(userId)
+                .map(cart -> {
+                    if (!cart.getStoreId().equals(storeId)) {
+                        if (!force) throw new ApiException(ErrorCode.CART_STORE_CONFLICT);
+                        cart.delete(userId);
+                        return cartRepository.save(Cart.create(userId, storeId));
+                    }
+                    return cart;
+                })
+                .orElseGet(() -> cartRepository.save(Cart.create(userId, storeId)));
+    }
+
+    private void upsertCartItem(Cart cart, CartCreateRequest request) {
+        cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
+                .ifPresentOrElse(
+                        item -> item.update(item.getQuantity() + request.quantity()),
+                        () -> cartItemRepository.save(
+                                CartItem.create(cart, request.productId(), request.quantity())
+                        )
+                );
+    }
+
     private static UUID toUuid(String userId) {
         return UUID.fromString(userId);
     }
+
+
 }

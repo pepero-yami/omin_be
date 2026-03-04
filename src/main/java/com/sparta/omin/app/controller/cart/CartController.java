@@ -50,4 +50,10 @@ public class CartController {
     public ResponseEntity<CartItemResponse> updateQuantity(@PathVariable UUID cartId, @RequestBody CartItemUpdateRequest request, Principal principal) {
         return ResponseEntity.ok(cartItemService.updateQuantity(principal.getName(), cartId, request));
     }
+
+    @DeleteMapping("/cart/{cartId}")
+    public ResponseEntity<Void> deleteCart(Principal principal) {
+        cartService.deleteCart(principal.getName());
+        return ResponseEntity.noContent().build();
+    }
 }
