@@ -6,6 +6,8 @@ import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
+import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +29,7 @@ public class RegionService {
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         if (regionRepository.existsByAddressAndIsDeletedFalse(address)) {
-            throw new IllegalStateException("이미 존재하는 지역(address)입니다.");
+            throw new ApiException(ErrorCode.REGION_ALREADY_EXISTS);
         }
 
         Region saved = regionRepository.save(Region.create(address));
@@ -36,7 +38,7 @@ public class RegionService {
 
     public RegionResponse getRegion(UUID regionId) {
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.REGION_NOT_FOUND));
 
         return RegionResponse.of(region.getId(), region.getAddress());
     }
@@ -47,10 +49,10 @@ public class RegionService {
         String address = kakaoAddressClient.normalizeToRegionDepth3(rawAddress);
 
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.REGION_NOT_FOUND));
 
         if (regionRepository.existsByAddressAndIsDeletedFalseAndIdNot(address, regionId)) {
-            throw new IllegalStateException("이미 존재하는 지역(address)입니다.");
+            throw new ApiException(ErrorCode.REGION_ALREADY_EXISTS);
         }
 
         region.updateAddress(address);
@@ -60,7 +62,7 @@ public class RegionService {
     @Transactional
     public void deleteRegion(UUID regionId) {
         Region region = regionRepository.findByIdAndIsDeletedFalse(regionId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 지역(regionId)입니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.REGION_NOT_FOUND));
 
         region.softDelete();
     }
