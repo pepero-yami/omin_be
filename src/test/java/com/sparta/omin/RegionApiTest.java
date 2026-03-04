@@ -45,7 +45,7 @@ class RegionApiTest {
     @MockitoBean
     JwtUtil jwtUtil;
 
-    @MockBean
+    @MockitoBean
     UserDetailsServiceImpl userDetailsService;
 
     @Test
