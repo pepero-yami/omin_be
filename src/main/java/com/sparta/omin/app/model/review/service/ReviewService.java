@@ -34,11 +34,11 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse createReview(String email, ReviewCreateRequest request, List<MultipartFile> images) {
-        if(images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+        // 이미지 개수 초과 예외
+        if (images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
         // 주문 조회
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
-
         // 주문 상태 COMPLETED 아니면 예외
         if (!order.isCompleted()) {
             throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
