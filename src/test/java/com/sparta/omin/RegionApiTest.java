@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.sparta.omin.app.controller.region.RegionController;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.service.RegionService;
+import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.jwt.JwtUtil;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
 import java.util.List;
@@ -42,6 +43,9 @@ class RegionApiTest {
 
     @MockitoBean
     JwtUtil jwtUtil;
+
+    @MockBean
+    UserDetailsServiceImpl userDetailsService;
 
     @Test
     void post_region_returns201() throws Exception {
