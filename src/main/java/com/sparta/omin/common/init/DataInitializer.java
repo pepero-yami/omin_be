@@ -35,7 +35,7 @@ public class DataInitializer implements CommandLineRunner {
             return;
         }
 
-        UUID actorId = AuditUserProvider.currentUserId(); // TODO(auth): 인증 붙이면 실제 로그인 유저로 변경
+        UUID actorId = AuditUserProvider.currentUserId(); // TODO(auth): 인증 붙이면 실제 로그인 유저로 변경 - 이건 master여야 함
         LocalDateTime now = LocalDateTime.now();
 
         List<String> regionAddresses = List.of(
