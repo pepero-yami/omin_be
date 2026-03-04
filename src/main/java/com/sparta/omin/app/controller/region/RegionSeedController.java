@@ -2,29 +2,23 @@ package com.sparta.omin.app.controller.region;
 
 import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionSeedService.RegionSeedResult;
-import com.sparta.omin.app.model.user.entity.User;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class RegionSeedController {
 
     private final RegionSeedService regionSeedService;
 
-    public RegionSeedController(RegionSeedService regionSeedService) {
-        this.regionSeedService = regionSeedService;
-    }
-
     @PostMapping("/region-seeds")
-    public ResponseEntity<RegionSeedResponse> seed(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<RegionSeedResponse> seed() {
 
-        RegionSeedResult result = regionSeedService.seedRegions(user.getId());
+        RegionSeedResult result = regionSeedService.seedRegions();
         return ResponseEntity.ok(RegionSeedResponse.from(result));
     }
 

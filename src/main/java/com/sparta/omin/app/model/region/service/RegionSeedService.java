@@ -2,27 +2,25 @@ package com.sparta.omin.app.model.region.service;
 
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class RegionSeedService {
 
     private final RegionRepository regionRepository;
 
-    public RegionSeedService(RegionRepository regionRepository) {
-        this.regionRepository = regionRepository;
-    }
-
     @Transactional
-    public RegionSeedResult seedRegions(UUID actorId) {
+    public RegionSeedResult seedRegions() {
 
         // seed 데이터(카카오 normalize 결과와 "동일한 문자열"임을 전제로 함)
         // - seed에서는 Kakao API 호출을 하지 않는다(대량 호출/레이트리밋/속도 이슈 방지)
@@ -94,7 +92,7 @@ public class RegionSeedService {
                 skipped++;
                 continue;
             }
-            toInsert.add(Region.create(address, actorId));
+            toInsert.add(Region.create(address));
         }
 
         regionRepository.saveAll(toInsert);

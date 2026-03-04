@@ -2,9 +2,7 @@ package com.sparta.omin.common.init;
 
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
-import com.sparta.omin.app.model.user.constants.Role;
-import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.app.model.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -13,17 +11,11 @@ import java.util.List;
 
 @Component
 @EnableConfigurationProperties(SeedProperties.class)
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final RegionRepository regionRepository;
-    private final UserRepository userRepository;
     private final SeedProperties seedProperties;
-
-    public DataInitializer(RegionRepository regionRepository, UserRepository userRepository, SeedProperties seedProperties) {
-        this.regionRepository = regionRepository;
-        this.userRepository = userRepository;
-        this.seedProperties = seedProperties;
-    }
 
     @Override
     public void run(String... args) {
@@ -35,11 +27,6 @@ public class DataInitializer implements CommandLineRunner {
         if (regionRepository.count() > 0) {
             return;
         }
-
-        // 운영에서도 audit 필드는 실제 user id가 들어가야 함.
-        // MASTER 권한 유저를 seed actor로 사용.
-        User masterUser = userRepository.findFirstByRoleAndIsDeletedFalse(Role.MASTER)
-                .orElseThrow(() -> new IllegalStateException("Seed를 위한 MASTER 유저가 존재하지 않습니다. (created_by/updated_by 세팅 불가)"));
 
         List<String> regionAddresses = List.of(
                 "서울 종로구 청운동", "서울 종로구 신교동", "서울 종로구 궁정동", "서울 종로구 효자동", "서울 종로구 창성동", "서울 종로구 통의동", "서울 종로구 적선동", "서울 종로구 통인동", "서울 종로구 누상동", "서울 종로구 누하동", "서울 종로구 옥인동", "서울 종로구 체부동", "서울 종로구 필운동", "서울 종로구 내자동", "서울 종로구 사직동", "서울 종로구 도렴동", "서울 종로구 당주동", "서울 종로구 내수동", "서울 종로구 세종로", "서울 종로구 신문로1가", "서울 종로구 신문로2가", "서울 종로구 청진동", "서울 종로구 서린동", "서울 종로구 수송동", "서울 종로구 중학동", "서울 종로구 종로1가", "서울 종로구 공평동", "서울 종로구 관훈동", "서울 종로구 견지동", "서울 종로구 와룡동", "서울 종로구 권농동", "서울 종로구 운니동", "서울 종로구 익선동", "서울 종로구 경운동", "서울 종로구 관철동", "서울 종로구 인사동", "서울 종로구 낙원동", "서울 종로구 종로2가", "서울 종로구 팔판동", "서울 종로구 삼청동", "서울 종로구 안국동", "서울 종로구 소격동", "서울 종로구 화동", "서울 종로구 사간동", "서울 종로구 송현동", "서울 종로구 가회동", "서울 종로구 재동", "서울 종로구 계동", "서울 종로구 원서동", "서울 종로구 훈정동", "서울 종로구 묘동", "서울 종로구 봉익동", "서울 종로구 돈의동", "서울 종로구 장사동", "서울 종로구 관수동", "서울 종로구 종로3가", "서울 종로구 인의동", "서울 종로구 예지동", "서울 종로구 원남동", "서울 종로구 연지동", "서울 종로구 종로4가", "서울 종로구 효제동", "서울 종로구 종로5가", "서울 종로구 종로6가", "서울 종로구 이화동", "서울 종로구 연건동", "서울 종로구 충신동", "서울 종로구 동숭동", "서울 종로구 혜화동", "서울 종로구 명륜1가", "서울 종로구 명륜2가", "서울 종로구 명륜4가", "서울 종로구 명륜3가", "서울 종로구 창신동", "서울 종로구 숭인동", "서울 종로구 교남동", "서울 종로구 평동", "서울 종로구 송월동", "서울 종로구 홍파동", "서울 종로구 교북동", "서울 종로구 행촌동", "서울 종로구 구기동", "서울 종로구 평창동", "서울 종로구 부암동", "서울 종로구 홍지동", "서울 종로구 신영동", "서울 종로구 무악동",
@@ -84,7 +71,7 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         List<Region> regions = regionAddresses.stream()
-                .map(addr -> Region.create(addr, masterUser.getId()))
+                .map(Region::create)
                 .toList();
 
         regionRepository.saveAll(regions);
