@@ -33,8 +33,7 @@ public class Store extends BaseTimeEntity {
     private UUID regionId;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "category",  nullable = false, columnDefinition = "store_category")
+    @Column(name = "category",  nullable = false)
     private Category category;
 
     @Column(name = "name", nullable = false, length = 100)
@@ -47,8 +46,7 @@ public class Store extends BaseTimeEntity {
     private String detailAddress;                                                  //상세주소
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "status", nullable = false, columnDefinition = "store_status")
+    @Column(name = "status", nullable = false)
     private Status status = Status.PENDING;
 
     @Column(name = "latitude", nullable = false, precision = 10,scale = 6)
