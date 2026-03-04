@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.omin.app.controller.user.UserController;
 import com.sparta.omin.app.model.user.dto.UserDto;
 import com.sparta.omin.app.model.user.dto.request.UserInfoEditRequest;
+import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.model.user.service.UserReadService;
 import com.sparta.omin.app.model.user.service.UserWriteService;
 import com.sparta.omin.app.security.jwt.JwtUtil;
@@ -37,6 +38,9 @@ class UserControllerTest {
 
 	@MockBean
 	private JwtUtil jwtUtil;
+
+	@MockBean
+	private UserDetailsServiceImpl userDetailsService;
 
 	@MockBean
 	private UserReadService userReadService;
