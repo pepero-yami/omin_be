@@ -1,11 +1,11 @@
 package com.sparta.omin.app.model.review.entity;
 
 import com.sparta.omin.common.entity.BaseAuditEntity;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -19,6 +19,7 @@ public class Review extends BaseAuditEntity {
 
     @Id
     @GeneratedValue
+    @UuidGenerator
     @Column(nullable = false, updatable = false)
     private UUID id;
 
@@ -61,6 +62,13 @@ public class Review extends BaseAuditEntity {
         return review;
     }
 
+    // 도메인 규칙 : 별점
+    private static void validRating(double rating) {
+        if (rating <= 1 || rating > 5) {
+            throw new IllegalArgumentException("rating must be between 1 and 5");
+        }
+    }
+
     public void updateReview(double newRating, String newComment, UUID actorId) {
         this.rating = newRating;
         this.comment = newComment;
@@ -69,13 +77,6 @@ public class Review extends BaseAuditEntity {
 
     public void softDelete(UUID actorId, LocalDateTime now) {
         markDeleted(actorId, now);
-    }
-
-    // 도메인 규칙 : 별점
-    private static void validRating(double rating) {
-        if (rating <= 1 || rating > 5) {
-            throw new IllegalArgumentException("rating must be between 1 and 5");
-        }
     }
 
 }
