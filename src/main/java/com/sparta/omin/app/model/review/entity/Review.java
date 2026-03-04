@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -50,8 +51,8 @@ public class Review extends BaseAuditEntity {
     ) {
 
         Review review = new Review();
-        review.userId = userId;
-        review.orderId = orderId;
+        review.userId = Objects.requireNonNull(userId, "userId must not be null");
+        review.orderId = Objects.requireNonNull(orderId, "orderId must not be null");
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
@@ -72,8 +73,8 @@ public class Review extends BaseAuditEntity {
 
     // 도메인 규칙 : 별점
     private static void validRating(double rating) {
-        if (rating < 0 || rating > 5) {
-            throw new IllegalArgumentException("rating must be between 0 and 5");
+        if (rating <= 1 || rating > 5) {
+            throw new IllegalArgumentException("rating must be between 1 and 5");
         }
     }
 

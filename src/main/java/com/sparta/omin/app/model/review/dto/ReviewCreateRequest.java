@@ -10,7 +10,7 @@ public record ReviewCreateRequest(
         @NotNull
         UUID orderId,
         @NotNull
-        @Min(0)
+        @Min(1)
         @Max(5)
         Double rating,
         String comment
