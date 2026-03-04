@@ -6,14 +6,18 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "p_store_image")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "update p_store_image set is_deleted = true where id = ?")
+@SQLRestriction("is_deleted = false")
+@Table(name = "p_store_image")
 public class StoreImage extends BaseTimeEntity {
     @Id
     @UuidGenerator
@@ -27,8 +31,8 @@ public class StoreImage extends BaseTimeEntity {
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
-    @Column(name="is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+//    @Column(name="is_deleted", nullable = false)
+//    private Boolean isDeleted = false;
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)

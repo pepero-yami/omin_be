@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 
-public record StoreCreateRequest (
+public record StoreUpdateRequest(
         @NotNull
         UUID regionId,
         @NotNull
@@ -32,19 +32,14 @@ public record StoreCreateRequest (
         BigDecimal latitude,
         @NotEmpty
         @Size(max = 10)
-        List<@NotBlank @Size(max = 255) String> images //등록한 img url이 공란이면 x
+        List<StoreImageRequest> images
 ) {
-    public Store toEntity(){
-        return Store.builder()
-                //todo : 시큐리티와 병합 후 변경예정
-                .ownerId(AuditUserProvider.currentUserId())
-                .regionId(regionId)
-                .category(category)
-                .name(name)
-                .roadAddress(roadAddress)
-                .detailAddress(detailAddress)
-                .latitude(latitude)
-                .longitude(longitude)
-                .build();
+    public record StoreImageRequest(
+        @NotBlank
+        @Size(max = 255)
+        String url,
+        UUID id
+    ) {
+
     }
 }

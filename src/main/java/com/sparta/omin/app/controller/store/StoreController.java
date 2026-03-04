@@ -2,6 +2,7 @@ package com.sparta.omin.app.controller.store;
 
 import com.sparta.omin.app.model.store.dto.StoreCreateRequest;
 import com.sparta.omin.app.model.store.dto.StoreResponse;
+import com.sparta.omin.app.model.store.dto.StoreUpdateRequest;
 import com.sparta.omin.app.model.store.service.StoreService;
 import com.sparta.omin.common.response.ApiResponse;
 import com.sparta.omin.common.response.ResponseUtil;
@@ -34,5 +35,22 @@ public class StoreController {
                 foundStore
         );
     }
+
+    @PutMapping("/stores/{storeId}")
+    public ResponseEntity<ApiResponse<StoreResponse>> updateStore(
+            @Valid @RequestBody StoreUpdateRequest storeUpdateRequest ,@PathVariable UUID storeId
+    ){
+        StoreResponse updatedStore = storeService.modifyStore(storeUpdateRequest, storeId);
+        return ResponseUtil.ok(
+                updatedStore
+        );
+    }
+
+    @DeleteMapping("/stores/{storeId}")
+    public ResponseEntity<Void> deleteStore(@PathVariable UUID storeId) {
+        storeService.deleteStore(storeId);
+        return ResponseUtil.noContent();
+    }
+
 
 }

@@ -1,12 +1,12 @@
 package com.sparta.omin.app.model.store.entity;
 
+import com.sparta.omin.app.model.store.dto.StoreUpdateRequest;
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
@@ -18,10 +18,11 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "update p_store set is_deleted = true where id = ?")
+@SQLRestriction("is_deleted = false")
 @Table (name = "p_store")
 public class Store extends BaseTimeEntity {
     @Id
-    @GeneratedValue
     @UuidGenerator
     @Column(name = "id", nullable = false)
     private UUID id;
@@ -57,8 +58,9 @@ public class Store extends BaseTimeEntity {
     @Column(name = "longitude", nullable = false, precision = 10,scale = 6)
     private BigDecimal longitude;                                                   //경도
 
-    @Column(name="is_deleted", nullable = false)
-    private Boolean isDeleted = false;                                              //삭제여부
+//    @Column(name="is_deleted", nullable = false)
+//    private Boolean isDeleted = false;                                              //삭제여부
+
 
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -70,6 +72,15 @@ public class Store extends BaseTimeEntity {
         storeImage.setSequence(images.size());
     }
 
+    public void updateStore(StoreUpdateRequest storeUpdateRequest) {
+        this.regionId = storeUpdateRequest.regionId();
+        this.category = storeUpdateRequest.category();
+        this.name = storeUpdateRequest.name();
+        this.roadAddress = storeUpdateRequest.roadAddress();
+        this.detailAddress = storeUpdateRequest.detailAddress();
+        this.latitude = storeUpdateRequest.latitude();
+        this.longitude = storeUpdateRequest.longitude();
+    }
 
     @Builder
     public Store(UUID ownerId, UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
