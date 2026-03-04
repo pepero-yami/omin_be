@@ -45,11 +45,15 @@ public class CartItemService {
     }
 
     @Transactional
-    public CartItemResponse updateQuantity(UUID cartId, CartItemUpdateRequest request) {
-        CartItem cartItem = getCartItem(cartId, request.productId());
+    public CartItemResponse updateQuantity(UUID userId, UUID cartId, CartItemUpdateRequest request) {
+        Cart cart = getActiveCart(userId);
 
+        if (!cart.getId().equals(cartId)) {
+            throw new ApiException(ErrorCode.CART_NOT_FOUND);
+        }
+
+        CartItem cartItem = getCartItem(cart.getId(), request.productId());
         cartItem.update(request.quantity());
-
         return CartItemResponse.from(cartItem);
     }
 
