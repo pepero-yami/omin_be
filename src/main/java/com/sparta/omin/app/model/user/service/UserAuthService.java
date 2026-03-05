@@ -10,9 +10,13 @@ import com.sparta.omin.app.security.jwt.JwtUtil;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.concurrent.TimeUnit;
+import com.sparta.omin.common.util.AuditUserProvider;
+import com.sparta.omin.common.util.AuditUserProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +43,18 @@ public class UserAuthService {
 			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.build()));
+//		// 회원가입 시 created_by/updated_by NOT NULL 충족하도록 2단계로 나눔
+//		User user = User.builder()
+//				.name(request.name())
+//				.nickname(request.nickname())
+//				.email(request.email())
+//				.password(passwordEncoder.encode(request.password()))
+//				.build();
+//
+//		user.initAuditFieldsForSignUp(AuditUserProvider.currentUserId());
+//
+//		return UserDto.from(userRepository.save(user));
+
 	}
 
 	public TokenResponse login(UserLoginRequest request) {
@@ -56,5 +72,11 @@ public class UserAuthService {
 			1000 * 60 * 60 * 12,
 			TimeUnit.MILLISECONDS);
 		return tokenResponse;
+	}
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		return userRepository.findByEmailAndIsDeletedFalse(username).orElseThrow(
+				() -> new ApiException(ErrorCode.USER_NOT_FOUND)
+		);
 	}
 }

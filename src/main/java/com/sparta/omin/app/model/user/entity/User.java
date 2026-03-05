@@ -54,10 +54,7 @@ public class User extends BaseTimeEntity implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@Column(name = "is_deleted", nullable = false)
-	private boolean isDeleted;
-
-	@Column(name = "deleted_by")
+	@Column(name = "deleted_by") //FIXME 이거 삭제되는거죠?
 	private UUID deletedBy;
 
 	@Override
@@ -105,5 +102,12 @@ public class User extends BaseTimeEntity implements UserDetails {
 	public void softDelete(UUID id) {
 		this.isDeleted = true;
 		this.deletedBy = id;
+	}
+
+	// 회원가입 시점(인증 전)에는 actorId를 알 수 없어서, UUID=0000...로 created_by/updated_by NOT NULL을 채우기 위한 용도
+	public void initAuditFieldsForSignUp(UUID actorId) {
+		this.createdBy = actorId;
+		this.updatedBy = actorId;
+		this.isDeleted = false;
 	}
 }
