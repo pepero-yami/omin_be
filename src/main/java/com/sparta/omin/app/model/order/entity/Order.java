@@ -20,8 +20,8 @@ public class Order extends BaseEntity {
     @UuidGenerator
     private UUID id;
     private UUID userId;
-    @JoinColumn(name = "store_id", nullable = false, updatable = false)
     @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false, updatable = false)
     private Store store;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
