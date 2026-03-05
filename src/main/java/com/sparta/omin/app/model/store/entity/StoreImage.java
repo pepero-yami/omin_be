@@ -5,14 +5,19 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
 @Getter
 @Entity
-@Table(name = "p_store_image")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "update p_store_image set is_deleted = true where id = ?")
+@SQLRestriction("is_deleted = false")
+@Table(name = "p_store_image")
 public class StoreImage extends BaseEntity {
     @Id
     @UuidGenerator
@@ -22,25 +27,16 @@ public class StoreImage extends BaseEntity {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
+    @Setter
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
-    @Column(name="is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
 
-    public void setStore(Store store) {
-        this.store = store;
-    }
-    public void setSequence(Integer sequence) {
-        this.sequence = sequence;
-    }
-
     public StoreImage(String imageUrl) {
         this.imageUrl = imageUrl;
     }
-
 }

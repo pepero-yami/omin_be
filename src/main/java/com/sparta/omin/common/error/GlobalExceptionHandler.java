@@ -6,6 +6,7 @@ import com.sparta.omin.common.error.exceptions.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,7 +72,16 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("VALIDATION_ERROR", fieldErrors));
     }
 
-    // 그 외: 500. 운영에서 내부 메시지 노출을 피하기 위해 message는 고정.
+    //403: 권한없음
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(AccessDeniedException e) {
+        log.error("AccessDeniedException is occurred.", e);
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("FORBIDDEN", e.getMessage()));
+    }
+
+    //그 외: 500. 운영에서 내부 메시지 노출을 피하기 위해 message는 고정.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("Exception is occurred.", e);

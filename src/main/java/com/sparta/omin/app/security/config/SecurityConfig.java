@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+	private final JwtFilter jwtFilter;
 
     /**
      * TODO(auth):
@@ -52,6 +52,14 @@ public class SecurityConfig {
 
 						// Region seed 실행: MASTER만 가능
 						.requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
+
+						//store
+						.requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
+						.requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
+						.requestMatchers(HttpMethod.GET,"/api/v1/stores/*").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.DELETE,"/api/v1/stores/*").hasRole("OWNER")
+						.requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
+						.requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
 
 						.anyRequest().permitAll()
                 )
