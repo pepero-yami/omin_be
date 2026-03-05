@@ -45,10 +45,5 @@ public class RCart {
 		private Double price;
 		private Double totalPrice;
 		private int quantity;
-
-		public void add(int quantity) {
-			this.quantity += quantity;
-			this.totalPrice = this.price * this.quantity;
-		}
 	}
 }
