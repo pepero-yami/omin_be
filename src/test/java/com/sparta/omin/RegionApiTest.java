@@ -158,4 +158,18 @@ class RegionApiTest {
                 .andExpect(jsonPath("$.insertedCount").value(3))
                 .andExpect(jsonPath("$.skippedCount").value(10));
     }
+
+    @Test
+    void get_regions_withKeyword_returnsFilteredList() throws Exception {
+        UUID id = UUID.randomUUID();
+        // 검색 시에는 searchRegions가 호출되어야 함
+        given(regionService.searchRegions("강남")).willReturn(List.of(
+                RegionResponse.of(id, "서울특별시 강남구 역삼동")
+        ));
+
+        mockMvc.perform(get("/api/v1/regions").param("keyword", "강남"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].address").value("서울특별시 강남구 역삼동"));
+    }
 }
