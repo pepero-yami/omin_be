@@ -23,7 +23,7 @@ public record ReviewResponse(
     public static ReviewResponse of(Review review, String nickname) {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
-                .orderId(review.getOrderId())
+                .orderId(review.getOrder().getId())
                 .userId(review.getUserId())
                 .nickname(nickname)
                 .rating(review.getRating())
