@@ -43,21 +43,6 @@ public class UserAuthService {
 			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.build()));
-//		// 회원가입 시 created_by/updated_by NOT NULL 충족하도록 2단계로 나눔
-//		User user = User.builder()
-//				.name(request.name())
-//				.nickname(request.nickname())
-//				.email(request.email())
-//				.password(passwordEncoder.encode(request.password()))
-//				.build();
-//
-//		user.initAuditFieldsForSignUp(AuditUserProvider.currentUserId());
-//
-//		return UserDto.from(userRepository.save(user));
-
-//		user.initAuditFieldsForSignUp(AuditUserProvider.currentUserId());
-
-//		return UserDto.from(userRepository.save(user));
 	}
 
 	public TokenResponse login(UserLoginRequest request) {

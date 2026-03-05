@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
@@ -16,10 +18,11 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table (name = "p_store")
+@SQLDelete(sql = "update p_store set is_deleted = true where id = ?")
+@SQLRestriction("is_deleted = false")
+@Table(name = "p_store")
 public class Store extends BaseEntity {
     @Id
-    @GeneratedValue
     @UuidGenerator
     @Column(name = "id", nullable = false)
     private UUID id;
@@ -31,7 +34,7 @@ public class Store extends BaseEntity {
     private UUID regionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "category",  nullable = false)
+    @Column(name = "category", nullable = false)
     private Category category;
 
     @Column(name = "name", nullable = false, length = 100)
@@ -40,25 +43,21 @@ public class Store extends BaseEntity {
     @Column(name = "road_address", nullable = false)
     private String roadAddress;                                                    //도로명주소
 
-    @Column(name = "detail_address",nullable = false, length = 100)
+    @Column(name = "detail_address", nullable = false, length = 100)
     private String detailAddress;                                                  //상세주소
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status = Status.PENDING;
 
-    @Column(name = "latitude", nullable = false, precision = 10,scale = 6)
+    @Column(name = "latitude", nullable = false, precision = 10, scale = 6)
     private BigDecimal latitude;                                                    //위도
 
-    @Column(name = "longitude", nullable = false, precision = 10,scale = 6)
+    @Column(name = "longitude", nullable = false, precision = 10, scale = 6)
     private BigDecimal longitude;                                                   //경도
 
-    @Column(name="is_deleted", nullable = false)
-    private Boolean isDeleted = false;                                              //삭제여부
-
-
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StoreImage> images = new ArrayList<>();
+    private final List<StoreImage> images = new ArrayList<>();
 
     public void addImage(StoreImage storeImage) {
         images.add(storeImage);
@@ -66,6 +65,19 @@ public class Store extends BaseEntity {
         storeImage.setSequence(images.size());
     }
 
+    public void updateStore(UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
+        this.regionId = regionId;
+        this.category = category;
+        this.name = name;
+        this.roadAddress = roadAddress;
+        this.detailAddress = detailAddress;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
 
     @Builder
     public Store(UUID ownerId, UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
@@ -78,5 +90,4 @@ public class Store extends BaseEntity {
         this.latitude = latitude;
         this.longitude = longitude;
     }
-
 }
