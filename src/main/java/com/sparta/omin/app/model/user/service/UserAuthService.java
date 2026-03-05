@@ -55,6 +55,9 @@ public class UserAuthService {
 //
 //		return UserDto.from(userRepository.save(user));
 
+//		user.initAuditFieldsForSignUp(AuditUserProvider.currentUserId());
+
+//		return UserDto.from(userRepository.save(user));
 	}
 
 	public TokenResponse login(UserLoginRequest request) {

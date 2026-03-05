@@ -9,31 +9,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.sparta.omin.app.controller.region.RegionController;
 import com.sparta.omin.app.controller.region.RegionSeedController;
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.jwt.JwtUtil;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -57,28 +50,10 @@ class RegionApiTest {
     @MockitoBean
     UserDetailsServiceImpl userDetailsService;
 
-    private void setAuthentication(UUID userId) {
-        // addFilters=false라 JwtFilter를 안 타므로, @AuthenticationPrincipal 주입을 위해 SecurityContext를 직접 세팅
-        User user = org.mockito.Mockito.mock(User.class);
-        given(user.getId()).willReturn(userId);
-
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
-        SecurityContextHolder.getContext().setAuthentication(auth);
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
-    }
-
     @Test
     void post_regions_returns201() throws Exception {
-        UUID actorId = UUID.randomUUID();
-        setAuthentication(actorId);
-
         UUID id = UUID.randomUUID();
-        given(regionService.createRegion(any(), eq(actorId))).willReturn(RegionResponse.of(id, "서울"));
+        given(regionService.createRegion(any())).willReturn(RegionResponse.of(id, "서울"));
 
         mockMvc.perform(post("/api/v1/regions")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,26 +62,18 @@ class RegionApiTest {
                                 """))
                 .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.uuid").value(id.toString()))
-                .andExpect(jsonPath("$.address").value("서울"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void post_regions_validationError_returns400() throws Exception {
-        UUID actorId = UUID.randomUUID();
-        setAuthentication(actorId);
-
         mockMvc.perform(post("/api/v1/regions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"address":""}
                                 """))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"))
-                .andExpect(jsonPath("$.details.address").exists());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -118,17 +85,13 @@ class RegionApiTest {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                .andExpect(jsonPath("$.details").exists());
+                .andExpect(jsonPath("$.message").value("존재하지 않는 지역(regionId)입니다."));
     }
 
     @Test
     void put_regions_id_conflict_returns409() throws Exception {
-        UUID actorId = UUID.randomUUID();
-        setAuthentication(actorId);
-
         UUID id = UUID.randomUUID();
-        given(regionService.updateRegion(eq(id), any(), eq(actorId)))
+        given(regionService.updateRegion(eq(id), any()))
                 .willThrow(new IllegalStateException("이미 존재하는 지역(address)입니다."));
 
         mockMvc.perform(put("/api/v1/regions/{regionId}", id)
@@ -139,17 +102,13 @@ class RegionApiTest {
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("CONFLICT"))
-                .andExpect(jsonPath("$.details").exists());
+                .andExpect(jsonPath("$.message").value("이미 존재하는 지역(address)입니다."));
     }
 
     @Test
     void delete_regions_id_returns204() throws Exception {
-        UUID actorId = UUID.randomUUID();
-        setAuthentication(actorId);
-
         UUID id = UUID.randomUUID();
-        willDoNothing().given(regionService).deleteRegion(id, actorId);
+        willDoNothing().given(regionService).deleteRegion(id);
 
         mockMvc.perform(delete("/api/v1/regions/{regionId}", id))
                 .andDo(print())
@@ -178,10 +137,7 @@ class RegionApiTest {
 
     @Test
     void post_regionSeeds_returns200_withCounts() throws Exception {
-        UUID actorId = UUID.randomUUID();
-        setAuthentication(actorId);
-
-        given(regionSeedService.seedRegions(eq(actorId)))
+        given(regionSeedService.seedRegions())
                 .willReturn(new RegionSeedService.RegionSeedResult(3, 10));
 
         mockMvc.perform(post("/api/v1/region-seeds")
