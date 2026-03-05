@@ -35,15 +35,15 @@ public class ReviewService {
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
         // 이미지 개수 초과 예외
         if (images != null && images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
-        // 주문 조회
-        Order order = orderRepository.findById(request.orderId())
+        // 주문에 따른 가게 함께 조회 (fetch join)
+        Order order = orderRepository.findByIdWithStore(request.orderId())
                 .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
         // 자신의 주문이 아니라면 예외
         if (!order.getUserId().equals(user.getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
-        // TODO: 사장님이 본인 가게 리뷰 작성하는지 검증
-        /*if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(user.getId())) {
+        // 주문에 따른 가게 조회
+        if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(user.getId())) {
             throw new ApiException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
-        }*/
+        }
         // 주문 상태 COMPLETED 아니면 예외
         if (!order.isCompleted()) throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
 
@@ -65,6 +65,7 @@ public class ReviewService {
         Review newReview = Review.create(
                 userId,
                 order,
+                order.getStore(),
                 request.rating(),
                 request.comment()
         );
@@ -81,11 +82,11 @@ public class ReviewService {
         reviewRepository.save(newReview);
 
         // 해당 가게에 기존 평점 통계가 존재하는지 확인 후 평점 생성 / 업데이트
-        Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreId((order.getStoreId()));
+        Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreId(order.getStore().getId());
         if (oldStoreRatingStat.isPresent()) {
             oldStoreRatingStat.get().increase(request.rating());
         } else {
-            statRepository.save(StoreRatingStat.create(order.getStoreId(), request.rating()));
+            statRepository.save(StoreRatingStat.create(order.getStore().getId(), request.rating()));
         }
         // 단일 응답 생성
         String nickName = user.getNickname();
