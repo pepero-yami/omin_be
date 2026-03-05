@@ -8,5 +8,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
-    Optional<Review> findByOrderIdAndIsDeletedFalse(@NotNull UUID uuid);
+    boolean existsByOrder_IdAndIsDeletedFalse(@NotNull UUID id);
 }

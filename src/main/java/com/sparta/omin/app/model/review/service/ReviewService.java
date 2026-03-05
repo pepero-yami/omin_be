@@ -33,21 +33,22 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
+        UUID loginUserId = user.getId();
         // 이미지 개수 초과 예외
         if (images != null && images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
-        // 주문에 따른 가게 함께 조회 (fetch join)
-        Order order = orderRepository.findByIdWithStore(request.orderId())
+        // 사용자가 요청한 주문 조회
+        Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
-        // 자신의 주문이 아니라면 예외
-        if (!order.getUserId().equals(user.getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
-        // 자신의 가게라면 예외
-        if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(user.getId())) {
+        // 로그인된 사용자 자신의 주문이 아니라면 예외
+        if (!loginUserId.equals(order.getUser().getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
+        // 사용자 자신의 가게라면 예외
+        if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(loginUserId)) {
             throw new ApiException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
         }
         // 주문 상태 COMPLETED 아니면 예외
         if (!order.isCompleted()) throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
 
-        // 주문일 + 2일 초과면 예외
+        // 주문일 + 2일 초과면 예외 --> status 변경시간 + 2일
         if (order.getCreatedAt().
                 plusDays(2).
                 isBefore(LocalDateTime.now())
@@ -55,21 +56,16 @@ public class ReviewService {
             throw new ApiException(ErrorCode.REVIEW_PERIOD_EXPIRED);
         }
         // 이미 리뷰 작성했으면 예외
-        Optional<Review> oldReview = reviewRepository.findByOrderIdAndIsDeletedFalse(request.orderId());
-        if (oldReview.isPresent()) throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
-
-        // 요청에 해당하는 유저 정보 조회
-        UUID userId = user.getId();
+        if (reviewRepository.existsByOrder_IdAndIsDeletedFalse(order.getId())) throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
 
         // Review 생성
         Review newReview = Review.create(
-                userId,
+                user,
                 order,
                 order.getStore(),
                 request.rating(),
                 request.comment()
         );
-
         // 이미지 처리 (이미지가 있을 경우에만)
         if (images != null && !images.isEmpty()) {
             List<String> uploadedUrls = images.stream()
@@ -81,7 +77,7 @@ public class ReviewService {
         }
         reviewRepository.save(newReview);
 
-        // 해당 가게에 기존 평점 통계가 존재하는지 확인 후 평점 생성 / 업데이트
+        // 주문에 해당하는 가게에 기존 평점 통계가 존재하는지 확인 후 평점 생성 / 업데이트
         Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreId(order.getStore().getId());
         if (oldStoreRatingStat.isPresent()) {
             oldStoreRatingStat.get().increase(request.rating());

@@ -32,7 +32,7 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch =  FetchType.LAZY)
     private User user;
 
-    @JoinColumn(name = "order_id", nullable = false, updatable = false)
+    @JoinColumn(name = "order_id", nullable = false, updatable = false,  unique = true)
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;
 

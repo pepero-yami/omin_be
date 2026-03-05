@@ -13,6 +13,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_order")
 @Getter
+
 @NoArgsConstructor
 // 임시 Stub입니다. 이 파일을 무시해주세요.
 public class Order extends BaseEntity {
@@ -20,21 +21,33 @@ public class Order extends BaseEntity {
     @GeneratedValue
     @UuidGenerator
     private UUID id;
-    private UUID userId;
-    @ManyToOne
-    @JoinColumn(name = "store_id", nullable = false, updatable = false)
-    private Store store;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false, updatable = false)
+    private Store store;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    // forTest
+    public static Order createWithId(User user, Store store) {
+        Order order = new Order();
+        order.user = user;
+        order.store = store;
+        order.status = OrderStatus.COMPLETED;
+        return order;
+    }
 
     public boolean isCompleted() {
         return this.status == OrderStatus.COMPLETED;
     }
 
-    private enum OrderStatus {
+
+    public enum OrderStatus {
         COMPLETED
     }
 }

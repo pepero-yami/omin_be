@@ -24,13 +24,11 @@ public class ReviewImage {
     private Review review;
 
     @Column(nullable = false)
-    private String imageUrl; // S3에서 받은 URL
+    private String imageUrl;
 
     @Column(nullable = false)
     private int sequence;
 
-
-    // 생성자를 통해 관계를 강제
     private ReviewImage(Review review, String imageUrl, int sequence) {
         this.review = review;
         this.imageUrl = imageUrl;
@@ -39,7 +37,6 @@ public class ReviewImage {
 
     public static ReviewImage create(Review review, String imageUrl, int sequence) {
         ReviewImage image = new ReviewImage(review, imageUrl, sequence);
-        // 생성될 때 부모의 리스트에도 추가해줌 (양방향 편의)
         review.getImages().add(image);
         return image;
     }

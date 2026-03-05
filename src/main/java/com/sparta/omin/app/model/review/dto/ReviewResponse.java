@@ -24,7 +24,7 @@ public record ReviewResponse(
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .orderId(review.getOrder().getId())
-                .userId(review.getUserId())
+                .userId(review.getUser().getId())
                 .nickname(nickname)
                 .rating(review.getRating())
                 .comment(review.getComment())
