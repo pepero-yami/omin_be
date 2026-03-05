@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.store.entity;
 
+import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.common.entity.BaseTimeEntity;
 import jakarta.persistence.*;
@@ -59,6 +60,8 @@ public class Store extends BaseTimeEntity {
     @Column(name="is_deleted", nullable = false)
     private Boolean isDeleted = false;                                              //삭제여부
 
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StoreImage> images = new ArrayList<>();

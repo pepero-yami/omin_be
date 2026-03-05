@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.order.entity;
 
+import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.common.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -19,7 +20,9 @@ public class Order extends BaseAuditEntity {
     @UuidGenerator
     private UUID id;
     private UUID userId;
-    private UUID storeId;
+    @JoinColumn(name = "store_id", nullable = false, updatable = false)
+    @ManyToOne
+    private Store store;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
