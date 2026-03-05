@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.user.entity;
 
 import com.sparta.omin.app.model.user.constants.Role;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_user")
-public class User extends BaseTimeEntity implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
 
 	@Id
 	@GeneratedValue
@@ -54,10 +54,7 @@ public class User extends BaseTimeEntity implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
-	@Column(name = "is_deleted", nullable = false)
-	private boolean isDeleted;
-
-	@Column(name = "deleted_by")
+	@Column(name = "deleted_by") //FIXME @순식님 일단 주석처리
 	private UUID deletedBy;
 
 	@Override
@@ -79,6 +76,7 @@ public class User extends BaseTimeEntity implements UserDetails {
 		this.email = email;
 		this.password = password;
 		this.role = Role.CUSTOMER;
+		this.isDeleted = false;
 	}
 
 	public void edit(String nickname, String password, PasswordEncoder passwordEncoder) {
@@ -104,6 +102,14 @@ public class User extends BaseTimeEntity implements UserDetails {
 
 	public void softDelete(UUID id) {
 		this.isDeleted = true;
-		this.deletedBy = id;
+		this.deletedBy = id; //FIXME @순식님 일단 주석처리
+//		this.updatedBy = id;
 	}
+
+//	// 회원가입 시점(인증 전)에는 actorId를 알 수 없어서, UUID=0000...로 created_by/updated_by NOT NULL을 채우기 위한 용도
+//	public void initAuditFieldsForSignUp(UUID actorId) {
+//		this.createdBy = actorId;
+//		this.updatedBy = actorId;
+//		this.isDeleted = false;
+//	}
 }

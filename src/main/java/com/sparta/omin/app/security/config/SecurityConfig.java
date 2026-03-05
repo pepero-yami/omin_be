@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -39,7 +41,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/auth").permitAll()
                         .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
-                        .anyRequest().permitAll()
+
+						// Region 조회: CUSTOMER도 가능
+						.requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.GET, "/api/v1/regions").hasRole("CUSTOMER")
+
+						// Region 생성/수정/삭제: MASTER만 가능
+						.requestMatchers(HttpMethod.POST, "/api/v1/regions").hasRole("MASTER")
+						.requestMatchers(HttpMethod.PUT, "/api/v1/regions/**").hasRole("MASTER")
+						.requestMatchers(HttpMethod.DELETE, "/api/v1/regions/**").hasRole("MASTER")
+
+						// Region seed 실행: MASTER만 가능
+						.requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
+
+						.anyRequest().permitAll()
                 )
 
                 // 개발 단계: Postman 호출 편의상 csrf 끔

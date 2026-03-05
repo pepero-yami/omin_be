@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.order.entity;
 
 import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.common.entity.BaseAuditEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 // 임시 Stub입니다. 이 파일을 무시해주세요.
-public class Order extends BaseAuditEntity {
+public class Order extends BaseEntity {
     @Id
     @GeneratedValue
     @UuidGenerator

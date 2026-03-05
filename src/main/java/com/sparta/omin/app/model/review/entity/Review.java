@@ -2,7 +2,7 @@ package com.sparta.omin.app.model.review.entity;
 
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.common.entity.BaseAuditEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(name = "p_review")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Review extends BaseAuditEntity {
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -62,7 +62,6 @@ public class Review extends BaseAuditEntity {
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
-        review.markCreated(userId);
 
         return review;
     }
@@ -77,11 +76,6 @@ public class Review extends BaseAuditEntity {
     public void updateReview(double newRating, String newComment, UUID actorId) {
         this.rating = newRating;
         this.comment = newComment;
-        markUpdated(actorId);
-    }
-
-    public void softDelete(UUID actorId, LocalDateTime now) {
-        markDeleted(actorId, now);
     }
 
     public void addImages(List<String> imageUrls) {

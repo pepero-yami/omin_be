@@ -1,8 +1,7 @@
 package com.sparta.omin.app.model.store.entity;
 
 import com.sparta.omin.app.model.order.entity.Order;
-import com.sparta.omin.app.model.review.entity.Review;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table (name = "p_store")
-public class Store extends BaseTimeEntity {
+public class Store extends BaseEntity {
     @Id
     @GeneratedValue
     @UuidGenerator
@@ -71,6 +70,7 @@ public class Store extends BaseTimeEntity {
         storeImage.setStore(this);
         storeImage.setSequence(images.size());
     }
+
 
     @Builder
     public Store(UUID ownerId, UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
