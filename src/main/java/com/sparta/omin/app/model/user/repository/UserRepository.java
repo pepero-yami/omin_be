@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.user.repository;
 
+import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
 import java.util.Optional;
 import java.util.UUID;

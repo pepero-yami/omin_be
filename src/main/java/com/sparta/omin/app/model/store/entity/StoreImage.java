@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.store.entity;
 
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import java.util.UUID;
 @SQLDelete(sql = "update p_store_image set is_deleted = true where id = ?")
 @SQLRestriction("is_deleted = false")
 @Table(name = "p_store_image")
-public class StoreImage extends BaseTimeEntity {
+public class StoreImage extends BaseEntity {
     @Id
     @UuidGenerator
     @Column(name = "id", nullable = false)
@@ -30,7 +30,6 @@ public class StoreImage extends BaseTimeEntity {
     @Setter
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
-
 
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)

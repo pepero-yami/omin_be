@@ -58,6 +58,7 @@ public class StoreService {
         savedStore.updateStore(storeUpdateRequest.regionId(), storeUpdateRequest.category(), storeUpdateRequest.name()
                 , storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeUpdateRequest.latitude()
                 , storeUpdateRequest.longitude());
+
         //이미지 삭제요청 처리
         List<StoreUpdateRequest.StoreImageRequest> imageRequests = storeUpdateRequest.images();
         handleDeleteImgRequest(savedStore, imageRequests);
@@ -112,7 +113,6 @@ public class StoreService {
         if (loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER) {
             return;
         }
-
         //관리자가 아니라면 반드시 가게 주인이어야 함
         if (!store.getOwnerId().equals(loginUser.getId())) {
             throw new AccessDeniedException("해당 가게에 대한 권한이 없습니다");

@@ -1,11 +1,10 @@
 package com.sparta.omin.app.model.region.repos;
 
 import com.sparta.omin.app.model.region.entity.Region;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RegionRepository extends JpaRepository<Region, UUID> {
 
@@ -16,4 +15,7 @@ public interface RegionRepository extends JpaRepository<Region, UUID> {
     boolean existsByAddressAndIsDeletedFalse(String address);
 
     boolean existsByAddressAndIsDeletedFalseAndIdNot(String address, UUID id);
+
+    // Seed N+1 제거(한 번에 조회해서 contains로 판별)
+    List<Region> findAllByAddressInAndIsDeletedFalse(List<String> address);
 }

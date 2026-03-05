@@ -1,6 +1,10 @@
 spring:
   application:
     name: omin
+  data:
+    redis:
+      port: 6379
+      host: localhost
   datasource:
     #host: localhost, 포트: 5432, DB명: omindb
     url: jdbc:postgresql://localhost:5432/omindb
@@ -15,9 +19,18 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  # OPEN AI
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-5-nano
+
 app:
   seed:
-    enabled: true  # TODO(prod): 운영에서는 반드시 false 또는 local 프로필로 제한할 것
+    enabled: false  # TODO(prod): 운영에서는 반드시 false 또는 local 프로필로 제한할 것
 kakao:
   rest-api-key: ${KAKAO_REST_API_KEY}
 
