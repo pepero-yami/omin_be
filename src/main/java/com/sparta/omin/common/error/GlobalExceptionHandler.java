@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(errorCode.name(), errorCode.getDescription()));
     }
 
-    // TODO(error): 도메인 확장되면 NotFoundException 같은 커스텀 예외로 분리하는 게 좋을지도...
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
         log.error("IllegalArgumentException is occurred.", e);
@@ -39,22 +38,12 @@ public class GlobalExceptionHandler {
     }
 
     // 409: 중복/상태 충돌
-    // TODO(error): DuplicateException 같은 커스텀 예외로 분리하는 게 좋을지도
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException e) {
         log.error("IllegalStateException is occurred", e);
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("CONFLICT", e.getMessage()));
-    }
-
-    // 502: 외부 API 장애/연동 실패
-    @ExceptionHandler(KakaoApiException.class)
-    public ResponseEntity<ErrorResponse> handleKakaoApiException(KakaoApiException e) {
-        log.error("{} is occurred", e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.BAD_GATEWAY)
-                .body(ErrorResponse.of("KAKAO_API_ERROR", e.getMessage()));
     }
 
     // 400: Validation 실패 (@Valid)
