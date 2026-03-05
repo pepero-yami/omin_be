@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.service.RegionService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,45 +14,39 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/regions")
+@RequiredArgsConstructor
 public class RegionController {
-
-    // TODO(auth): 아래 모든 Region API는 MANAGER 권한이 필요.
-    //            Spring Security 도입 후 @PreAuthorize("hasRole('MANAGER')") 또는 별도 권한 체크 방식으로 보호해야 함
 
     private final RegionService regionService;
 
-    public RegionController(RegionService regionService) {
-        this.regionService = regionService;
-    }
-
-    @PostMapping("/region")
+    @PostMapping
     public ResponseEntity<RegionResponse> create(@Valid @RequestBody RegionCreateRequest request) {
-        RegionResponse created = regionService.create(request);
+        RegionResponse created = regionService.createRegion(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @GetMapping("/region/{regionId}")
+    @GetMapping("/{regionId}")
     public ResponseEntity<RegionResponse> get(@PathVariable UUID regionId) {
-        return ResponseEntity.ok(regionService.get(regionId));
+        return ResponseEntity.ok(regionService.getRegion(regionId));
     }
 
-    @PutMapping("/region/{regionId}")
+    @PutMapping("/{regionId}")
     public ResponseEntity<RegionResponse> update(
             @PathVariable UUID regionId,
             @Valid @RequestBody RegionUpdateRequest request
     ) {
-        return ResponseEntity.ok(regionService.update(regionId, request));
+        return ResponseEntity.ok(regionService.updateRegion(regionId, request));
     }
 
-    @DeleteMapping("/region/{regionId}")
+    @DeleteMapping("/{regionId}")
     public ResponseEntity<Void> delete(@PathVariable UUID regionId) {
-        regionService.delete(regionId);
+        regionService.deleteRegion(regionId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/regions")
+    @GetMapping
     public ResponseEntity<List<RegionResponse>> list() {
-        return ResponseEntity.ok(regionService.list());
+        return ResponseEntity.ok(regionService.getRegions());
     }
 }

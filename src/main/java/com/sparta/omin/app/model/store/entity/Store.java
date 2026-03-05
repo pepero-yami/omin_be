@@ -1,14 +1,12 @@
 package com.sparta.omin.app.model.store.entity;
 
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -19,7 +17,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table (name = "p_store")
-public class Store extends BaseTimeEntity {
+public class Store extends BaseEntity {
     @Id
     @GeneratedValue
     @UuidGenerator

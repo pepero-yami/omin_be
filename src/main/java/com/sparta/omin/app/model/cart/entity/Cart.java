@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.cart.entity;
 
 import com.sparta.omin.app.model.cartItem.entity.CartItem;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "p_cart")
-public class Cart extends BaseTimeEntity {
+public class Cart extends BaseEntity {
 
     @Id
     @GeneratedValue

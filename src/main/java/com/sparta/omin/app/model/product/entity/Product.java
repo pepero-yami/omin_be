@@ -2,7 +2,7 @@ package com.sparta.omin.app.model.product.entity;
 
 import com.sparta.omin.app.model.product.code.ProductStatus;
 import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 
 import java.util.UUID;
@@ -14,7 +14,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Getter
 @NoArgsConstructor
 @Table(name="p_product")
-public class Product extends BaseTimeEntity {
+public class Product extends BaseEntity {
 
     @Id
     @GeneratedValue

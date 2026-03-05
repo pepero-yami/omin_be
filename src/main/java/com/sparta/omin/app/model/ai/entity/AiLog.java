@@ -2,7 +2,7 @@ package com.sparta.omin.app.model.ai.entity;
 
 import com.sparta.omin.app.model.ai.code.RequestType;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +22,7 @@ import org.hibernate.annotations.UuidGenerator;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AiLog extends BaseTimeEntity {
+public class AiLog extends BaseEntity {
 
     @Id
     @GeneratedValue

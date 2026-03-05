@@ -1,19 +1,33 @@
 package com.sparta.omin.common.util;
 
+import com.sparta.omin.app.model.user.entity.User;
 import java.util.UUID;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class AuditUserProvider {
 
     private AuditUserProvider() {}
 
-    /**
-     * TODO(auth): 유저/인증 작업 완료 후, SecurityContext(또는 @AuthenticationPrincipal)에서
-     *             현재 로그인 사용자의 UUID를 반환하도록 변경.
-     *             이 파일만 수정하면 created_by/updated_by/deleted_by 세팅 로직은 그대로 유지 가능.
-     */
-    private static final UUID SYSTEM_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final UUID SYSTEM_USER_ID =
+            UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     public static UUID currentUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // 미인증/익명인 경우
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return SYSTEM_USER_ID;
+        }
+
+        Object principal = auth.getPrincipal();
+
+        // 현재 프로젝트: principal로 User 엔티티(UserDetails 구현)가 들어오는 구조
+        if (principal instanceof User user && user.getId() != null) {
+            return user.getId();
+        }
+
         return SYSTEM_USER_ID;
     }
 }
