@@ -1,9 +1,6 @@
 package com.sparta.omin.app.security.jwt;
 
 import com.sparta.omin.app.model.user.dto.response.TokenResponse;
-import com.sparta.omin.common.error.ApiException;
-import com.sparta.omin.common.error.constants.ErrorCode;
-import com.sparta.omin.common.error.dto.ErrorResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -12,14 +9,11 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Date;
 import java.util.UUID;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 @Component
