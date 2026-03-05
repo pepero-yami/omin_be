@@ -43,10 +43,14 @@ public enum ErrorCode {
     KAKAO_NO_LONGITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 경도(x) 값이 없습니다."),
     KAKAO_INVALID_COORDINATE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과의 좌표 값이 올바르지 않습니다."),
 
-    //서버 에러
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
-    // AI - 요청/검증 (400)
-    INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+	//서버 에러
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+
+	// Product
+	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
+
+	// AI - 요청/검증 (400)
+	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
 
     // AI - 외부 의존성(OpenAI) (502/503/504/429)
     AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
