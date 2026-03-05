@@ -25,6 +25,24 @@ public enum ErrorCode {
 	REGION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 지역(address)입니다."),
 	REGION_INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "유효하지 않은 주소(address)입니다."),
 
+	// Address 에러
+	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 배송지(addressId)입니다."),
+	ADDRESS_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 배송지입니다."),
+	ADDRESS_DEFAULT_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "기본배송지는 삭제할 수 없습니다."),
+	ADDRESS_REGION_NOT_FOUND(HttpStatus.BAD_REQUEST, "등록되지 않은 지역입니다. region 등록이 필요합니다."),
+	ADDRESS_DEFAULT_MUST_EXIST(HttpStatus.BAD_REQUEST, "기본배송지는 항상 1개 이상 존재해야 합니다."),
+
+	// 카카오 API 관련 에러
+	EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "외부 API 연동 중 에러가 발생했습니다."),
+	SEARCH_RESULT_NOT_FOUND(HttpStatus.NOT_FOUND, "검색 결과가 존재하지 않습니다."),
+	KAKAO_EMPTY_QUERY(HttpStatus.BAD_REQUEST, "주소(query)가 비어있습니다."),
+	KAKAO_NO_RESULT(HttpStatus.NOT_FOUND, "카카오 주소 검색 결과가 없습니다."),
+	KAKAO_API_CALL_FAILED(HttpStatus.BAD_GATEWAY, "카카오 주소 검색 API 호출에 실패했습니다."),
+	KAKAO_INVALID_RESPONSE(HttpStatus.BAD_GATEWAY, "카카오 주소 검색 API 응답이 올바르지 않습니다."),
+	KAKAO_NO_LATITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 위도(y) 값이 없습니다."),
+	KAKAO_NO_LONGITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 경도(x) 값이 없습니다."),
+	KAKAO_INVALID_COORDINATE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과의 좌표 값이 올바르지 않습니다."),
+
 	//서버 에러
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
 	// AI - 요청/검증 (400)

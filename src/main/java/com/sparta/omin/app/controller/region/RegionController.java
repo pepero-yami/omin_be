@@ -21,18 +21,26 @@ public class RegionController {
     private final RegionService regionService;
 
     @PostMapping
-    public ResponseEntity<RegionResponse> create(@Valid @RequestBody RegionCreateRequest request) {
+    public ResponseEntity<RegionResponse> createRegion(@Valid @RequestBody RegionCreateRequest request) {
         RegionResponse created = regionService.createRegion(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    @GetMapping("/{regionId}")
-    public ResponseEntity<RegionResponse> get(@PathVariable UUID regionId) {
+    @GetMapping //주소로 조회
+    public ResponseEntity<List<RegionResponse>> getRegions(@RequestParam(required = false) String keyword) {
+        if (keyword != null && !keyword.isBlank()) {
+            return ResponseEntity.ok(regionService.searchRegions(keyword));
+        }
+        return ResponseEntity.ok(regionService.getRegions());
+    }
+
+    @GetMapping("/{regionId}") //지역아이디로 조회
+    public ResponseEntity<RegionResponse> getRegion(@PathVariable UUID regionId) {
         return ResponseEntity.ok(regionService.getRegion(regionId));
     }
 
     @PutMapping("/{regionId}")
-    public ResponseEntity<RegionResponse> update(
+    public ResponseEntity<RegionResponse> updateRegion(
             @PathVariable UUID regionId,
             @Valid @RequestBody RegionUpdateRequest request
     ) {
@@ -40,13 +48,8 @@ public class RegionController {
     }
 
     @DeleteMapping("/{regionId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID regionId) {
+    public ResponseEntity<Void> deleteRegion(@PathVariable UUID regionId) {
         regionService.deleteRegion(regionId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping
-    public ResponseEntity<List<RegionResponse>> list() {
-        return ResponseEntity.ok(regionService.getRegions());
     }
 }

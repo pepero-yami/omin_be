@@ -9,7 +9,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -18,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+	private final JwtFilter jwtFilter;
 
     /**
      * TODO(auth):
@@ -41,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/auth").permitAll()
                         .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
+						.requestMatchers("/api/v1/me/addresses/**").hasRole("CUSTOMER") // address
 
 						// Region 조회: CUSTOMER도 가능
 						.requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")
@@ -53,6 +53,14 @@ public class SecurityConfig {
 
 						// Region seed 실행: MASTER만 가능
 						.requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
+
+						//store
+						.requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
+						.requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
+						.requestMatchers(HttpMethod.GET,"/api/v1/stores/*").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.DELETE,"/api/v1/stores/*").hasRole("OWNER")
+						.requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
+						.requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
 
 						.anyRequest().permitAll()
                 )

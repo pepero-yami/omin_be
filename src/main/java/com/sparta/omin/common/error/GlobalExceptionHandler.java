@@ -6,6 +6,7 @@ import com.sparta.omin.common.error.exceptions.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,7 +29,6 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(errorCode.name(), errorCode.getDescription()));
     }
 
-    // TODO(error): 도메인 확장되면 NotFoundException 같은 커스텀 예외로 분리하는 게 좋을지도...
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException e) {
         log.error("IllegalArgumentException is occurred.", e);
@@ -38,22 +38,12 @@ public class GlobalExceptionHandler {
     }
 
     // 409: 중복/상태 충돌
-    // TODO(error): DuplicateException 같은 커스텀 예외로 분리하는 게 좋을지도
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException e) {
         log.error("IllegalStateException is occurred", e);
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("CONFLICT", e.getMessage()));
-    }
-
-    // 502: 외부 API 장애/연동 실패
-    @ExceptionHandler(KakaoApiException.class)
-    public ResponseEntity<ErrorResponse> handleKakaoApiException(KakaoApiException e) {
-        log.error("{} is occurred", e.getMessage(), e);
-        return ResponseEntity
-                .status(HttpStatus.BAD_GATEWAY)
-                .body(ErrorResponse.of("KAKAO_API_ERROR", e.getMessage()));
     }
 
     // 400: Validation 실패 (@Valid)
@@ -71,7 +61,16 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("VALIDATION_ERROR", fieldErrors));
     }
 
-    // 그 외: 500. 운영에서 내부 메시지 노출을 피하기 위해 message는 고정.
+    //403: 권한없음
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(AccessDeniedException e) {
+        log.error("AccessDeniedException is occurred.", e);
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of("FORBIDDEN", e.getMessage()));
+    }
+
+    //그 외: 500. 운영에서 내부 메시지 노출을 피하기 위해 message는 고정.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("Exception is occurred.", e);

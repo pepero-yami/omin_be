@@ -28,6 +28,9 @@ public class KakaoAddressSearchResponse {
 
         @JsonProperty("address_name")
         private String addressName;
+
+        private String x; //경도
+        private String y; //위도
     }
 
     @Getter

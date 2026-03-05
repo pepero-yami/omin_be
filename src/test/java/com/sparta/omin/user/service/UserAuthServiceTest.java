@@ -25,8 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -148,9 +147,11 @@ class UserAuthServiceTest {
 			given(passwordEncoder.matches(request.password(), user.getPassword())).willReturn(false);
 
 			// when & then
-			assertThatThrownBy(() -> userAuthService.login(request))
-				.isInstanceOf(ApiException.class)
-				.hasMessageContaining(ErrorCode.INVALID_PASSWORD.getDescription());
+			assertThatExceptionOfType(ApiException.class)
+					.isThrownBy(() -> userAuthService.login(request))
+					.extracting(ApiException::getErrorCode)
+					.isEqualTo(ErrorCode.INVALID_PASSWORD)
+			;
 		}
 	}
 }
