@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.review.entity;
 
 import com.sparta.omin.app.model.order.entity.Order;
+import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.common.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -33,6 +34,10 @@ public class Review extends BaseAuditEntity {
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;
 
+    @JoinColumn(name = "store_id", nullable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Store store;
+
     @Column(name = "review_rating", nullable = false)
     private double rating;
 
@@ -45,6 +50,7 @@ public class Review extends BaseAuditEntity {
     public static Review create(
             UUID userId,
             Order order,
+            Store store,
             double rating,
             String comment
     ) {
@@ -52,6 +58,7 @@ public class Review extends BaseAuditEntity {
         Review review = new Review();
         review.userId = Objects.requireNonNull(userId, "userId must not be null");
         review.order = Objects.requireNonNull(order, "orderId must not be null");
+        review.store = Objects.requireNonNull(store, "storeId must not be null");
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
