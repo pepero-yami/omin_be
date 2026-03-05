@@ -1,7 +1,8 @@
 package com.sparta.omin.app.model.region.client;
 
 import com.sparta.omin.app.model.region.client.dto.KakaoAddressSearchResponse;
-import com.sparta.omin.common.error.KakaoApiException;
+import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -39,7 +40,7 @@ public class KakaoAddressClient {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
         if (first.getAddress() == null) {
-            throw new KakaoApiException("카카오 주소 검색 결과가 없습니다.");
+            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
         }
 
         String depth3 = buildDepth3(first.getAddress());
@@ -49,12 +50,12 @@ public class KakaoAddressClient {
         return new KakaoAddressResult(depth3, latitude, longitude);
     }
 
-    //Region이 사용 중인 기존 메서드
+    //Region이 사용 중인 기존 메서드 - 주소 문자열만 반환
     public String normalizeToRegionDepth3(String query) {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
         if (first.getAddress() == null) {
-            throw new KakaoApiException("카카오 주소 검색 결과가 없습니다.");
+            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
         }
 
         return buildDepth3(first.getAddress());
@@ -62,7 +63,7 @@ public class KakaoAddressClient {
 
     private KakaoAddressSearchResponse.Document requestFirstDocument(String query) {
         if (!StringUtils.hasText(query)) {
-            throw new IllegalArgumentException("주소(query)가 비어있습니다.");
+            throw new ApiException(ErrorCode.KAKAO_EMPTY_QUERY);
         }
 
         URI uri = UriComponentsBuilder
@@ -82,21 +83,22 @@ public class KakaoAddressClient {
         try {
             response = restTemplate.exchange(uri, HttpMethod.GET, entity, KakaoAddressSearchResponse.class);
         } catch (RestClientException e) {
-            throw new KakaoApiException("카카오 주소 검색 API 호출에 실패했습니다.", e);
+            throw new ApiException(ErrorCode.KAKAO_API_CALL_FAILED);
         }
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new KakaoApiException("카카오 주소 검색 API 응답이 올바르지 않습니다.");
+            throw new ApiException(ErrorCode.KAKAO_INVALID_RESPONSE);
         }
 
         KakaoAddressSearchResponse body = response.getBody();
         KakaoAddressSearchResponse.Document first = body.firstDocumentOrNull();
         if (first == null) {
-            throw new KakaoApiException("카카오 주소 검색 결과가 없습니다.");
+            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
         }
         return first;
     }
 
+    //법정동 우선, 비었다면 행정동(HName)
     private String buildDepth3(KakaoAddressSearchResponse.Address addr) {
         String depth1 = trimToNull(addr.getRegion1depthName());
         String depth2 = trimToNull(addr.getRegion2depthName());
@@ -106,7 +108,7 @@ public class KakaoAddressClient {
 
         // depth1, depth3은 필수로 간주
         if (!StringUtils.hasText(depth1) || !StringUtils.hasText(depth3)) {
-            throw new KakaoApiException("유효하지 않은 주소(address)입니다.");
+            throw new ApiException(ErrorCode.REGION_INVALID_ADDRESS);
         }
 
         List<String> parts = new ArrayList<>();
@@ -125,12 +127,15 @@ public class KakaoAddressClient {
 
     private BigDecimal parseBigDecimal(String value, String fieldName) {
         if (!StringUtils.hasText(value)) {
-            throw new KakaoApiException("카카오 주소 검색 결과에 " + fieldName + " 값이 없습니다.");
+            // x(경도)와 y(위도) 구분에 따른 에러 코드 매핑
+            throw new ApiException(fieldName.contains("x")
+                    ? ErrorCode.KAKAO_NO_LONGITUDE
+                    : ErrorCode.KAKAO_NO_LATITUDE);
         }
         try {
             return new BigDecimal(value.trim());
         } catch (NumberFormatException e) {
-            throw new KakaoApiException("카카오 주소 검색 결과의 " + fieldName + " 값이 올바르지 않습니다.");
+            throw new ApiException(ErrorCode.KAKAO_INVALID_COORDINATE);
         }
     }
 }
