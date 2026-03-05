@@ -20,12 +20,12 @@ public record ReviewResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static ReviewResponse of(Review review, String nickname) {
+    public static ReviewResponse from(Review review) {
         return ReviewResponse.builder()
                 .reviewId(review.getId())
                 .orderId(review.getOrder().getId())
                 .userId(review.getUser().getId())
-                .nickname(nickname)
+                .nickname(review.getUser().getNickname())
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .images(review.getImages().stream()

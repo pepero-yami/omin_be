@@ -4,6 +4,8 @@ import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
+import com.sparta.omin.app.model.review.entity.Review;
+import com.sparta.omin.app.model.review.repos.ReviewRepository;
 import com.sparta.omin.app.model.store.entity.Category;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
@@ -16,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class ReviewDataInitializer implements CommandLineRunner {
     private final OrderRepository orderRepository;
     private final PasswordEncoder passwordEncoder;
     private final SeedProperties seedProperties;
+    private final ReviewRepository reviewRepository;
 
     @Override
     @Transactional
@@ -63,9 +65,7 @@ public class ReviewDataInitializer implements CommandLineRunner {
         // 5. 테스트용 완료된 주문 생성
         if (orderRepository.count() == 0) {
 
-            Order order1 = Order.createWithId(
-
-                    customer, store);
+            Order order1 = Order.createWithId(customer, store);
 
             orderRepository.save(order1);
 
@@ -73,9 +73,38 @@ public class ReviewDataInitializer implements CommandLineRunner {
 
             orderRepository.save(order2);
 
+            Order order3 = Order.createWithId(customer, store);
+
+            orderRepository.save(order3);
 
             System.out.println("TEST ORDER1 = " + order1.getId());
             System.out.println("TEST ORDER2 = " + order2.getId());
+
+            Review review = Review.create(
+                    customer,
+                    order3,
+                    order3.getStore(),
+                    3.5,
+                    "그냥 그래요!"
+            );
+            reviewRepository.save(review);
+            System.out.println("TEST REVIEW1 = " + review.getId());
         }
+
     } // run 메서드 종료
 }
+
+/*
+리뷰 생성 JSON
+* {
+  "orderId": "ebc6d11e-7723-4e43-81e8-fa4f762246b0",
+  "rating": 4,
+  "comment": "진짜 최고예요! ㅎㅎ 배달도 빨라요"
+}
+
+{
+  "orderId": "05a81a10-397f-4c5f-8667-b084ea16deb6",
+  "rating": 1.5,
+  "comment": "진짜 맛없어요 ㅜㅜ 배달도 느리고 최악입니다"
+}
+* */

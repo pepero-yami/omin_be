@@ -8,15 +8,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -36,5 +34,11 @@ public class ReviewController {
                 .buildAndExpand(response.reviewId())
                 .toUri();
         return ResponseEntity.created(uri).body(response);
+    }
+
+    @GetMapping("/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> get(@PathVariable UUID reviewId) {
+        ReviewResponse response = reviewService.getReview(reviewId);
+        return ResponseEntity.ok(response);
     }
 }

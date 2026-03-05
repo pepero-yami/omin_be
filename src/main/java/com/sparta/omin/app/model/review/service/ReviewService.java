@@ -56,7 +56,8 @@ public class ReviewService {
             throw new ApiException(ErrorCode.REVIEW_PERIOD_EXPIRED);
         }
         // 이미 리뷰 작성했으면 예외
-        if (reviewRepository.existsByOrder_IdAndIsDeletedFalse(order.getId())) throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
+        if (reviewRepository.existsByOrder_IdAndIsDeletedFalse(order.getId()))
+            throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
 
         // Review 생성
         Review newReview = Review.create(
@@ -84,9 +85,12 @@ public class ReviewService {
         } else {
             statRepository.save(StoreRatingStat.create(order.getStore().getId(), request.rating()));
         }
-        // 단일 응답 생성
-        String nickName = user.getNickname();
-        return ReviewResponse.of(newReview, nickName);
+        return ReviewResponse.from(newReview);
     }
 
+    @Transactional(readOnly = true)
+    public ReviewResponse getReview(UUID reviewId) {
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId).orElseThrow(() -> new ApiException(ErrorCode.REVIEW_NOT_FOUND));
+        return ReviewResponse.from(review);
+    }
 }
