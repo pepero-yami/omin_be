@@ -105,11 +105,4 @@ public class User extends BaseEntity implements UserDetails {
 		this.deletedBy = id; //FIXME @순식님 일단 주석처리
 //		this.updatedBy = id;
 	}
-
-//	// 회원가입 시점(인증 전)에는 actorId를 알 수 없어서, UUID=0000...로 created_by/updated_by NOT NULL을 채우기 위한 용도
-//	public void initAuditFieldsForSignUp(UUID actorId) {
-//		this.createdBy = actorId;
-//		this.updatedBy = actorId;
-//		this.isDeleted = false;
-//	}
 }
