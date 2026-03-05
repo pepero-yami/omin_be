@@ -40,7 +40,7 @@ public class ReviewService {
                 .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
         // 자신의 주문이 아니라면 예외
         if (!order.getUserId().equals(user.getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
-        // 주문에 따른 가게 조회
+        // 자신의 가게라면 예외
         if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(user.getId())) {
             throw new ApiException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
         }
