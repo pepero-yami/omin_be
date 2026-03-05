@@ -46,6 +46,9 @@ public enum ErrorCode {
 	//서버 에러
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
 
+	// Product
+	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
+
 	// AI - 요청/검증 (400)
 	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
 
