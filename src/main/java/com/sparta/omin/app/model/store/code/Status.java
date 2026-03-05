@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.store.entity;
+package com.sparta.omin.app.model.store.code;
 
 public enum Status {
     OPENED,
