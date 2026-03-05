@@ -8,9 +8,9 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +29,10 @@ public class Review extends BaseEntity {
     private UUID id;
 
     @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    @ManyToOne(fetch =  FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @JoinColumn(name = "order_id", nullable = false, updatable = false,  unique = true)
+    @JoinColumn(name = "order_id", nullable = false, updatable = false, unique = true)
     @OneToOne(fetch = FetchType.LAZY)
     private Order order;
 
@@ -46,6 +46,7 @@ public class Review extends BaseEntity {
     @Column(name = "review_comment", length = 300)
     private String comment;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 

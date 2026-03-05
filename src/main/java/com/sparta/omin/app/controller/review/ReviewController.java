@@ -6,6 +6,10 @@ import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +43,12 @@ public class ReviewController {
     @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<ReviewResponse> get(@PathVariable UUID reviewId) {
         ReviewResponse response = reviewService.getReview(reviewId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<Page<ReviewResponse>> getReviews(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ReviewResponse> response = reviewService.getReviews(pageable);
         return ResponseEntity.ok(response);
     }
 }

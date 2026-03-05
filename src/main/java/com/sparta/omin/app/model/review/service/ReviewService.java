@@ -14,6 +14,8 @@ import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -92,5 +94,10 @@ public class ReviewService {
     public ReviewResponse getReview(UUID reviewId) {
         Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId).orElseThrow(() -> new ApiException(ErrorCode.REVIEW_NOT_FOUND));
         return ReviewResponse.from(review);
+    }
+
+    public Page<ReviewResponse> getReviews(Pageable pageable) {
+        Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(pageable);
+        return reviewPage.map(ReviewResponse::from);
     }
 }
