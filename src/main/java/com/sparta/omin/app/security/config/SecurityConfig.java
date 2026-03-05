@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/users/auth").permitAll()
                         .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
+						.requestMatchers("/api/v1/me/addresses/**").hasRole("CUSTOMER") // address
 
 						// Region 조회: CUSTOMER도 가능
 						.requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")

@@ -1,10 +1,11 @@
 package com.sparta.omin.app.model.region.repos;
 
 import com.sparta.omin.app.model.region.entity.Region;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RegionRepository extends JpaRepository<Region, UUID> {
 
@@ -21,4 +22,7 @@ public interface RegionRepository extends JpaRepository<Region, UUID> {
 
     // 주소에 특정 키워드가 포함되어 있고, 삭제되지 않은 지역 목록 조회
     List<Region> findAllByAddressContainingAndIsDeletedFalseOrderByAddressAsc(String keyword);
+
+    // Address에서 단일 주소 검증용
+    Optional<Region> findByAddressAndIsDeletedFalse(String address);
 }
