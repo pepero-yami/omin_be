@@ -6,5 +6,5 @@ import jakarta.validation.constraints.NotNull;
 public record StoreStatusUpdateRequest(
         @NotNull
         Status status
-        ) {
+) {
 }

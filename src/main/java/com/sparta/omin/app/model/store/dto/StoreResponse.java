@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.store.dto;
 
 import com.sparta.omin.app.model.store.entity.Category;
+import com.sparta.omin.app.model.store.entity.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.entity.StoreImage;
 import lombok.Builder;
@@ -18,10 +19,11 @@ public record StoreResponse(
         String name,
         String roadAddress,
         String detailAddress,
+        Status status,
         BigDecimal longitude,
         BigDecimal latitude,
         List<StoreImageResponse> images
-){
+) {
     @Builder
     public record StoreImageResponse(
             UUID id,
@@ -37,14 +39,16 @@ public record StoreResponse(
         }
     }
 
-    public static StoreResponse of(Store store){
+    public static StoreResponse of(Store store) {
         return StoreResponse.builder()
                 .id(store.getId())
                 .ownerId(store.getOwnerId())
                 .regionId(store.getRegionId())
                 .category(store.getCategory())
+                .name(store.getName())
                 .roadAddress(store.getRoadAddress())
                 .detailAddress(store.getDetailAddress())
+                .status(store.getStatus())
                 .longitude(store.getLongitude())
                 .latitude(store.getLatitude())
                 .images(store.getImages().stream().map(StoreResponse.StoreImageResponse::of).toList())

@@ -1,8 +1,6 @@
 package com.sparta.omin.app.model.store.dto;
 
 import com.sparta.omin.app.model.store.entity.Category;
-import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.common.util.AuditUserProvider;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -35,10 +33,8 @@ public record StoreUpdateRequest(
         List<StoreImageRequest> images
 ) {
     public record StoreImageRequest(
-        @NotBlank
-        @Size(max = 255)
-        String url,
-        UUID id
+            UUID id,
+            boolean isNewUploaded
     ) {
 
     }

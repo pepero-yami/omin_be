@@ -2,15 +2,16 @@ package com.sparta.omin.app.model.store.dto;
 
 import com.sparta.omin.app.model.store.entity.Category;
 import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.common.util.AuditUserProvider;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 
-public record StoreCreateRequest (
+public record StoreCreateRequest(
         @NotNull
         UUID regionId,
         @NotNull
@@ -29,15 +30,11 @@ public record StoreCreateRequest (
         BigDecimal longitude,
         @NotNull
         @Digits(integer = 4, fraction = 6)
-        BigDecimal latitude,
-        @NotEmpty
-        @Size(max = 10)
-        List<@NotBlank @Size(max = 255) String> images //등록한 img url이 공란이면 x
+        BigDecimal latitude
 ) {
-    public Store toEntity(){
+    public Store toEntity(UUID ownerId) {
         return Store.builder()
-                //todo : 시큐리티와 병합 후 변경예정
-                .ownerId(AuditUserProvider.currentUserId())
+                .ownerId(ownerId)
                 .regionId(regionId)
                 .category(category)
                 .name(name)

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,6 +39,15 @@ public class SecurityConfig {
 				.permitAll() // 정적 리소스 허용
 				.requestMatchers("/api/v1/users/auth").permitAll()
 				.requestMatchers("/api/v1/users").hasRole("CUSTOMER")
+
+				//store
+				.requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
+				.requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
+				.requestMatchers(HttpMethod.GET,"/api/v1/stores/*").hasRole("CUSTOMER")
+				.requestMatchers(HttpMethod.DELETE,"/api/v1/stores/*").hasRole("OWNER")
+				.requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
+				.requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
+
 				.anyRequest().permitAll()
 			)
 
