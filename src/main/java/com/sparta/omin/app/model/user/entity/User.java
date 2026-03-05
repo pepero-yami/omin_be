@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.user.entity;
 
 import com.sparta.omin.app.model.user.constants.Role;
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import jakarta.persistence.Column;
@@ -29,7 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "p_user")
-public class User extends BaseTimeEntity implements UserDetails {
+public class User extends BaseEntity implements UserDetails {
 
 	@Id
 	@GeneratedValue

@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.region.entity;
 
-import com.sparta.omin.common.entity.BaseTimeEntity;
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "p_region")
-public class Region extends BaseTimeEntity {
+public class Region extends BaseEntity {
 
     @Id
     @GeneratedValue
