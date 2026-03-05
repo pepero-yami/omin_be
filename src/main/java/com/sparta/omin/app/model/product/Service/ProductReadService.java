@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.product.Service;
 
 import com.sparta.omin.app.model.product.dto.ProductResult;
+import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.exceptions.CommonException;
@@ -24,6 +25,17 @@ public class ProductReadService {
     public ProductResult getProduct(UUID productId) {
         return productRepository.findById(productId)
             .map(ProductResult::from)
+            .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    /**
+     * 메뉴의 요약 정보를 반환합니다.<br>
+     * 설명을 포함하지 않는 {@link ProductSummaryResult} 를 반환합니다.<br>
+     * 설명이 필요하지 않은 cart 또는 order에서 사용하세요.
+     */
+    public ProductSummaryResult getProductSummary(UUID productId) {
+        return productRepository.findById(productId)
+            .map(ProductSummaryResult::from)
             .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 }
