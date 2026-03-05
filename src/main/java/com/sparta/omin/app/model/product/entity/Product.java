@@ -6,13 +6,16 @@ import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name="p_product")
 public class Product extends BaseEntity {
 
@@ -29,7 +32,7 @@ public class Product extends BaseEntity {
     private String description;
 
     @Column(name="price", nullable = false)
-    private double price;
+    private Double price;
 
     @Column(name="status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -38,4 +41,13 @@ public class Product extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
+
+    @Builder
+    public Product (String name, String description, Double price, ProductStatus status, Store store) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.status = (status != null) ? status : ProductStatus.ON_SALE;
+        this.store = store;
+    }
 }

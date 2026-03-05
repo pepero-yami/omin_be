@@ -73,4 +73,11 @@ public class RegionService {
                 .map(r -> RegionResponse.of(r.getId(), r.getAddress()))
                 .toList();
     }
+
+    public List<RegionResponse> searchRegions(String keyword) {
+        return regionRepository.findAllByAddressContainingAndIsDeletedFalseOrderByAddressAsc(keyword)
+                .stream()
+                .map(r -> RegionResponse.of(r.getId(), r.getAddress()))
+                .toList();
+    }
 }

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.sparta.omin.app.model.ai.repos.AiLogRepository;
+import com.sparta.omin.app.model.user.service.UserReadService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,12 @@ class AiServiceImplTest {
     private ChatClient.CallResponseSpec responseSpec;
     @Mock
     private AiLogRepository aiLogRepository;
+    @Mock
+    private UserReadService userReadService;
 
     @BeforeEach
     void setUp() {
-        aiService = new AiServiceImpl(chatClient, aiLogRepository);
+        aiService = new AiServiceImpl(chatClient, aiLogRepository, userReadService);
     }
 
     @Test
@@ -50,7 +53,7 @@ class AiServiceImplTest {
         when(responseSpec.content()).thenReturn(expectedContent);
 
         // 2. When
-        String result = aiService.generateMenuDescription(userPrompt);
+        String result = aiService.generateMenuDescription(userPrompt, "test@test.com");
 
         // 3. Then
         // 결과값 검증
