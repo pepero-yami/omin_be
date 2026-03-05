@@ -76,10 +76,4 @@ public class UserAuthService {
 			TimeUnit.MILLISECONDS);
 		return tokenResponse;
 	}
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		return userRepository.findByEmailAndIsDeletedFalse(username).orElseThrow(
-				() -> new ApiException(ErrorCode.USER_NOT_FOUND)
-		);
-	}
 }
