@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.review.entity;
 
+import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.common.entity.BaseAuditEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,8 +29,9 @@ public class Review extends BaseAuditEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
-    @Column(name = "order_id", nullable = false, updatable = false)
-    private UUID orderId;
+    @JoinColumn(name = "order_id", nullable = false, updatable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    private Order order;
 
     @Column(name = "review_rating", nullable = false)
     private double rating;
@@ -42,20 +44,27 @@ public class Review extends BaseAuditEntity {
 
     public static Review create(
             UUID userId,
-            UUID orderId,
+            Order order,
             double rating,
             String comment
     ) {
 
         Review review = new Review();
         review.userId = Objects.requireNonNull(userId, "userId must not be null");
-        review.orderId = Objects.requireNonNull(orderId, "orderId must not be null");
+        review.order = Objects.requireNonNull(order, "orderId must not be null");
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
         review.markCreated(userId);
 
         return review;
+    }
+
+    // 도메인 규칙 : 별점
+    private static void validRating(double rating) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("rating must be between 1 and 5");
+        }
     }
 
     public void updateReview(double newRating, String newComment, UUID actorId) {
@@ -71,15 +80,8 @@ public class Review extends BaseAuditEntity {
     public void addImages(List<String> imageUrls) {
         this.images.clear();
         for (int i = 0; i < imageUrls.size(); i++) {
-            ReviewImage.create(this, imageUrls.get(i), i*1000);
+            ReviewImage.create(this, imageUrls.get(i), i * 1000);
             // sequence = i * 1000: 중간 이미지를 수정/삭제 되었을 때도 다시 sequence 계산 안해도 됨
-        }
-    }
-
-    // 도메인 규칙 : 별점
-    private static void validRating(double rating) {
-        if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("rating must be between 1 and 5");
         }
     }
 

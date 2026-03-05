@@ -64,7 +64,7 @@ public class ReviewService {
         // Review 생성
         Review newReview = Review.create(
                 userId,
-                request.orderId(),
+                order,
                 request.rating(),
                 request.comment()
         );
