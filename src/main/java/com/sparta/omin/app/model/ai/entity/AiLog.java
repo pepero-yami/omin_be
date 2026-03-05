@@ -40,15 +40,14 @@ public class AiLog extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RequestType requestType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_id", nullable = false)
-    private User user;
+    @Column(name="user_id", nullable = false)
+    private UUID userId;
 
     @Builder
-    public AiLog (String input, String output, RequestType requestType, User user) {
+    public AiLog (String input, String output, RequestType requestType, UUID userId) {
         this.input = input;
         this.output = output;
         this.requestType = requestType;
-        this.user = user;
+        this.userId = userId;
     }
 }
