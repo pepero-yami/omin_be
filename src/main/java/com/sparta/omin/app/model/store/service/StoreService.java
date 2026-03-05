@@ -4,14 +4,15 @@ import com.sparta.omin.app.model.store.dto.StoreCreateRequest;
 import com.sparta.omin.app.model.store.dto.StoreResponse;
 import com.sparta.omin.app.model.store.dto.StoreStatusUpdateRequest;
 import com.sparta.omin.app.model.store.dto.StoreUpdateRequest;
-import com.sparta.omin.app.model.store.entity.Status;
+import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.entity.StoreImage;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
+import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,14 +47,14 @@ public class StoreService {
     //단건조회
     public StoreResponse findStore(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
         return StoreResponse.of(store);
     }
 
     @Transactional
     public StoreResponse modifyStore(UUID storeId, StoreUpdateRequest storeUpdateRequest, List<MultipartFile> newImages, UserDetails user) {
         Store savedStore = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, savedStore);
         savedStore.updateStore(storeUpdateRequest.regionId(), storeUpdateRequest.category(), storeUpdateRequest.name()
                 , storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeUpdateRequest.latitude()
@@ -72,7 +73,7 @@ public class StoreService {
     @Transactional
     public void deleteStore(UUID storeId, UserDetails user) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("삭제할 가게가 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         storeRepository.delete(store); // entity의 update 쿼리가 대신 실행
     }
@@ -81,9 +82,9 @@ public class StoreService {
     @Transactional
     public StoreResponse modifyStoreStatusToClose(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
         if (store.getStatus() != Status.PENDING) {
-            throw new IllegalStateException("가게가 승인대기 상태가 아닙니다.");
+            throw new ApiException(ErrorCode.STORE_STATUS_NOT_PENDING);
         }
         store.updateStatus(Status.CLOSED);
         return StoreResponse.of(store);
@@ -93,14 +94,14 @@ public class StoreService {
     @Transactional
     public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId, UserDetails user) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         if (storeStatusUpdateRequest.status() == Status.PENDING) {
-            throw new IllegalArgumentException("승인 대기 상태로는 변경할 수 없습니다.");
+            throw new ApiException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
         }
         //가게 상태가 PENDING 일 때 예외발생
         if (store.getStatus() == Status.PENDING) {
-            throw new IllegalStateException("승인 대기 중인 가게의 상태는 변경 불가합니다.");
+            throw new ApiException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
         }
         store.updateStatus(storeStatusUpdateRequest.status());
         return StoreResponse.of(store);
@@ -115,7 +116,7 @@ public class StoreService {
         }
         //관리자가 아니라면 반드시 가게 주인이어야 함
         if (!store.getOwnerId().equals(loginUser.getId())) {
-            throw new AccessDeniedException("해당 가게에 대한 권한이 없습니다");
+            throw new ApiException(ErrorCode.STORE_ACCESS_DENIED);
         }
     }
 
@@ -155,13 +156,12 @@ public class StoreService {
             if (!req.isNewUploaded()) {
                 // 기존 DB에 저장되어 있던 이미지 → 순번 변동사항만 갱신
                 StoreImage existing = existingImageMap.get(req.id());
-                existing.setSequence(newSequence);
+                existing.updateImageSorting(newSequence);
             } else {
                 // 신규 이미지 → 생성 후 추가
                 StoreImage newImage = new StoreImage(newUrlList.get(currentNewImageSequence++));
-                newImage.setStore(savedStore);
                 savedStore.getImages().add(newImage);
-                newImage.setSequence(newSequence);
+                newImage.mappingNewStoreImage(newSequence,savedStore);
             }
         }
     }

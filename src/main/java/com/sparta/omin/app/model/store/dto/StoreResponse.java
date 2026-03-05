@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.store.dto;
 
-import com.sparta.omin.app.model.store.entity.Category;
-import com.sparta.omin.app.model.store.entity.Status;
+import com.sparta.omin.app.model.store.code.Category;
+import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.entity.StoreImage;
 import lombok.Builder;

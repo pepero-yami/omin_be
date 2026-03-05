@@ -27,16 +27,23 @@ public class StoreImage extends BaseEntity {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Setter
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private Store store;
 
     public StoreImage(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public void updateImageSorting(Integer sequence){
+        this.sequence = sequence;
+    }
+
+    public void mappingNewStoreImage(Integer sequence, Store store) {
+        this.sequence = sequence;
+        this.store = store;
     }
 }
