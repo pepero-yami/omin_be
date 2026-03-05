@@ -24,30 +24,40 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AddressControllerTest extends AddressControllerHelper {
 
     @Test
+    @DisplayName("새 배송지 추가 성공 (201 Created)")
     void post_addresses_returns201() throws Exception {
-        mockUser(); //유저를 로그인 상태로 만든다 - 헬퍼에 만들어둠
-
+        // Given
+        // 헬퍼 메서드로 로그인 유저를 세팅하고, 서비스 응답을 설정
+        mockUser();
         UUID id = UUID.randomUUID();
         given(addressService.create(any(), any())).willReturn(createResponse(id, "우리집", true));
 
+        // When
+        // /api/v1/me/addresses 경로로 POST 요청 보냄
         mockMvc.perform(post(ADDRESS_BASE_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(ADDRESS_CREATE_FIXTURE))
                 .andDo(print())
+                // Then
+                // 201 상태 코드와 닉네임, 기본 배송지 여부 확인
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.nickname").value("우리집"))
                 .andExpect(jsonPath("$.isDefault").value(true));
     }
 
     @Test
+    @DisplayName("내 배송지 목록 조회 성공 (200 OK)")
     void get_addresses_returns200() throws Exception {
         mockUser();
-
+        // Given
+        // 두 개의 주소가 포함된 리스트를 반환하도록 설정
         given(addressService.getMyAddresses(any())).willReturn(List.of(
                 createResponse(UUID.randomUUID(), "집", true),
                 createResponse(UUID.randomUUID(), "회사", false)
         ));
 
+        // When & Then
+        // 목록의 개수가 2개인지 확인
         mockMvc.perform(get(ADDRESS_BASE_URL))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -55,12 +65,17 @@ class AddressControllerTest extends AddressControllerHelper {
     }
 
     @Test
+    @DisplayName("특정 주소를 기본 배송지로 설정 성공 (200 OK)")
     void patch_address_default_returns200() throws Exception {
         mockUser();
 
         UUID id = UUID.randomUUID();
+        // Given
+        // 해당 ID의 주소가 기본 배송지로 변경된 결과를 반환
         given(addressService.setDefault(any(), eq(id))).willReturn(createResponse(id, "기본지", true));
 
+        // When & Then
+        // PATCH 요청 후 상태 변경을 확인
         mockMvc.perform(patch(ADDRESS_DEFAULT_URL.formatted(id)))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -68,11 +83,14 @@ class AddressControllerTest extends AddressControllerHelper {
     }
 
     @Test
+    @DisplayName("배송지 삭제 성공 (204 No Content)")
     void delete_address_returns204() throws Exception {
         mockUser();
 
         UUID id = UUID.randomUUID();
 
+        // When & Then
+        // DELETE 요청 시 204 No Content가 오는지 확인
         mockMvc.perform(delete(ADDRESS_ID_URL.formatted(id)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
