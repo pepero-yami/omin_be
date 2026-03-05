@@ -44,20 +44,3 @@ public class CartApplication {
 			throw new OminBusinessException(ErrorCode.PRODUCT_IS_NOT_AVAILABLE_FOR_SALE);
 		}
 	}
-
-	private void validateCartStore(RCart cart, UUID requestStoreId) {
-		if (!cart.getStoreId().equals(requestStoreId)) {
-			throw new OminBusinessException(ErrorCode.CART_STORE_CONFLICT);
-		}
-	}
-
-	private void addNewProduct(RCart cart, Product product, int quantity) {
-		cart.getProducts().add(RCart.Product.builder()
-			.id(product.getId())
-			.name(product.getName())
-			.price(product.getPrice())
-			.quantity(quantity)
-			.totalPrice(product.getPrice() * quantity)
-			.build());
-	}
-}
