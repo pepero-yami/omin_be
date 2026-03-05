@@ -25,6 +25,13 @@ public enum ErrorCode {
 	REGION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 지역(address)입니다."),
 	REGION_INVALID_ADDRESS(HttpStatus.BAD_REQUEST, "유효하지 않은 주소(address)입니다."),
 
+	// Address 에러
+	ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 배송지(addressId)입니다."),
+	ADDRESS_DUPLICATED(HttpStatus.CONFLICT, "이미 존재하는 배송지입니다."),
+	ADDRESS_DEFAULT_CANNOT_DELETE(HttpStatus.BAD_REQUEST, "기본배송지는 삭제할 수 없습니다."),
+	ADDRESS_REGION_NOT_FOUND(HttpStatus.BAD_REQUEST, "등록되지 않은 지역입니다. region 등록이 필요합니다."),
+	ADDRESS_DEFAULT_MUST_EXIST(HttpStatus.BAD_REQUEST, "기본배송지는 항상 1개 이상 존재해야 합니다."),
+
 	//서버 에러
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
 
