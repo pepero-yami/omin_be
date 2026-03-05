@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.order.entity;
 
 import com.sparta.omin.app.model.store.entity.Store;
+import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class Order extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false, updatable = false)
     private Store store;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    private User user;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 

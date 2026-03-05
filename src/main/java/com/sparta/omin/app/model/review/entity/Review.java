@@ -2,6 +2,7 @@ package com.sparta.omin.app.model.review.entity;
 
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.store.entity.Store;
+import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -27,8 +28,9 @@ public class Review extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false, updatable = false)
-    private UUID userId;
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
+    @ManyToOne(fetch =  FetchType.LAZY)
+    private User user;
 
     @JoinColumn(name = "order_id", nullable = false, updatable = false)
     @OneToOne(fetch = FetchType.LAZY)
@@ -48,7 +50,7 @@ public class Review extends BaseEntity {
     private List<ReviewImage> images = new ArrayList<>();
 
     public static Review create(
-            UUID userId,
+            User user,
             Order order,
             Store store,
             double rating,
@@ -56,9 +58,9 @@ public class Review extends BaseEntity {
     ) {
 
         Review review = new Review();
-        review.userId = Objects.requireNonNull(userId, "userId must not be null");
-        review.order = Objects.requireNonNull(order, "orderId must not be null");
-        review.store = Objects.requireNonNull(store, "storeId must not be null");
+        review.user = Objects.requireNonNull(user, "user must not be null");
+        review.order = Objects.requireNonNull(order, "order must not be null");
+        review.store = Objects.requireNonNull(store, "store must not be null");
         validRating(rating);
         review.rating = rating;
         review.comment = comment;
