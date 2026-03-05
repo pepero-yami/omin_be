@@ -1,6 +1,10 @@
 spring:
   application:
     name: omin
+  data:
+    redis:
+      port: 6379
+      host: localhost
   datasource:
     #host: localhost, 포트: 5432, DB명: omindb
     url: jdbc:postgresql://localhost:5432/omindb
@@ -15,8 +19,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   # OPEN AI
+
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
