@@ -55,7 +55,11 @@ public enum ErrorCode {
 	AI_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "AI rate limited"),
 	AI_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "AI service unavailable"),
 	AI_EMPTY_RESPONSE(HttpStatus.BAD_GATEWAY, "Empty AI response"),
-	;
+
+	// 주문 에러
+	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 주문이 없습니다.");
+
+
 	private final HttpStatus status;
 	private final String description;
 }
