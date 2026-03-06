@@ -34,10 +34,10 @@ public class OrderItem extends BaseEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
-    @Column(name = "price", nullable = false, precision = 10, scale = 7)
+    @Column(name = "price", nullable = false)
     private double price;
 
-    @Column(name = "total_price", nullable = false, precision = 10, scale = 7)
+    @Column(name = "total_price", nullable = false)
     private double totalPrice; // 단가 * 수량
 
     public static OrderItem create(Order order, Product product, int quantity, double price) {
