@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.order.service;
 
 import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
+import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
@@ -14,11 +15,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -30,6 +36,103 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Test
+    @DisplayName("주문 이력 조회 - 성공")
+    void getOrderHistory_success() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Store store = mock(Store.class);
+
+        Order order1 = Order.create(user, store, "문 앞에 놔주세요", "서울시 종로구 세종대로 172", "정부서울청사 1층");
+        Order order2 = Order.create(user, store, "벨 눌러주세요", "서울시 종로구 사직로 161", "경복궁 옆 빌딩 2층");
+
+        Pageable pageable = PageRequest.of(0, 10);
+        SliceImpl<Order> slice = new SliceImpl<>(
+                List.of(order1, order2),
+                pageable,
+                false
+        );
+
+        given(orderRepository.findByUserIdAndIsDeletedFalse(userId, pageable))
+                .willReturn(slice);
+
+        // when
+        Slice<OrderResponse> response = orderService.getOrdersHistory(userId, pageable);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getContent().size()).isEqualTo(2);
+        assertThat(response.hasNext()).isFalse();
+        assertThat(response.getContent().get(0).userRequest()).isEqualTo("문 앞에 놔주세요");
+        assertThat(response.getContent().get(1).userRequest()).isEqualTo("벨 눌러주세요");
+
+        // 콘솔 출력
+        System.out.println("=== 광화문 주문 이력 조회 결과 ===");
+        System.out.println("총 주문 수: " + response.getContent().size());
+        System.out.println("다음 페이지 있음: " + response.hasNext());
+        response.getContent().forEach(o -> {
+            System.out.println("---");
+            System.out.println("주문 상태: " + o.orderStatus());
+            System.out.println("요청사항: " + o.userRequest());
+            System.out.println("가게명: " + o.storeName());
+        });
+    }
+
+    @Test
+    @DisplayName("주문 이력 조회 - 다음 페이지 있음")
+    void getOrderHistory_hasNext() {
+        // given
+        UUID userId = UUID.randomUUID();
+        User user = mock(User.class);
+        Store store = mock(Store.class);
+        given(store.getName()).willReturn("광화문 순대국");
+
+        List<Order> orders = List.of(
+                Order.create(user, store, "문 앞에 놔주세요", "서울시 종로구 세종대로 172", "정부서울청사 1층"),
+                Order.create(user, store, "빠르게 부탁드려요", "서울시 종로구 율곡로 10", "KT 광화문빌딩 3층")
+        );
+
+        Pageable pageable = PageRequest.of(0, 2);
+        SliceImpl<Order> slice = new SliceImpl<>(orders, pageable, true); // hasNext = true
+
+        given(orderRepository.findByUserIdAndIsDeletedFalse(userId, pageable))
+                .willReturn(slice);
+
+        // when
+        Slice<OrderResponse> response = orderService.getOrdersHistory(userId, pageable);
+
+        // then
+        assertThat(response.hasNext()).isTrue();
+
+        System.out.println("=== 다음 페이지 테스트 ===");
+        System.out.println("현재 페이지: " + pageable.getPageNumber());
+        System.out.println("페이지 사이즈: " + pageable.getPageSize());
+        System.out.println("다음 페이지 존재: " + response.hasNext());
+    }
+
+    @Test
+    @DisplayName("주문 이력 조회 - 주문 없음")
+    void getOrderHistory_empty() {
+        // given
+        UUID userId = UUID.randomUUID();
+        Pageable pageable = PageRequest.of(0, 10);
+        SliceImpl<Order> slice = new SliceImpl<>(List.of(), pageable, false);
+
+        given(orderRepository.findByUserIdAndIsDeletedFalse(userId, pageable))
+                .willReturn(slice);
+
+        // when
+        Slice<OrderResponse> response = orderService.getOrdersHistory(userId, pageable);
+
+        // then
+        assertThat(response.getContent()).isEmpty();
+        assertThat(response.hasNext()).isFalse();
+
+        System.out.println("=== 주문 없음 테스트 ===");
+        System.out.println("주문 수: " + response.getContent().size());
+    }
 
     @Test
     @DisplayName("주문 단건 조회 - 성공")
@@ -73,7 +176,6 @@ class OrderServiceTest {
         assertThat(response.address().shippingDetailAddress()).isEqualTo("1층 로비");
         assertThat(response.store().storeName()).isEqualTo("테스트 가게");
 
-        // 결과값 콘솔 출력
         System.out.println("=== 주문 조회 결과 ===");
         System.out.println("주문 상태: " + response.orderStatus());
         System.out.println("가게명: " + response.store().storeName());
