@@ -39,7 +39,7 @@ public record OrderDetailResponse(
     ) { }
 
     public record AddressInfo(
-            String shippingAddress,          // ← roadAddress → shippingAddress
+            String shippingAddress,
             String shippingDetailAddress
     ) { }
 
