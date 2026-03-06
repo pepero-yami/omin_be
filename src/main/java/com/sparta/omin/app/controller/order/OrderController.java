@@ -34,12 +34,11 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(user.getId(), request));
     }
 
-    @GetMapping("/{orderId}")
-    public ResponseEntity<Slice<OrderResponse>> getOrdersHistory(@PathVariable UUID orderId,
-                                                                 @AuthenticationPrincipal User user,
+    @GetMapping("/history")
+    public ResponseEntity<Slice<OrderResponse>> getOrdersHistory(@AuthenticationPrincipal User user,
                                                                  @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                    Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersHistory(orderId, pageable));
+        return ResponseEntity.ok(orderService.getOrdersHistory(user.getId(), pageable));
     }
 
     /**
