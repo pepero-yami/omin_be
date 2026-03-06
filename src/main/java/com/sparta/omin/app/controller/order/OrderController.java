@@ -45,7 +45,7 @@ public class OrderController {
     /**
      * 손님 & 사장님
      */
-    @GetMapping("/{orderId}")
+    @GetMapping("/{orderId}/details") // TODO 중복으로 인한 임시
     public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetail(orderId));
     }
