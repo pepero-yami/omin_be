@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.orderItem.entity;
 
 import com.sparta.omin.app.model.order.entity.Order;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -8,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
@@ -28,34 +27,30 @@ public class OrderItem extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false, updatable = false)
     private Order order;
 
-    @Column(name = "product_id", nullable = false, updatable = false)
-    private UUID productId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 7)
-    private BigDecimal price;
+    private double price;
 
     @Column(name = "total_price", nullable = false, precision = 10, scale = 7)
-    private BigDecimal totalPrice; // 단가 * 수량
+    private double totalPrice; // 단가 * 수량
 
-    public static OrderItem create(
-            Order order,
-            UUID productId,
-            int quantity,
-            BigDecimal price
-    ) {
-        OrderItem item = new OrderItem();
+    public static OrderItem create(Order order, Product product, int quantity, double price) {
+        OrderItem orderItem = new OrderItem();
 
-        item.order = Objects.requireNonNull(order, "order must not be null");
-        item.productId = Objects.requireNonNull(productId, "productId must not be null");
-        item.quantity = quantity;
-        item.price = price;
-        item.totalPrice = price.multiply(BigDecimal.valueOf(quantity));
-        item.isDeleted = false;
+        orderItem.order = order;
+        orderItem.product = product;
+        orderItem.quantity = quantity;
+        orderItem.price = price;
+        orderItem.totalPrice = quantity * price;
+        orderItem.isDeleted = false;
 
-        return item;
+        return orderItem;
     }
 
     public void delete() {
