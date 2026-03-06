@@ -60,6 +60,15 @@ public enum ErrorCode {
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 주문이 없습니다.");
 
 
+
+	// store 에러
+	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),
+	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
+	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
+	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
+	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.")
+
+	;
 	private final HttpStatus status;
 	private final String description;
 }

@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.store.dto;
 
-import com.sparta.omin.app.model.store.entity.Category;
+import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.entity.Store;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
