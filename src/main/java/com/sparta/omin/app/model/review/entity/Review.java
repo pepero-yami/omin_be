@@ -47,6 +47,7 @@ public class Review extends BaseEntity {
     private String comment;
 
     @BatchSize(size = 100)
+    @OrderBy("sequence ASC")
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
