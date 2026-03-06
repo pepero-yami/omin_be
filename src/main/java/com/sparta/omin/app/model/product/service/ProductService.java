@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.product.service;
+package com.sparta.omin.app.model.product.Service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
