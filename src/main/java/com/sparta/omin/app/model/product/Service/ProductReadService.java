@@ -23,7 +23,7 @@ public class ProductReadService {
      * {@link ProductResult} 를 반환합니다.
      */
     public ProductResult getProduct(UUID productId) {
-        return productRepository.findById(productId)
+        return productRepository.findByIdAndIsDeletedFalse(productId)
             .map(ProductResult::from)
             .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
     }
@@ -34,7 +34,7 @@ public class ProductReadService {
      * 설명이 필요하지 않은 cart 또는 order에서 사용하세요.
      */
     public ProductSummaryResult getProductSummary(UUID productId) {
-        return productRepository.findById(productId)
+        return productRepository.findByIdAndIsDeletedFalse(productId)
             .map(ProductSummaryResult::from)
             .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
     }
