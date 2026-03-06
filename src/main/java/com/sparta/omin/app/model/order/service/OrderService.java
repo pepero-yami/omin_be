@@ -33,15 +33,18 @@ public class OrderService {
         return OrderDetailResponse.from(order);
     }
 
-    public Slice<OrderResponse> getOrdersHistory(UUID orderId, UUID userId, Pageable pageable) {
-        return orderRepository.findByIdAndUserIdAndIsDeletedFalse(orderId, userId, pageable)
+    public Slice<OrderResponse> getOrdersHistory(UUID userId, Pageable pageable) {
+        return orderRepository.findByUserIdAndIsDeletedFalse(userId, pageable)
                 .map(OrderResponse::from);
     }
 
     public Slice<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, String email, Pageable pageable) {
         /**
          * TODO 검증 pull받으면 활성화 할 것!
-         * storeReadService.isOwnedStore(storeId, email);
+         *
+         *        if(!storeReadService.isOwnedStore(storeId(), email)) {
+         *             throw new CommonException(ErrorCode.STORE_ACCESS_DENIED);
+         *         }
          */
 
         // 가게에 들어온 주문 요청목록
