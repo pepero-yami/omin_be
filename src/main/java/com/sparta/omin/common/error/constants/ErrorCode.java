@@ -68,7 +68,7 @@ public enum ErrorCode {
     ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다."),
 
 	// 주문 에러
-	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 주문이 없습니다.");
+//	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 주문이 없습니다."),
 
 
 
@@ -77,9 +77,8 @@ public enum ErrorCode {
 	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
 	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
-	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.")
+	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.");
 
-	;
 	private final HttpStatus status;
 	private final String description;
 }
