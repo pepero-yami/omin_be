@@ -162,7 +162,7 @@ class ReviewControllerTest {
                         .file(createJsonPart(request)))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("이미 해당 주문 건으로 작성된 리뷰가 있습니다."));
+                .andExpect(jsonPath("$.error").value("REVIEW_ALREADY_EXISTS"));
     }
 
     // 403 테스트
