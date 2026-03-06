@@ -7,6 +7,7 @@ import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.app.model.store.service.StoreReadService;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.exceptions.CommonException;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,7 @@ public class ProductService {
     @Transactional
     public void createProduct(
         ProductCreateCommand command,
-        String userId
+        UUID userId
     ) {
         // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(command.storeId(), userId)) {

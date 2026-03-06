@@ -3,6 +3,7 @@ package com.sparta.omin.app.model.ai.service;
 import com.sparta.omin.app.model.ai.code.RequestType;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.exceptions.CommonException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -22,7 +23,7 @@ public class AiService {
     private final ChatClient chatClient;
     private final AiLogService aiLogService;
 
-    public String generateMenuDescription(String userPrompt, String userEmail) {
+    public String generateMenuDescription(String userPrompt, UUID userId) {
 
         // 입력 검증
         if(!StringUtils.hasText(userPrompt)) {
@@ -81,7 +82,7 @@ public class AiService {
         }
 
         // 로그 저장
-        aiLogService.createAiLog(userPrompt, response, RequestType.PRODUCT_DESCRIPTION, userEmail);
+        aiLogService.createAiLog(userPrompt, response, RequestType.PRODUCT_DESCRIPTION, userId);
 
         return response.trim();
     }
