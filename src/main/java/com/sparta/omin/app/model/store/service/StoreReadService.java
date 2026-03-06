@@ -14,16 +14,13 @@ import org.springframework.stereotype.Service;
 public class StoreReadService {
 
     private final StoreRepository storeRepository;
-    private final UserReadService userReadService;
 
     /**
      * 자신이 소유한 Store인지 검증합니다.
      */
-    public Boolean isOwnedStore(UUID storeId, String userEmail) {
+    public Boolean isOwnedStore(UUID storeId, UUID userId) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new CommonException(ErrorCode.STORE_NOT_FOUND));
-        UUID requesterId = userReadService.getUserInfo(userEmail).id();
-
-        return requesterId.equals(store.getOwnerId());
+        return userId.equals(store.getOwnerId());
     }
 
     /**
