@@ -6,7 +6,7 @@ import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
 import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.app.model.review.repos.ReviewRepository;
-import com.sparta.omin.app.model.store.entity.Category;
+import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.entity.User;
@@ -56,7 +56,8 @@ public class ReviewDataInitializer implements CommandLineRunner {
         // 4. 테스트용 가게 생성 (가게가 없을 때만 생성하도록 권장)
         Store store;
         if (storeRepository.count() == 0) {
-            store = Store.builder().ownerId(owner.getId()).regionId(region.getId()).category(Category.CHICKEN).name("테스트 치킨 맛집").roadAddress("서울 강남구 테헤란로").detailAddress("123번지 1층").latitude(new BigDecimal("37.123456")).longitude(new BigDecimal("127.123456")).build();
+            store = Store.builder().ownerId(owner.getId()).regionId(region.getId()).category(
+                Category.CHICKEN).name("테스트 치킨 맛집").roadAddress("서울 강남구 테헤란로").detailAddress("123번지 1층").latitude(new BigDecimal("37.123456")).longitude(new BigDecimal("127.123456")).build();
             store = storeRepository.save(store);
         } else {
             store = storeRepository.findAll().get(0);
