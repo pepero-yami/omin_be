@@ -54,19 +54,19 @@ public class Order extends BaseEntity {
     @Column(name = "total_price")
     private double totalPrice; // 0306
 
-    public static Order create(
-            User user,
-            Store store,
-            String userRequest,
-            String deliveryAddress
+    public static Order create(User user,
+                               Store store,
+                               String userRequest,
+                               String deliveryAddress,
+                               String deliveryAddressDetail
     ) {
         Order order = new Order();
 
-//        order.userId = userId;
         order.user = user;
         order.store = store;
         order.userRequest = userRequest;
         order.deliveryAddress = deliveryAddress;
+        order.deliveryAddressDetail = deliveryAddressDetail;
         order.status = OrderStatus.PENDING;
         order.isDeleted = false;
 
