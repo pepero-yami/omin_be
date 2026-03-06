@@ -1,11 +1,8 @@
-package com.sparta.omin.app.model.product.Service;
+package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
-import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
-import com.sparta.omin.common.error.constants.ErrorCode;
-import com.sparta.omin.common.error.exceptions.CommonException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
