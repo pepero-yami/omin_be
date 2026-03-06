@@ -3,6 +3,7 @@ package com.sparta.omin.app.model.order.entity;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.orderItem.entity.OrderItem;
 import com.sparta.omin.app.model.store.entity.Store;
+import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -26,8 +27,9 @@ public class Order extends BaseEntity {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "user_id", nullable = false, updatable = false)
-    private UUID userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
@@ -53,14 +55,15 @@ public class Order extends BaseEntity {
     private double totalPrice; // 0306
 
     public static Order create(
-            UUID userId,
+            User user,
             Store store,
             String userRequest,
             String deliveryAddress
     ) {
         Order order = new Order();
 
-        order.userId = userId;
+//        order.userId = userId;
+        order.user = user;
         order.store = store;
         order.userRequest = userRequest;
         order.deliveryAddress = deliveryAddress;
@@ -72,5 +75,10 @@ public class Order extends BaseEntity {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    //에러방지
+    public boolean isCompleted() {
+        return false;
     }
 }
