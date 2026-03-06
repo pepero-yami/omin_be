@@ -39,7 +39,7 @@ public class OrderController {
                                                                  @AuthenticationPrincipal User user,
                                                                  @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                    Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersHistory(orderId, user.getId(), pageable));
+        return ResponseEntity.ok(orderService.getOrdersHistory(orderId, pageable));
     }
 
     /**
