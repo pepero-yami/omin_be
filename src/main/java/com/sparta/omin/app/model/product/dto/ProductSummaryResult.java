@@ -9,14 +9,13 @@ import lombok.Data;
 /**
  * 메뉴 설명을 포함하지 않는 정보를 반환하는 객체입니다.
  */
-@Data
 @Builder
-public class ProductSummaryResult {
-
-    private UUID id;
-    private String name;
-    private Double price;
-    private ProductStatus status;
+public record ProductSummaryResult(
+    UUID id,
+    String name,
+    Double price,
+    ProductStatus status
+) {
 
     public static ProductSummaryResult from(Product product) {
         return ProductSummaryResult.builder()
