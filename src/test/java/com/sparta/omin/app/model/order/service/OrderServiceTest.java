@@ -37,6 +37,9 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+//    @Mock
+//    StoreReadService storeReadService;
+
     @Test
     @DisplayName("주문 이력 조회 - 성공")
     void getOrderHistory_success() {
@@ -135,7 +138,7 @@ class OrderServiceTest {
     }
 
     @Test
-    @DisplayName("주문 단건 조회 - 성공")
+    @DisplayName("주문 단건 세부 조회 - 성공")
     void getOrderDetail_success() {
         // given
         UUID orderId = UUID.randomUUID();
@@ -192,4 +195,55 @@ class OrderServiceTest {
             System.out.println("총액: " + item.totalPrice());
         });
     }
+
+    @Test
+    @DisplayName("사장님 가게에 들어온 주문 요청 목록 조회 - 성공")
+    void getOrdersByOwner_success() {
+        // given
+        UUID storeId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String email = "owner@gwanghwamun.com";
+
+        User user = mock(User.class);
+        Store store = mock(Store.class);
+
+        Order order1 = Order.create(user, store, "빠르게 부탁드려요", "서울시 종로구 세종대로 172", "정부서울청사 1층");
+        Order order2 = Order.create(user, store, "문 앞에 놔주세요", "서울시 종로구 율곡로 10", "KT 광화문빌딩 3층");
+
+        Pageable pageable = PageRequest.of(0, 10);
+        SliceImpl<Order> slice = new SliceImpl<>(
+                List.of(order1, order2),
+                pageable,
+                false
+        );
+
+        given(orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable))
+                .willReturn(slice);
+
+        // when
+        Slice<OrderResponse> response = orderService.getOrdersByOwner(storeId, userId, email, pageable);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getContent().size()).isEqualTo(2);
+        assertThat(response.hasNext()).isFalse();
+
+        System.out.println("=== 사장님 주문 목록 조회 결과 ===");
+        System.out.println("총 주문 수: " + response.getContent().size());
+        System.out.println("다음 페이지: " + response.hasNext());
+        response.getContent().forEach(o -> {
+            System.out.println("---");
+            System.out.println("주문 상태: " + o.orderStatus());
+            System.out.println("요청사항: " + o.userRequest());
+        });
+    }
+
+    // TODO: storeReadService.isOwnedStore() 머지 후 아래 테스트 활성화
+    // @Test
+    // @DisplayName("사장님 가게에 들어온 주문 요청 목록 조회 - 다른 가게 접근 실패")
+    // void getOrdersByOwner_accessDenied() {
+    //     given(storeReadService.isOwnedStore(storeId, email)).willReturn(false);
+    //     assertThatThrownBy(() -> orderService.getOrdersByOwner(...))
+    //             .isInstanceOf(CommonException.class);
+    // }
 }
