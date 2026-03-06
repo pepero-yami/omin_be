@@ -16,5 +16,6 @@ public class ApiException extends RuntimeException {
 	public ApiException(ErrorCode errorCode) {
 		super(errorCode.getDescription());
 		this.errorCode = errorCode;
+		this.message = errorCode.getDescription();
 	}
 }

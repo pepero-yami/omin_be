@@ -6,7 +6,8 @@ import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
 import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.app.model.review.repos.ReviewRepository;
-import com.sparta.omin.app.model.store.entity.Category;
+
+import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.entity.User;

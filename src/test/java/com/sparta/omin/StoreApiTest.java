@@ -42,6 +42,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(controllers = StoreController.class)
@@ -52,13 +53,13 @@ class StoreApiTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     StoreService storeService;
 
-    @MockBean
+    @MockitoBean
     JwtUtil jwtUtil;
 
-    @MockBean
+    @MockitoBean
     UserDetailsServiceImpl userDetailsService;
 
     @Autowired
@@ -115,9 +116,9 @@ class StoreApiTest {
                     .andDo(print())
                     .andExpect(status().isCreated())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.data.id").value(PENDING_STORE_ID.toString()))
-                    .andExpect(jsonPath("$.data.name").value("후와후와"))
-                    .andExpect(jsonPath("$.data.status").value("PENDING"));
+                    .andExpect(jsonPath("$.id").value(PENDING_STORE_ID.toString()))
+                    .andExpect(jsonPath("$.name").value("후와후와"))
+                    .andExpect(jsonPath("$.status").value("PENDING"));
         }
 
         @Test
@@ -172,8 +173,8 @@ class StoreApiTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.data.id").value(NON_PENDING_STORE_ID.toString()))
-                    .andExpect(jsonPath("$.data.name").value("후와후와"));
+                    .andExpect(jsonPath("$.id").value(NON_PENDING_STORE_ID.toString()))
+                    .andExpect(jsonPath("$.name").value("후와후와"));
         }
 
         @Test
@@ -236,9 +237,9 @@ class StoreApiTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.data.id").value(NON_PENDING_STORE_ID.toString()))
-                    .andExpect(jsonPath("$.data.name").value("수정후와후와"))
-                    .andExpect(jsonPath("$.data.category").value("CHINESE"));
+                    .andExpect(jsonPath("$.id").value(NON_PENDING_STORE_ID.toString()))
+                    .andExpect(jsonPath("$.name").value("수정후와후와"))
+                    .andExpect(jsonPath("$.category").value("CHINESE"));
         }
 
         @Test
@@ -364,8 +365,8 @@ class StoreApiTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.data.id").value(PENDING_STORE_ID.toString()))
-                    .andExpect(jsonPath("$.data.status").value("CLOSED"));
+                    .andExpect(jsonPath("$.id").value(PENDING_STORE_ID.toString()))
+                    .andExpect(jsonPath("$.status").value("CLOSED"));
         }
 
         @Test
@@ -420,8 +421,8 @@ class StoreApiTest {
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.data.id").value(NON_PENDING_STORE_ID.toString()))
-                    .andExpect(jsonPath("$.data.status").value("OPENED"));
+                    .andExpect(jsonPath("$.id").value(NON_PENDING_STORE_ID.toString()))
+                    .andExpect(jsonPath("$.status").value("OPENED"));
         }
 
         @Test
