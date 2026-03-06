@@ -8,8 +8,8 @@ import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +21,7 @@ import java.util.UUID;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+//    private final StoreReadService storeReadService;
 
     public OrderResponse createOrder(UUID userId, OrderCreateRequest request) {
         return null;
@@ -32,13 +33,19 @@ public class OrderService {
         return OrderDetailResponse.from(order);
     }
 
-    public Page<OrderResponse> getOrdersHistory(UUID orderId, UUID userId, Pageable pageable) {
+    public Slice<OrderResponse> getOrdersHistory(UUID orderId, UUID userId, Pageable pageable) {
         return orderRepository.findByIdAndUserIdAndIsDeletedFalse(orderId, userId, pageable)
                 .map(OrderResponse::from);
     }
 
-    public Page<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, Pageable pageable) {
-        //TODO 받아온 storeId와 로그인된 userId가 같은지 검증해야함 - 성원님이랑 상의해볼 것
-        return orderRepository.findByUserIdAndIsDeletedFalse(userId, pageable);
+    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, String email, Pageable pageable) {
+        /**
+         * TODO 검증 pull받으면 활성화 할 것!
+         * storeReadService.isOwnedStore(storeId, email);
+         */
+
+        // 가게에 들어온 주문 요청목록
+        return orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable)
+                .map(OrderResponse::from);
     }
 }

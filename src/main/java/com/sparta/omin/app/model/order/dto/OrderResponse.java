@@ -9,14 +9,14 @@ import java.util.UUID;
 public record OrderResponse(
         UUID orderId,
         OrderStatus orderStatus,
-//        BigDecimal totalPrice,
+        double totalPrice,
         LocalDateTime createdAt
 ) {
     public static OrderResponse from(Order order) {
         return new OrderResponse(
                 order.getId(),
                 order.getStatus(),
-//                totalPrice,
+                order.getTotalPrice(),
                 order.getCreatedAt()
         );
     }
