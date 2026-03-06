@@ -52,7 +52,7 @@ public class Order extends BaseEntity {
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @Column(name = "total_price")
-    private double totalPrice; // 0306
+    private double totalPrice;
 
     public static Order create(User user,
                                Store store,
