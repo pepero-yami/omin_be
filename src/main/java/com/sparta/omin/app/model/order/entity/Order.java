@@ -49,6 +49,9 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
+    @Column(name = "total_price")
+    private double totalPrice;
+
     public static Order create(
             UUID userId,
             Store store,
