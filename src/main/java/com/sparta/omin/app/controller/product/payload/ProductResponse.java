@@ -6,13 +6,13 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public class ProductResponse {
-
-    private UUID id;
-    private String name;
-    private String description;
-    private Double price;
-    private ProductStatus status;
+public record ProductResponse(
+    UUID id,
+    String name,
+    String description,
+    Double price,
+    ProductStatus status
+) {
 
     public static ProductResponse from(ProductResult dto) {
         return ProductResponse.builder()
