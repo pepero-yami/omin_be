@@ -65,7 +65,16 @@ public enum ErrorCode {
     //주문 - 리뷰 에러,
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문이 존재하지 않습니다."),
     ORDER_NOT_COMPLETED(HttpStatus.BAD_REQUEST, "주문 완료 후에만 리뷰 작성이 가능합니다."),
-    ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다.");
-    private final HttpStatus status;
-    private final String description;
+    ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다."),
+
+	// store 에러
+	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),
+	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
+	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
+	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
+	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.")
+
+	;
+	private final HttpStatus status;
+	private final String description;
 }

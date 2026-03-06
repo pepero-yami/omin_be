@@ -1,5 +1,7 @@
 package com.sparta.omin.app.model.store.entity;
 
+import com.sparta.omin.app.model.store.code.Category;
+import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -61,8 +63,7 @@ public class Store extends BaseEntity {
 
     public void addImage(StoreImage storeImage) {
         images.add(storeImage);
-        storeImage.setStore(this);
-        storeImage.setSequence(images.size());
+        storeImage.mappingNewStoreImage(images.size(),this);
     }
 
     public void updateStore(UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
