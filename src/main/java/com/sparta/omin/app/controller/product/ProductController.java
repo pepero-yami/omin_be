@@ -39,6 +39,6 @@ public class ProductController {
         ProductCreateCommand command = request.toCommand();
         productService.createProduct(command, userId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("test");
+        return ResponseEntity.status(HttpStatus.CREATED).body("success");
     }
 }
