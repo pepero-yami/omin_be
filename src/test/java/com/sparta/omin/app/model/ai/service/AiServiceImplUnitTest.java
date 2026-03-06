@@ -23,7 +23,7 @@ class AiServiceImplUnitTest {
     private AiLogRepository aiLogRepository;
 
     @InjectMocks
-    private AiServiceImpl aiLogService;
+    private AiLogService aiLogService;
 
     @Test
     @DisplayName("save()호출 확인 및 AiLog 값 확인")
@@ -32,13 +32,12 @@ class AiServiceImplUnitTest {
         String input = "사용자 질문";
         String output = "AI 응답";
         RequestType requestType = RequestType.PRODUCT_DESCRIPTION;
-        String userEmail = "test@test.com";
         UUID userId = UUID.randomUUID();
 
         ArgumentCaptor<AiLog> captor = ArgumentCaptor.forClass(AiLog.class);
 
         // when
-        aiLogService.createAiLog(input, output, requestType, userEmail);
+        aiLogService.createAiLog(input, output, requestType, userId);
 
         // then
         verify(aiLogRepository, times(1)).save(captor.capture());
