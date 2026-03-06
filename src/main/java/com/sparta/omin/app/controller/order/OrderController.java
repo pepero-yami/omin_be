@@ -7,8 +7,8 @@ import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -35,9 +35,9 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<Page<OrderResponse>> getOrdersHistory(@PathVariable UUID orderId,
-                                                                   @AuthenticationPrincipal User user,
-                                                                   @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+    public ResponseEntity<Slice<OrderResponse>> getOrdersHistory(@PathVariable UUID orderId,
+                                                                 @AuthenticationPrincipal User user,
+                                                                 @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                    Pageable pageable) {
         return ResponseEntity.ok(orderService.getOrdersHistory(orderId, user.getId(), pageable));
     }
@@ -54,10 +54,10 @@ public class OrderController {
      * 사장님
      */
     @GetMapping
-    public ResponseEntity<Page<OrderResponse>> getOrdersByOwner(@RequestParam UUID storeId,
+    public ResponseEntity<Slice<OrderResponse>> getOrdersByOwner(@RequestParam UUID storeId,
                                                                 @AuthenticationPrincipal User user,
                                                                 @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                 Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByOwner(storeId, user.getId(), pageable));
+        return ResponseEntity.ok(orderService.getOrdersByOwner(storeId, user.getId(), user.getEmail(), pageable));
     }
 }
