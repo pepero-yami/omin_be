@@ -9,6 +9,8 @@ import java.util.UUID;
 public record OrderResponse(
         UUID orderId,
         OrderStatus orderStatus,
+        String userRequest,
+        String storeName,
         double totalPrice,
         LocalDateTime createdAt
 ) {
@@ -16,6 +18,8 @@ public record OrderResponse(
         return new OrderResponse(
                 order.getId(),
                 order.getStatus(),
+                order.getUserRequest(),
+                order.getStore().getName(),
                 order.getTotalPrice(),
                 order.getCreatedAt()
         );
