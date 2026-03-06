@@ -2,6 +2,7 @@ package com.sparta.omin.app.model.order.entity;
 
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.orderItem.entity.OrderItem;
+import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,8 +29,9 @@ public class Order extends BaseEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
-    @Column(name = "store_id", nullable = false, updatable = false)
-    private UUID storeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Store store;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
@@ -41,19 +43,22 @@ public class Order extends BaseEntity {
     @Column(name = "delivery_address", length = 100)
     private String deliveryAddress;
 
+    @Column(name = "delivery_address_detail", length = 100)
+    private String deliveryAddressDetail;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public static Order create(
             UUID userId,
-            UUID storeId,
+            Store store,
             String userRequest,
             String deliveryAddress
     ) {
         Order order = new Order();
 
         order.userId = userId;
-        order.storeId = storeId;
+        order.store = store;
         order.userRequest = userRequest;
         order.deliveryAddress = deliveryAddress;
         order.status = OrderStatus.PENDING;
