@@ -24,7 +24,6 @@ public record OrderDetailResponse(
                         order.getStore(),
                         order.getOrderItems(),
                         order.getTotalPrice()
-//                        order.getStatus()
                 )
         );
     }
@@ -37,7 +36,6 @@ public record OrderDetailResponse(
             String userRequest,
             List<OrderItemInfo> orderItems,
             double totalPrice
-//            OrderStatus orderStatus
     ) {
         public static OrderDetailsData from(
                 Order order,
@@ -58,7 +56,6 @@ public record OrderDetailResponse(
                             .map(OrderItemInfo::from)
                             .toList(),
                     totalPrice
-//                    orderStatus
             );
         }
     }
