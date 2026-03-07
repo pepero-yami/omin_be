@@ -73,4 +73,15 @@ public class OrderController {
                                                                  Pageable pageable) {
         return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), pageable));
     }
+
+    //FIXME 리스너 사용 확정이면 이 부분 삭제!
+//    //테스트용 - 주문 상태 강제 변경 API
+//    @PatchMapping("/test/orders/{orderId}/status")
+//    public ResponseEntity<String> updateOrderStatusForTest(
+//            @PathVariable UUID orderId,
+//            @RequestParam OrderStatus status) {
+//        Order order = orderService.getOrderEntity(orderId);
+//        order.updateStatus(status);
+//        return ResponseEntity.ok("주문 상태가 " + status + "(으)로 변경되었습니다.");
+//    }
 }

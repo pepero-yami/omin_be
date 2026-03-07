@@ -1,8 +1,11 @@
 package com.sparta.omin.app.model.payment.service;
 
+import com.sparta.omin.app.model.order.dto.OrderInternalDto;
+import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.payment.dto.PaymentResponse;
 import com.sparta.omin.app.model.payment.entity.Payment;
 import com.sparta.omin.app.model.payment.entity.PaymentStatus;
+import com.sparta.omin.app.model.payment.event.PaymentCanceledEvent;
 import com.sparta.omin.app.model.payment.event.PaymentCompletedEvent;
 import com.sparta.omin.app.model.payment.repos.PaymentRepository;
 import com.sparta.omin.common.error.OminBusinessException;
@@ -21,23 +24,26 @@ import java.util.UUID;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final OrderService orderService;
     private final ApplicationEventPublisher eventPublisher;
-
-    @Transactional(readOnly = true)
-    public PaymentResponse getPayment(UUID orderId, UUID userId) {
-        Payment payment = paymentRepository.findByOrderIdAndUserIdAndIsDeletedFalse(orderId, userId)
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
-        return PaymentResponse.from(payment);
-    }
 
     // 1. 결제 요청 (READY 상태 생성)
     @Transactional
     public PaymentResponse requestPayment(UUID orderId, UUID userId, double amount) {
-        // 이미 진행 중인 결제가 있는지 확인
+
+        // 1) 주문 정보 및 소유권 확인 - 엔티티 대신 DTO를 받아옴(MSA)
+        OrderInternalDto order = orderService.getOrderForPayment(orderId);
+
+        // 본인 주문 확인 (Dto의 정보를 활용)
+        if (!order.userId().equals(userId)) {
+            throw new OminBusinessException(ErrorCode.ORDER_USER_MISMATCH);
+        }
+
+        // 2) 중복 결제 요청 확인 (멱등성 - 이미 성공한 내역이 있는 경우)
         paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)
                 .ifPresent(p -> {
-                    if(p.getPaymentStatus() == PaymentStatus.SUCCESS) {
-                        throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR, "이미 결제가 완료된 주문입니다.");
+                    if (p.getPaymentStatus() == PaymentStatus.SUCCESS) {
+                        throw new OminBusinessException(ErrorCode.PAYMENT_ALREADY_COMPLETED); // 이미 완료된 결제
                     }
                 });
 
@@ -47,46 +53,63 @@ public class PaymentService {
 
     // 2. 결제 승인 (Toss 결제 완료 후 호출됨)
     @Transactional
-    public PaymentResponse confirmPayment(UUID orderId, String paymentKey, double amount) {
+    public PaymentResponse confirmPayment(UUID orderId, String paymentKey, double amount, UUID userId) {
         Payment payment = paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)
-                .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        if (payment.getPaymentStatus() != PaymentStatus.READY) {
-            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR, "결제 대기 상태가 아닙니다."); //FIXME 에러코드 추가하기
+        // 1) 결제 정보 소유권(권한) 확인
+        if (!payment.getUserId().equals(userId)) {
+            throw new OminBusinessException(ErrorCode.PAYMENT_UNAUTHORIZED);
         }
 
-        // 실제 연동은 안 하지만 금액 검증은 일단 넣음
+        // 2) 결제 가능 상태 확인 (READY가 아닌 경우)
+        if (payment.getPaymentStatus() != PaymentStatus.READY) {
+            throw new OminBusinessException(ErrorCode.PAYMENT_INVALID_STATUS);
+        }
+
+        // 3) 금액 검증 (토스에서 넘어온 금액과 DB의 주문 금액 대조)
         if (payment.getTotalPrice() != amount) {
             payment.fail();
-            throw new ApiException(ErrorCode.INTERNAL_SERVER_ERROR, "결제 금액이 일치하지 않습니다.");
+            throw new OminBusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
         }
 
+        // 승인 처리
         payment.confirm(paymentKey);
 
-        // 이벤트 발행 (MSA 대비 - 주문 서비스에서 이 이벤트를 구독하여 상태 변경) - 이벤트 기반 비동기 지향!
+        // 이벤트 발행 (OrderEventListener가 이를 받아 주문 상태를 변경함)
         // 결제 서비스가 주문 서비스를 직접 호출하지 않고 PaymentCompletedEvent를 던짐 -> 나중에 MSA로 전환할 때 코드 수정 없이 메시지 브큐(Kafka 등)만 연결하면 되는 구조라고 합니다
-        eventPublisher.publishEvent(new PaymentCompletedEvent(orderId, payment.getUserId(), amount));
+        eventPublisher.publishEvent(new PaymentCompletedEvent(orderId, userId, amount));
 
+        return PaymentResponse.from(payment);
+    }
+
+    @Transactional(readOnly = true)
+    public PaymentResponse getPayment(UUID orderId, UUID userId) {
+        Payment payment = paymentRepository.findByOrderIdAndUserIdAndIsDeletedFalse(orderId, userId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
         return PaymentResponse.from(payment);
     }
 
     @Transactional
     public PaymentResponse cancelPayment(UUID paymentId, UUID userId) {
         Payment payment = paymentRepository.findByIdAndIsDeletedFalse(paymentId)
-                .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
 
+        // 본인 확인
         if (!payment.getUserId().equals(userId)) {
-            throw new ApiException(ErrorCode.PAYMENT_UNAUTHORIZED);
+            throw new OminBusinessException(ErrorCode.PAYMENT_UNAUTHORIZED);
         }
 
+        // 이미 취소된 경우 체크
         if (payment.getPaymentStatus() == PaymentStatus.CANCELED) {
-            throw new ApiException(ErrorCode.PAYMENT_ALREADY_CANCELED);
+            throw new OminBusinessException(ErrorCode.PAYMENT_ALREADY_CANCELED);
         }
 
+        // 결제 상태 변경
         payment.cancel();
 
-        // TODO: 결제 취소 시 주문 상태도 같이 취소되는 로직 (주문 상태 업데이트 이벤트 발행 등) - 필요할까?
-        // eventPublisher.publishEvent(new PaymentCanceledEvent(payment.getOrderId()));
+        // 결제 취소 이벤트 발행 -> 주문 리스너가 듣고 주문을 취소함
+        eventPublisher.publishEvent(new PaymentCanceledEvent(payment.getOrderId(), userId));
 
         return PaymentResponse.from(payment);
     }
