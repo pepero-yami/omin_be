@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.sparta.omin.app.model.ai.repos.AiLogRepository;
 import com.sparta.omin.app.model.user.service.UserReadService;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,8 @@ import org.springframework.ai.chat.prompt.Prompt;
 @ExtendWith(MockitoExtension.class)
 class AiServiceImplTest {
 
-    private AiServiceImpl aiService;
+    private AiService aiService;
+    private AiLogService aiLogService;
 
     @Mock
     private ChatClient chatClient;
@@ -36,7 +38,7 @@ class AiServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        aiService = new AiServiceImpl(chatClient, aiLogRepository, userReadService);
+        aiService = new AiService(chatClient, aiLogService);
     }
 
     @Test
@@ -53,7 +55,7 @@ class AiServiceImplTest {
         when(responseSpec.content()).thenReturn(expectedContent);
 
         // 2. When
-        String result = aiService.generateMenuDescription(userPrompt, "test@test.com");
+        String result = aiService.generateMenuDescription(userPrompt, UUID.randomUUID());
 
         // 3. Then
         // 결과값 검증
