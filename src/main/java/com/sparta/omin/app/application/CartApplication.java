@@ -6,7 +6,7 @@ import com.sparta.omin.app.model.cart.service.RCartService;
 import com.sparta.omin.app.model.product.service.ProductReadService;
 import com.sparta.omin.app.model.product.code.ProductStatus;
 import com.sparta.omin.app.model.product.entity.Product;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -40,13 +40,13 @@ public class CartApplication {
 
 	private void validateProductStatus(Product product) {
 		if (product.getStatus() != ProductStatus.ON_SALE) {
-			throw new ApiException(ErrorCode.PRODUCT_IS_NOT_AVAILABLE_FOR_SALE);
+			throw new OminBusinessException(ErrorCode.PRODUCT_IS_NOT_AVAILABLE_FOR_SALE);
 		}
 	}
 
 	private void validateCartStore(RCart cart, UUID requestStoreId) {
 		if (!cart.getStoreId().equals(requestStoreId)) {
-			throw new ApiException(ErrorCode.CART_STORE_CONFLICT);
+			throw new OminBusinessException(ErrorCode.CART_STORE_CONFLICT);
 		}
 	}
 
