@@ -24,11 +24,11 @@ import java.util.UUID;
 public class AddressService {
 
     private final AddressRepository addressRepository;
-    private final RegionRepository regionRepository;
+    private final RegionRepository regionRepository; //FIXME
     private final KakaoAddressClient kakaoAddressClient;
 
     @Transactional
-    public AddressResponse create(UUID userId, AddressCreateRequest request) {
+    public AddressResponse createAddress(UUID userId, AddressCreateRequest request) {
         String rawRoadAddress = request.roadAddress().trim();
         String rawDetail = request.shippingDetailAddress().trim();
 
@@ -84,7 +84,7 @@ public class AddressService {
     }
 
     @Transactional
-    public AddressResponse update(UUID userId, UUID addressId, AddressUpdateRequest request) {
+    public AddressResponse updateAddress(UUID userId, UUID addressId, AddressUpdateRequest request) {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
 
@@ -132,7 +132,7 @@ public class AddressService {
     }
 
     @Transactional
-    public void delete(UUID userId, UUID addressId) {
+    public void deleteAddress(UUID userId, UUID addressId) {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
 
@@ -144,7 +144,7 @@ public class AddressService {
     }
 
     @Transactional
-    public AddressResponse setDefault(UUID userId, UUID addressId) {
+    public AddressResponse setDefaultAddress(UUID userId, UUID addressId) {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
 
