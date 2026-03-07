@@ -80,4 +80,11 @@ public class RegionService {
                 .map(r -> RegionResponse.of(r.getId(), r.getAddress()))
                 .toList();
     }
+
+    //주소 문자열로 Region ID 조회 - Address 서비스 등 외부 도메인에서 Region 정보가 필요할 때 사용!
+    public UUID getRegionIdByAddress(String address) {
+        return regionRepository.findByAddressAndIsDeletedFalse(address)
+                .map(Region::getId)
+                .orElseThrow(() -> new ApiException(ErrorCode.ADDRESS_REGION_NOT_FOUND));
+    }
 }
