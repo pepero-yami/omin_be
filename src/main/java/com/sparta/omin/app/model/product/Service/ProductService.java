@@ -2,6 +2,7 @@ package com.sparta.omin.app.model.product.Service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.app.model.store.service.StoreReadService;
 import com.sparta.omin.common.error.constants.ErrorCode;
