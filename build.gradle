@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    //postgis
+    implementation 'org.hibernate.orm:hibernate-spatial'
+
     //redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 

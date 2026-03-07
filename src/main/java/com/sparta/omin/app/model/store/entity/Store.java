@@ -11,10 +11,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
+import org.locationtech.jts.geom.Point;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -32,9 +33,6 @@ public class Store extends BaseEntity {
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 
-    @Column(name = "region_id", nullable = false)
-    private UUID regionId;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
     private Category category;
@@ -43,37 +41,42 @@ public class Store extends BaseEntity {
     private String name;
 
     @Column(name = "road_address", nullable = false)
-    private String roadAddress;                                                    //도로명주소
+    private String roadAddress;
 
     @Column(name = "detail_address", nullable = false, length = 100)
-    private String detailAddress;                                                  //상세주소
+    private String detailAddress;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private Status status = Status.PENDING;
 
-    @Column(name = "latitude", nullable = false, precision = 10, scale = 6)
-    private BigDecimal latitude;                                                    //위도
-
-    @Column(name = "longitude", nullable = false, precision = 10, scale = 6)
-    private BigDecimal longitude;                                                   //경도
+    @Column(name = "coordinates", columnDefinition = "geography(Point, 4326)", nullable = false)
+    private Point coordinates;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<StoreImage> images = new ArrayList<>();
+    private List<StoreImage> images = new ArrayList<>();
 
     public void addImage(StoreImage storeImage) {
         images.add(storeImage);
-        storeImage.mappingNewStoreImage(images.size(),this);
+        storeImage.mappingNewStoreImage(images.size(), this);
     }
 
-    public void updateStore(UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
-        this.regionId = regionId;
+    public void addNewImage(String imageUrl, int sequence) {
+        StoreImage storeImage = new StoreImage(imageUrl);
+        storeImage.mappingNewStoreImage(sequence, this);
+        images.add(storeImage);
+    }
+
+    public void removeImagesNotIn(Set<UUID> keepIds) {
+        images.removeIf(img -> !keepIds.contains(img.getId()));
+    }
+
+    public void updateStore(Category category, String name, String roadAddress, String detailAddress, Point coordinates) {
         this.category = category;
         this.name = name;
         this.roadAddress = roadAddress;
         this.detailAddress = detailAddress;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.coordinates = coordinates;
     }
 
     public void updateStatus(Status status) {
@@ -81,14 +84,12 @@ public class Store extends BaseEntity {
     }
 
     @Builder
-    public Store(UUID ownerId, UUID regionId, Category category, String name, String roadAddress, String detailAddress, BigDecimal latitude, BigDecimal longitude) {
+    public Store(UUID ownerId, Category category, String name, String roadAddress, String detailAddress, Point coordinates) {
         this.ownerId = ownerId;
-        this.regionId = regionId;
         this.category = category;
         this.name = name;
         this.roadAddress = roadAddress;
         this.detailAddress = detailAddress;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.coordinates = coordinates;
     }
 }
