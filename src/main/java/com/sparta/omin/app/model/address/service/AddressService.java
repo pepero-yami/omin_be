@@ -7,8 +7,7 @@ import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.address.repos.AddressRepository;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient.KakaoAddressResult;
-import com.sparta.omin.app.model.region.entity.Region;
-import com.sparta.omin.app.model.region.repos.RegionRepository;
+import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ import java.util.UUID;
 public class AddressService {
 
     private final AddressRepository addressRepository;
-    private final RegionRepository regionRepository; //FIXME
+    private final RegionService regionService;
     private final KakaoAddressClient kakaoAddressClient;
 
     @Transactional
@@ -34,9 +33,8 @@ public class AddressService {
 
         KakaoAddressResult kakao = kakaoAddressClient.searchAddress(rawRoadAddress);
 
-        // 단일 주소 조회로 간결화
-        Region region = regionRepository.findByAddressAndIsDeletedFalse(kakao.depth3Address())
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_REGION_NOT_FOUND));
+        //RegionService를 통해 ID만 가져옴 (도메인 격리)
+        UUID regionId = regionService.getRegionIdByAddress(kakao.depth3Address());
 
         long count = addressRepository.countByUserIdAndIsDeletedFalse(userId);
 
@@ -45,7 +43,7 @@ public class AddressService {
 
         // 상세주소까지 동일해야만 중복
         if (addressRepository.existsByUserIdAndRegionIdAndRoadAddressAndShippingDetailAddressAndIsDeletedFalse(
-                userId, region.getId(), rawRoadAddress, rawDetail
+                userId, regionId, rawRoadAddress, rawDetail
         )) {
             throw new OminBusinessException(ErrorCode.ADDRESS_DUPLICATED);
         }
@@ -58,7 +56,7 @@ public class AddressService {
 
         Address saved = addressRepository.save(Address.create(
                 userId,
-                region.getId(),
+                regionId,
                 request.nickname().trim(),
                 rawRoadAddress,
                 rawDetail,
@@ -93,12 +91,12 @@ public class AddressService {
 
         KakaoAddressResult kakao = kakaoAddressClient.searchAddress(rawRoadAddress);
 
-        Region region = regionRepository.findByAddressAndIsDeletedFalse(kakao.depth3Address())
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_REGION_NOT_FOUND));
+        // RegionService 활용
+        UUID regionId = regionService.getRegionIdByAddress(kakao.depth3Address());
 
         // 수정 시 -> 자기 자신 제외하고 상세주소까지 동일이면 중복
         if (addressRepository.existsByUserIdAndRegionIdAndRoadAddressAndShippingDetailAddressAndIsDeletedFalseAndIdNot(
-                userId, region.getId(), rawRoadAddress, rawDetail, addressId
+                userId, regionId, rawRoadAddress, rawDetail, addressId
         )) {
             throw new OminBusinessException(ErrorCode.ADDRESS_DUPLICATED);
         }
@@ -119,7 +117,7 @@ public class AddressService {
         }
 
         address.update(
-                region.getId(),
+                regionId,
                 request.nickname().trim(),
                 rawRoadAddress,
                 rawDetail,
