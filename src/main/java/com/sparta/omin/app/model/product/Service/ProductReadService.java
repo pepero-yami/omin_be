@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.exceptions.CommonException;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,5 +38,18 @@ public class ProductReadService {
         return productRepository.findByIdAndIsDeletedFalse(productId)
             .map(ProductSummaryResult::from)
             .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
+    }
+
+    /**
+     * 매장에 등록되어있는 메뉴들의 목록을 반환합니다.<br>
+     * 품절된 메뉴의 경우, UI에서 "품절되었습니다"메세지가 뜨는 것을 가정하여, 포함하여 반환합니다.
+     * @param storeId
+     * @return {@code List<ProductResult>}
+     */
+    public List<ProductResult> getProducts(UUID storeId) {
+        return productRepository.findByStoreIdAndIsDeletedFalse(storeId)
+            .stream()
+            .map(ProductResult::from)
+            .toList();
     }
 }
