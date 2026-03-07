@@ -47,6 +47,7 @@ public class ProductReadService {
      * @return {@code List<ProductResult>}
      */
     public List<ProductResult> getProducts(UUID storeId) {
+        //TODO : 존재하는 가게인지 검증하는 로직 작성
         return productRepository.findByStoreIdAndIsDeletedFalse(storeId)
             .stream()
             .map(ProductResult::from)
