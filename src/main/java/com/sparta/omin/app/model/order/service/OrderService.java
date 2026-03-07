@@ -5,7 +5,7 @@ import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +28,7 @@ public class OrderService {
 
     public OrderDetailResponse getOrderDetail(UUID orderId) {
         Order order = orderRepository.findByIdAndIsDeletedFalse(orderId)
-                .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
         return OrderDetailResponse.from(order);
     }
 

@@ -36,28 +36,47 @@ public class Payment extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "payment_key")
+    private String paymentKey;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(name = "total_price", nullable = false)
-    private int totalPrice;
+    private double totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private PaymentStatus paymentStatus;
 
-
-    public static Payment create(UUID orderId, PaymentMethod paymentMethod, int totalPrice, UUID userId) {
+    // 결제 초기 생성 (READY)
+    public static Payment create(UUID orderId, UUID userId, double totalPrice) {
         Payment payment = new Payment();
-
         payment.orderId = orderId;
-        payment.paymentMethod = paymentMethod;
+        payment.userId = userId;
         payment.totalPrice = totalPrice;
+        payment.paymentMethod = PaymentMethod.CREDIT_CARD;
         payment.paymentStatus = PaymentStatus.READY;
         payment.isDeleted = false;
 
         return payment;
+    }
+
+    // 승인 완료 처리
+    public void confirm(String paymentKey) {
+        this.paymentKey = paymentKey;
+        this.paymentStatus = PaymentStatus.SUCCESS;
+    }
+
+    // 결제 실패 처리
+    public void fail() {
+        this.paymentStatus = PaymentStatus.FAILED;
+    }
+
+    // 결제 취소 처리
+    public void cancel() {
+        this.paymentStatus = PaymentStatus.CANCELED;
     }
 
     public void softDelete() {
