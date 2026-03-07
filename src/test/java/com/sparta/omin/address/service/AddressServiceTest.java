@@ -8,7 +8,7 @@ import com.sparta.omin.app.model.address.repos.AddressRepository;
 import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.entity.Region;
-import com.sparta.omin.app.model.region.repos.RegionRepository;
+import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import static org.mockito.BDDMockito.given;
 class AddressServiceTest {
 
     @Mock private AddressRepository addressRepository;
-    @Mock private RegionRepository regionRepository;
+    @Mock private RegionService regionService;
     @Mock private KakaoAddressClient kakaoAddressClient;
     @InjectMocks private AddressService addressService;
 
@@ -45,8 +45,13 @@ class AddressServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        region = Region.create("서울 강남구 역삼동");
-        kakaoResult = new KakaoAddressClient.KakaoAddressResult("서울 강남구 역삼동", new BigDecimal("37.5"), new BigDecimal("127.1"));
+        // KakaoAddressResult 생성자에 roadAddress(정제주소) 필드 추가됨
+        kakaoResult = new KakaoAddressClient.KakaoAddressResult(
+                "서울 강남구 역삼동",
+                "서울 강남구 역삼로 123", // 추가된 필드
+                new BigDecimal("37.5"),
+                new BigDecimal("127.1")
+        );
     }
 
     @Nested
@@ -153,7 +158,7 @@ class AddressServiceTest {
 
     private void mockKakaoAndRegion() {
         given(kakaoAddressClient.searchAddress(any())).willReturn(kakaoResult);
-        given(regionRepository.findByAddressAndIsDeletedFalse(any())).willReturn(Optional.of(region));
+        given(regionService.getRegionIdByAddress(any())).willReturn(UUID.randomUUID());
     }
 
     private Address createMockAddress(boolean isDefault) {
