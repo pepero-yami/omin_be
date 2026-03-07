@@ -32,6 +32,7 @@ public class KakaoAddressClient {
 
     public record KakaoAddressResult(
             String depth3Address,
+            String roadAddress,     // 정규화된 도로명 주소 - 중간의 공백2번 등 오타 거르기 위해
             BigDecimal latitude,
             BigDecimal longitude
     ) {}
@@ -43,11 +44,18 @@ public class KakaoAddressClient {
             throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
 
+        // DB 조회용 - 법정동
         String depth3 = buildDepth3(first.getAddress());
+
+        // 카카오가 정제해준 표준 도로명 주소 (공백 등이 정리된 상태로 돌아옴!) - 도로명주소 있으면 도로명주소, 아니면 지번주소
+        String normalizedRoadAddress = (first.getRoadAddress() != null)
+                ? first.getRoadAddress().getAddressName()
+                : first.getAddress().getAddressName();
+
         BigDecimal longitude = parseBigDecimal(first.getX(), "longitude(x)");
         BigDecimal latitude = parseBigDecimal(first.getY(), "latitude(y)");
 
-        return new KakaoAddressResult(depth3, latitude, longitude);
+        return new KakaoAddressResult(depth3, normalizedRoadAddress, latitude, longitude);
     }
 
     //Region이 사용 중인 기존 메서드 - 주소 문자열만 반환
