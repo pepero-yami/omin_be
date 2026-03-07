@@ -85,6 +85,6 @@ public class RegionService {
     public UUID getRegionIdByAddress(String address) {
         return regionRepository.findByAddressAndIsDeletedFalse(address)
                 .map(Region::getId)
-                .orElseThrow(() -> new ApiException(ErrorCode.ADDRESS_REGION_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_REGION_NOT_FOUND));
     }
 }

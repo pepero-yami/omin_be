@@ -3,7 +3,7 @@ package com.sparta.omin.app.model.payment.service;
 import com.sparta.omin.app.model.payment.dto.PaymentResponse;
 import com.sparta.omin.app.model.payment.entity.Payment;
 import com.sparta.omin.app.model.payment.repos.PaymentRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,7 +20,7 @@ public class PaymentService {
 
     public PaymentResponse getPayment(UUID orderId, UUID userId) {
         Payment payment = paymentRepository.findByOrderIdAndUserIdAndIsDeletedFalse(orderId, userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
         return PaymentResponse.from(payment);
     }
 
@@ -44,7 +44,7 @@ public class PaymentService {
 
     public PaymentResponse getPaymentByAdmin(UUID paymentId) {
         Payment payment = paymentRepository.findByIdAndIsDeletedFalse(paymentId)
-                .orElseThrow(() -> new ApiException(ErrorCode.PAYMENT_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
         return PaymentResponse.from(payment);
     }
 }
