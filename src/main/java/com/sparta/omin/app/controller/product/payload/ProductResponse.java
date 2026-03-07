@@ -16,11 +16,11 @@ public record ProductResponse(
 
     public static ProductResponse from(ProductResult dto) {
         return ProductResponse.builder()
-            .id(dto.getId())
-            .name(dto.getName())
-            .description(dto.getDescription())
-            .price(dto.getPrice())
-            .status(dto.getStatus())
+            .id(dto.id())
+            .name(dto.name())
+            .description(dto.description())
+            .price(dto.price())
+            .status(dto.status())
             .build();
     }
 }
