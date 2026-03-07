@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.cart.entity.RCart;
 import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
 import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
 import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
+import com.sparta.omin.app.model.order.dto.OrderInternalDto;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
@@ -103,4 +104,27 @@ public class OrderService {
     }
 
 
+
+    // payment 서비스에서 주문 존재 여부와 데이터를 확인하기 위한 메서드
+    public Order getOrderEntity(UUID orderId) {
+        return orderRepository.findByIdAndIsDeletedFalse(orderId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
+    }
+
+    public OrderInternalDto getOrderForPayment(UUID orderId) {
+        Order order = getOrderEntity(orderId); // 기존에 만든 엔티티 조회 메서드 활용
+        return new OrderInternalDto(
+                order.getId(),
+                order.getUser().getId(),
+                order.getTotalPrice()
+        );
+    }
+
+    //FIXME 리스너 사용 확정이면 이 부분 삭제!
+//    // 테스트 API 및 리스너에서 상태 변경을 위해 호출
+//    @Transactional
+//    public void updateOrderStatus(UUID orderId, OrderStatus status) {
+//        Order order = getOrderEntity(orderId);
+//        order.updateStatus(status);
+//    }
 }
