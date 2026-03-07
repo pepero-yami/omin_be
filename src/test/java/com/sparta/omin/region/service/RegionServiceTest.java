@@ -6,7 +6,7 @@ import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -73,7 +73,7 @@ class RegionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> regionService.createRegion(request))
-                    .isInstanceOf(ApiException.class)
+                    .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REGION_ALREADY_EXISTS);
         }
     }
@@ -90,7 +90,7 @@ class RegionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> regionService.getRegion(id))
-                    .isInstanceOf(ApiException.class)
+                    .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.REGION_NOT_FOUND);
         }
 

@@ -2,7 +2,8 @@ package com.sparta.omin.app.model.ai.service;
 
 import com.sparta.omin.app.model.ai.code.RequestType;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import com.sparta.omin.common.error.exceptions.CommonException;
+import com.sparta.omin.common.error.exceptions.OpenAiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -26,7 +27,7 @@ public class AiService {
 
         // 입력 검증
         if(!StringUtils.hasText(userPrompt)) {
-            throw new CommonException(ErrorCode.INVALID_AI_PROMPT);
+            throw new OminBusinessException(ErrorCode.INVALID_AI_PROMPT);
         }
 
         String sysPrompt = """
@@ -68,16 +69,16 @@ public class AiService {
             response = chatClient.prompt(prompt).call().content();
         } catch (ResourceAccessException e) {
             log.error("[ERROR] Resource access failed (maybe timeout)", e);
-            throw new CommonException(ErrorCode.AI_TIMEOUT, e);
+            throw new OpenAiException(ErrorCode.AI_TIMEOUT, e);
         } catch (Exception e) {
             log.error("[ERROR] API call failed", e);
-            throw new CommonException(ErrorCode.AI_GENERATION_FAILED, e);
+            throw new OpenAiException(ErrorCode.AI_GENERATION_FAILED, e);
         }
 
         // 빈 응답 처리
         if (!StringUtils.hasText(response)) {
             log.warn("[WARN] Received empty response from OpenAI");
-            throw new CommonException(ErrorCode.AI_EMPTY_RESPONSE);
+            throw new OpenAiException(ErrorCode.AI_EMPTY_RESPONSE);
         }
 
         // 로그 저장

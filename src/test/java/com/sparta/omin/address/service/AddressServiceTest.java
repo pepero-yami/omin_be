@@ -9,7 +9,7 @@ import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.repos.RegionRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -85,7 +85,7 @@ class AddressServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> addressService.create(userId, request))
-                    .isInstanceOf(ApiException.class)
+                    .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DUPLICATED);
         }
     }
@@ -106,7 +106,7 @@ class AddressServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> addressService.update(userId, addressId, request))
-                    .isInstanceOf(ApiException.class)
+                    .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_MUST_EXIST);
         }
 
@@ -123,7 +123,7 @@ class AddressServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> addressService.delete(userId, addressId))
-                    .isInstanceOf(ApiException.class)
+                    .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_CANNOT_DELETE);
         }
     }

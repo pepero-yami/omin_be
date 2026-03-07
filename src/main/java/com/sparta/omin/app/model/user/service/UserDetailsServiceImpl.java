@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.user.service;
 
 import com.sparta.omin.app.model.user.repository.UserRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +17,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		return userRepository.findByEmailAndIsDeletedFalse(username).orElseThrow(
-			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
+			() -> new OminBusinessException(ErrorCode.USER_NOT_FOUND)
 		);
 	}
 }

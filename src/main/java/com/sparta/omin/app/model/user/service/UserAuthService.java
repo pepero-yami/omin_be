@@ -7,16 +7,12 @@ import com.sparta.omin.app.model.user.dto.response.TokenResponse;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.app.security.jwt.JwtUtil;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.concurrent.TimeUnit;
-import com.sparta.omin.common.util.AuditUserProvider;
-import com.sparta.omin.common.util.AuditUserProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +31,7 @@ public class UserAuthService {
 	@Transactional
 	public UserDto register(UserRegister.Request request) {
 		if (userRepository.existsByEmail(request.email())) {
-			throw new ApiException(ErrorCode.ALREADY_EMAIL_EXIST);
+			throw new OminBusinessException(ErrorCode.ALREADY_EMAIL_EXIST);
 		}
 		return UserDto.from(userRepository.save(User.builder()
 			.name(request.name())
@@ -47,10 +43,10 @@ public class UserAuthService {
 
 	public TokenResponse login(UserLoginRequest request) {
 		User user = userRepository.findByEmailAndIsDeletedFalse(request.email()).orElseThrow(
-			() -> new ApiException(ErrorCode.USER_NOT_FOUND)
+			() -> new OminBusinessException(ErrorCode.USER_NOT_FOUND)
 		);
 		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			throw new ApiException(ErrorCode.INVALID_PASSWORD);
+			throw new OminBusinessException(ErrorCode.INVALID_PASSWORD);
 		}
 		TokenResponse tokenResponse = jwtUtil.generateToken(user.getId(), user.getEmail(),
 			user.getRole().name());
