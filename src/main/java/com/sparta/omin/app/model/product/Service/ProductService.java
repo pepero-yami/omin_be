@@ -2,12 +2,11 @@ package com.sparta.omin.app.model.product.Service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
-import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.app.model.store.service.StoreReadService;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import com.sparta.omin.common.error.exceptions.CommonException;
 import java.util.UUID;
+import com.sparta.omin.common.error.OminBusinessException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +31,7 @@ public class ProductService {
     ) {
         // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(command.storeId(), userId)) {
-            throw new CommonException(ErrorCode.STORE_ACCESS_DENIED);
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
 
         // AI 설명 생성 옵션이 TRUE인 경우 AI 설명 생성
@@ -52,7 +51,7 @@ public class ProductService {
                 .build()
             );
         } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new OminBusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -8,7 +8,7 @@ import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.app.model.user.service.UserAuthService;
 import com.sparta.omin.app.security.jwt.JwtUtil;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
@@ -88,7 +88,7 @@ class UserAuthServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> userAuthService.register(request))
-				.isInstanceOf(ApiException.class)
+				.isInstanceOf(OminBusinessException.class)
 				.hasMessageContaining(ErrorCode.ALREADY_EMAIL_EXIST.getDescription());
 		}
 	}
@@ -147,9 +147,9 @@ class UserAuthServiceTest {
 			given(passwordEncoder.matches(request.password(), user.getPassword())).willReturn(false);
 
 			// when & then
-			assertThatExceptionOfType(ApiException.class)
+			assertThatExceptionOfType(OminBusinessException.class)
 					.isThrownBy(() -> userAuthService.login(request))
-					.extracting(ApiException::getErrorCode)
+					.extracting(OminBusinessException::getErrorCode)
 					.isEqualTo(ErrorCode.INVALID_PASSWORD)
 			;
 		}

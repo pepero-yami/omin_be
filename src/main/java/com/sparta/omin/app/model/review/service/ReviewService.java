@@ -10,7 +10,7 @@ import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.repos.StoreRatingStatRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
 import lombok.RequiredArgsConstructor;
@@ -37,29 +37,29 @@ public class ReviewService {
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
         UUID loginUserId = user.getId();
         // 이미지 개수 초과 예외
-        if (images != null && images.size() > 5) throw new ApiException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+        if (images != null && images.size() > 5) throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
         // 사용자가 요청한 주문 조회
         Order order = orderRepository.findById(request.orderId())
-                .orElseThrow(() -> new ApiException(ErrorCode.ORDER_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
         // 로그인된 사용자 자신의 주문이 아니라면 예외
-        if (!loginUserId.equals(order.getUser().getId())) throw new ApiException(ErrorCode.ORDER_USER_MISMATCH);
+        if (!loginUserId.equals(order.getUser().getId())) throw new OminBusinessException(ErrorCode.ORDER_USER_MISMATCH);
         // 사용자 자신의 가게라면 예외
         if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(loginUserId)) {
-            throw new ApiException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
+            throw new OminBusinessException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
         }
         // 주문 상태 COMPLETED 아니면 예외
-        if (!order.isCompleted()) throw new ApiException(ErrorCode.ORDER_NOT_COMPLETED);
+        if (!order.isCompleted()) throw new OminBusinessException(ErrorCode.ORDER_NOT_COMPLETED);
 
         // 주문일 + 2일 초과면 예외 --> status 변경시간 + 2일
         if (order.getCreatedAt().
                 plusDays(2).
                 isBefore(LocalDateTime.now())
         ) {
-            throw new ApiException(ErrorCode.REVIEW_PERIOD_EXPIRED);
+            throw new OminBusinessException(ErrorCode.REVIEW_PERIOD_EXPIRED);
         }
         // 이미 리뷰 작성했으면 예외
         if (reviewRepository.existsByOrder_IdAndIsDeletedFalse(order.getId()))
-            throw new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS);
+            throw new OminBusinessException(ErrorCode.REVIEW_ALREADY_EXISTS);
 
         // Review 생성
         Review newReview = Review.create(
@@ -92,7 +92,7 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public ReviewResponse getReview(UUID reviewId) {
-        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId).orElseThrow(() -> new ApiException(ErrorCode.REVIEW_NOT_FOUND));
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId).orElseThrow(() -> new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND));
         return ReviewResponse.from(review);
     }
 
