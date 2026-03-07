@@ -6,7 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
-
 import java.util.UUID;
 
 @Getter
@@ -21,43 +20,52 @@ public class Payment extends BaseEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    /**
-     * TODO 주문생성 - 결제실패 - 재결제시도 - 결제 성공시에는 (???) OneToMany가 맞을지도?!
-     * 현재 요구사항정의서는 상태코드를 바꾸기로 되어있는데, 그러면 실패이력은 안 남겨도되는지?
-     */
-
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "order_id", nullable = false)
-//    private Order order;
-
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
+    @Column(name = "payment_key")
+    private String paymentKey;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
     private PaymentMethod paymentMethod;
 
     @Column(name = "total_price", nullable = false)
-    private int totalPrice;
+    private double totalPrice;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private PaymentStatus paymentStatus;
 
-
-    public static Payment create(UUID orderId, PaymentMethod paymentMethod, int totalPrice, UUID userId) {
+    // 결제 초기 생성 (READY)
+    public static Payment create(UUID orderId, UUID userId, double totalPrice) {
         Payment payment = new Payment();
-
         payment.orderId = orderId;
-        payment.paymentMethod = paymentMethod;
+        payment.userId = userId;
         payment.totalPrice = totalPrice;
+        payment.paymentMethod = PaymentMethod.CREDIT_CARD;
         payment.paymentStatus = PaymentStatus.READY;
         payment.isDeleted = false;
-
         return payment;
+    }
+
+    // 승인 완료 처리
+    public void confirm(String paymentKey) {
+        this.paymentKey = paymentKey;
+        this.paymentStatus = PaymentStatus.SUCCESS;
+    }
+
+    // 결제 실패 처리
+    public void fail() {
+        this.paymentStatus = PaymentStatus.FAILED;
+    }
+
+    // 결제 취소 처리
+    public void cancel() {
+        this.paymentStatus = PaymentStatus.CANCELED;
     }
 
     public void softDelete() {
