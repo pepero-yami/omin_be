@@ -66,7 +66,7 @@ class AddressServiceTest {
             given(addressRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
             // When
-            AddressResponse response = addressService.create(userId, request);
+            AddressResponse response = addressService.createAddress(userId, request);
 
             // Then
             // 사용자는 false로 보냈지만, 첫 주소이므로 결과는 true여야 함!
@@ -84,7 +84,7 @@ class AddressServiceTest {
                     .willReturn(true);
 
             // When & Then
-            assertThatThrownBy(() -> addressService.create(userId, request))
+            assertThatThrownBy(() -> addressService.createAddress(userId, request))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DUPLICATED);
         }
@@ -105,7 +105,7 @@ class AddressServiceTest {
             mockKakaoAndRegion();
 
             // When & Then
-            assertThatThrownBy(() -> addressService.update(userId, addressId, request))
+            assertThatThrownBy(() -> addressService.updateAddress(userId, addressId, request))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_MUST_EXIST);
         }
@@ -122,7 +122,7 @@ class AddressServiceTest {
             given(addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)).willReturn(Optional.of(defaultAddress));
 
             // When & Then
-            assertThatThrownBy(() -> addressService.delete(userId, addressId))
+            assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_CANNOT_DELETE);
         }
@@ -143,7 +143,7 @@ class AddressServiceTest {
             given(addressRepository.findByUserIdAndIsDefaultTrueAndIsDeletedFalse(userId)).willReturn(Optional.of(oldDefaultAddress));
 
             // When
-            addressService.setDefault(userId, newDefaultId);
+            addressService.setDefaultAddress(userId, newDefaultId);
 
             // Then
             assertThat(newDefaultAddress.isDefault()).isTrue();
