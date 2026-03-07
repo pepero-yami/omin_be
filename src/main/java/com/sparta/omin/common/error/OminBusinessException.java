@@ -8,12 +8,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ApiException extends RuntimeException {
+public class OminBusinessException extends RuntimeException {
 
 	private ErrorCode errorCode;
 	private String message;
 
-	public ApiException(ErrorCode errorCode) {
+	public OminBusinessException(ErrorCode errorCode) {
 		super(errorCode.getDescription());
 		this.errorCode = errorCode;
 		this.message = errorCode.getDescription();

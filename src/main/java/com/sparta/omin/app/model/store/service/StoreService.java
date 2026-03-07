@@ -10,7 +10,7 @@ import com.sparta.omin.app.model.store.entity.StoreImage;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -47,14 +47,14 @@ public class StoreService {
     //단건조회
     public StoreResponse findStore(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         return StoreResponse.of(store);
     }
 
     @Transactional
     public StoreResponse modifyStore(UUID storeId, StoreUpdateRequest storeUpdateRequest, List<MultipartFile> newImages, UserDetails user) {
         Store savedStore = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, savedStore);
         savedStore.updateStore(storeUpdateRequest.regionId(), storeUpdateRequest.category(), storeUpdateRequest.name()
                 , storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeUpdateRequest.latitude()
@@ -73,7 +73,7 @@ public class StoreService {
     @Transactional
     public void deleteStore(UUID storeId, UserDetails user) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         storeRepository.delete(store); // entity의 update 쿼리가 대신 실행
     }
@@ -82,9 +82,9 @@ public class StoreService {
     @Transactional
     public StoreResponse modifyStoreStatusToClose(UUID storeId) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         if (store.getStatus() != Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_NOT_PENDING);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_NOT_PENDING);
         }
         store.updateStatus(Status.CLOSED);
         return StoreResponse.of(store);
@@ -94,14 +94,14 @@ public class StoreService {
     @Transactional
     public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId, UserDetails user) {
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         if (storeStatusUpdateRequest.status() == Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
         }
         //가게 상태가 PENDING 일 때 예외발생
         if (store.getStatus() == Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
         }
         store.updateStatus(storeStatusUpdateRequest.status());
         return StoreResponse.of(store);
@@ -116,7 +116,7 @@ public class StoreService {
         }
         //관리자가 아니라면 반드시 가게 주인이어야 함
         if (!store.getOwnerId().equals(loginUser.getId())) {
-            throw new ApiException(ErrorCode.STORE_ACCESS_DENIED);
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
     }
 

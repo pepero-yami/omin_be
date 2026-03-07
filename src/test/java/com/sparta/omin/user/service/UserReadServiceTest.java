@@ -9,7 +9,7 @@ import com.sparta.omin.app.model.user.dto.UserDto;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.app.model.user.service.UserReadService;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +56,7 @@ class UserReadServiceTest {
 
 		// when & then
 		assertThatThrownBy(() -> userReadService.getUserInfo(email))
-			.isInstanceOf(ApiException.class)
+			.isInstanceOf(OminBusinessException.class)
 			.hasMessageContaining(ErrorCode.USER_NOT_FOUND.getDescription());
 	}
 }

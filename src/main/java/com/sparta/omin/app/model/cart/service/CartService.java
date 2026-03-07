@@ -6,7 +6,7 @@ import com.sparta.omin.app.model.cart.entity.Cart;
 import com.sparta.omin.app.model.cart.repos.CartRepository;
 import com.sparta.omin.app.model.cartItem.entity.CartItem;
 import com.sparta.omin.app.model.cartItem.repos.CartItemRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +38,7 @@ public class CartService {
     @Transactional
     public void deleteCart(UUID userId, UUID cartId) {
         Cart cart = cartRepository.findByIdAndUserIdAndIsDeletedFalse(cartId, userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.CART_NOT_FOUND));
         cart.delete(userId);
     }
 
@@ -47,7 +47,7 @@ public class CartService {
         return cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .map(cart -> {
                     if (!cart.getStoreId().equals(storeId)) {
-                        if (!force) throw new ApiException(ErrorCode.CART_STORE_CONFLICT);
+                        if (!force) throw new OminBusinessException(ErrorCode.CART_STORE_CONFLICT);
                         cart.delete(userId);
                         return cartRepository.save(Cart.create(userId, storeId));
                     }
