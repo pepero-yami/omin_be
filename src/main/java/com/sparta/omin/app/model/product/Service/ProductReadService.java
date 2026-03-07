@@ -3,8 +3,8 @@ package com.sparta.omin.app.model.product.Service;
 import com.sparta.omin.app.model.product.dto.ProductResult;
 import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import com.sparta.omin.common.error.exceptions.CommonException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class ProductReadService {
     public ProductResult getProduct(UUID productId) {
         return productRepository.findByIdAndIsDeletedFalse(productId)
             .map(ProductResult::from)
-            .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     /**
@@ -37,7 +37,7 @@ public class ProductReadService {
     public ProductSummaryResult getProductSummary(UUID productId) {
         return productRepository.findByIdAndIsDeletedFalse(productId)
             .map(ProductSummaryResult::from)
-            .orElseThrow(() -> new CommonException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 
     /**
