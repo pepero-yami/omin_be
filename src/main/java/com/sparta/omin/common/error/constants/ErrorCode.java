@@ -46,19 +46,21 @@ public enum ErrorCode {
 	KAKAO_NO_LONGITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 경도(x) 값이 없습니다."),
 	KAKAO_INVALID_COORDINATE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과의 좌표 값이 올바르지 않습니다."),
 
-	//서버 에러
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+    //서버 에러
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+    // AI - 요청/검증 (400)
+    INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+    // 결제 에러
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
+    PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
+    PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "이미 완료된 결제입니다."), // 추가
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."), // 추가
+    PAYMENT_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제를 진행할 수 없는 상태입니다."), // 추가
+    PAYMENT_ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 처리가 가능합니다."),
 
 	// Product
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
-
-	// AI - 요청/검증 (400)
-	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
-
-	//결제 에러
-	PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
-	PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
-	PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
 
 	// AI - 외부 의존성(OpenAI) (502/503/504/429)
 	AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
