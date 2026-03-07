@@ -28,38 +28,39 @@ public class AddressService {
 
     @Transactional
     public AddressResponse createAddress(UUID userId, AddressCreateRequest request) {
-        String rawRoadAddress = request.roadAddress().trim();
-        String rawDetail = request.shippingDetailAddress().trim();
+        // 카카오 API로 주소 정규화 + 좌표 획득 <- 정제된 주소가 나옴!
+        KakaoAddressResult kakao = kakaoAddressClient.searchAddress(request.roadAddress().trim());
 
-        KakaoAddressResult kakao = kakaoAddressClient.searchAddress(rawRoadAddress);
-
-        //RegionService를 통해 ID만 가져옴 (도메인 격리)
+        // Region 조회 (법정동 기반 - RegionService 활용)
         UUID regionId = regionService.getRegionIdByAddress(kakao.depth3Address());
 
-        long count = addressRepository.countByUserIdAndIsDeletedFalse(userId);
+        // 중복 검사 (사용자 입력값이 아닌, 카카오가 준 정제된 주소 사용! 이러면 중간에 띄어쓰기 2번해도 ㄱㅊ)
+        String cleanRoadAddress = kakao.roadAddress(); // 띄어쓰기가 정제된 주소
+        String cleanDetail = request.shippingDetailAddress().trim(); //상세주소까지 동일해야 중복처리
 
-        // 주소가 0개면 무조건 기본배송지
-        boolean isDefault = (count == 0) || Boolean.TRUE.equals(request.isDefault());
-
-        // 상세주소까지 동일해야만 중복
         if (addressRepository.existsByUserIdAndRegionIdAndRoadAddressAndShippingDetailAddressAndIsDeletedFalse(
-                userId, regionId, rawRoadAddress, rawDetail
+                userId, regionId, cleanRoadAddress, cleanDetail
         )) {
             throw new OminBusinessException(ErrorCode.ADDRESS_DUPLICATED);
         }
 
-        // 기본으로 생성될 경우 기존 기본 해제
+        // 기본 배송지 설정 로직 (주소 0개면 무조건 기본배송지, 아니면 요청에 따름)
+        long count = addressRepository.countByUserIdAndIsDeletedFalse(userId);
+        boolean isDefault = (count == 0) || Boolean.TRUE.equals(request.isDefault());
+
+        // 만약 기본으로 설정될 경우, 기존의 기본은 해제처리
         if (isDefault) {
             addressRepository.findByUserIdAndIsDefaultTrueAndIsDeletedFalse(userId)
                     .ifPresent(a -> a.setDefault(false));
         }
 
+        // 저장 (정제된 주소와 법정동 ID 저장!)
         Address saved = addressRepository.save(Address.create(
                 userId,
                 regionId,
                 request.nickname().trim(),
-                rawRoadAddress,
-                rawDetail,
+                cleanRoadAddress,
+                cleanDetail,
                 kakao.latitude(),
                 kakao.longitude(),
                 isDefault
@@ -86,21 +87,23 @@ public class AddressService {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        String rawRoadAddress = request.roadAddress().trim();
-        String rawDetail = request.shippingDetailAddress().trim();
+        // 카카오 API 정규화
+        KakaoAddressResult kakao = kakaoAddressClient.searchAddress(request.roadAddress().trim());
 
-        KakaoAddressResult kakao = kakaoAddressClient.searchAddress(rawRoadAddress);
-
-        // RegionService 활용
+        // Region 조회
         UUID regionId = regionService.getRegionIdByAddress(kakao.depth3Address());
 
         // 수정 시 -> 자기 자신 제외하고 상세주소까지 동일이면 중복
+        String cleanRoadAddress = kakao.roadAddress();
+        String cleanDetail = request.shippingDetailAddress().trim();
+
         if (addressRepository.existsByUserIdAndRegionIdAndRoadAddressAndShippingDetailAddressAndIsDeletedFalseAndIdNot(
-                userId, regionId, rawRoadAddress, rawDetail, addressId
+                userId, regionId, cleanRoadAddress, cleanDetail, addressId
         )) {
             throw new OminBusinessException(ErrorCode.ADDRESS_DUPLICATED);
         }
 
+        // 기본 배송지 로직 체크
         boolean wantDefault = Boolean.TRUE.equals(request.isDefault());
 
         // 기본배송지는 항상 1개 이상
@@ -119,8 +122,8 @@ public class AddressService {
         address.update(
                 regionId,
                 request.nickname().trim(),
-                rawRoadAddress,
-                rawDetail,
+                cleanRoadAddress,
+                cleanDetail,
                 kakao.latitude(),
                 kakao.longitude(),
                 wantDefault
