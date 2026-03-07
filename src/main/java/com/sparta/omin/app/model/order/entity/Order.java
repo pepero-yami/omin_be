@@ -81,4 +81,12 @@ public class Order extends BaseEntity {
     public boolean isCompleted() {
         return false;
     }
+
+    //리스너용 메서드 2개
+    public void updateStatus(OrderStatus status) {
+        this.status = status;
+    }
+    public void completePayment() {
+        this.status = OrderStatus.ACCEPTED;
+    }
 }
