@@ -3,7 +3,7 @@ package com.sparta.omin.app.model.cart.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.omin.app.model.cart.entity.RCart;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class CartRedisClient {
 		try {
 			redisTemplate.opsForValue().set(key, objectMapper.writeValueAsString(cart));
 		} catch (JsonProcessingException e) {
-			throw new ApiException(ErrorCode.CART_CHANGE_FAIL);
+			throw new OminBusinessException(ErrorCode.CART_CHANGE_FAIL);
 		}
 	}
 
