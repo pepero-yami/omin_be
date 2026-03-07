@@ -1,6 +1,7 @@
 package com.sparta.omin.app.model.product.entity;
 
 import com.sparta.omin.app.model.product.code.ProductStatus;
+import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
@@ -49,5 +50,11 @@ public class Product extends BaseEntity {
         this.price = price;
         this.status = (status != null) ? status : ProductStatus.ON_SALE;
         this.store = store;
+    }
+
+    public void update(ProductUpdateCommand command) {
+        this.name = command.name();
+        this.description = command.description() != null && !command.description().isBlank() ? command.description() : this.description;
+        this.price = command.price();
     }
 }

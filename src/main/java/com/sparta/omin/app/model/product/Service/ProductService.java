@@ -2,7 +2,12 @@ package com.sparta.omin.app.model.product.Service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
+import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,5 +52,20 @@ public class ProductService {
 //        } catch (Exception e) {
 //            throw new CommonException(ErrorCode.INTERNAL_SERVER_ERROR);
 //        }
+    }
+
+    /**
+     * 메뉴 수정 요청을 처리합니다.
+     * @param productId
+     * @param command
+     * @param userId
+     */
+    @Transactional
+    public void updateProduct(UUID productId, ProductUpdateCommand command, UUID userId) {
+        // TODO : 요청한 사람이 점주 본인인지 확인하는 로직 추가
+
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.update(command);
     }
 }
