@@ -2,10 +2,10 @@ package com.sparta.omin.common.error;
 
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.error.dto.ErrorResponse;
-import com.sparta.omin.common.error.exceptions.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,8 +19,8 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
+    @ExceptionHandler(OminBusinessException.class)
+    public ResponseEntity<ErrorResponse> handleOminBusinessException(OminBusinessException e) {
         ErrorCode errorCode = e.getErrorCode();
         log.error("{} is occurred. message={}", errorCode.name(), e.getMessage(), e);
 
@@ -70,6 +70,15 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("FORBIDDEN", e.getMessage()));
     }
 
+    // UUID 형식 등 경로 변수 타입이 일치하지 않을 때 발생
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException e) {
+        log.error("MethodArgumentTypeMismatchException is occurred.", e);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("VALIDATION_ERROR", e.getMessage()));
+    }
+
     //그 외: 500. 운영에서 내부 메시지 노출을 피하기 위해 message는 고정.
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
@@ -77,21 +86,5 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of("INTERNAL_ERROR", "internal server error"));
-    }
-
-    @ExceptionHandler(CommonException.class)
-    public ResponseEntity<ErrorResponse> handleCommonException(CommonException e) {
-        ErrorCode errorCode = e.getErrorCode();
-
-        log.error("[ERROR] CommonException occurred. code={}, status={}, desc={}",
-                errorCode.name(),
-                errorCode.getStatus(),
-                errorCode.getDescription(),
-                e
-        );
-
-        return ResponseEntity
-                .status(errorCode.getStatus())
-                .body(ErrorResponse.of(errorCode.name(), errorCode.getDescription()));
     }
 }

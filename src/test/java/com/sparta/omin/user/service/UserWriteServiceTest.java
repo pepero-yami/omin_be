@@ -9,7 +9,7 @@ import com.sparta.omin.app.model.user.dto.UserDto;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.app.model.user.service.UserWriteService;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -75,7 +75,7 @@ class UserWriteServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> userWriteService.editInfo(email, "새닉네임", invalidPassword))
-				.isInstanceOf(ApiException.class)
+				.isInstanceOf(OminBusinessException.class)
 				.hasMessageContaining(ErrorCode.PASSWORD_POLICY_VIOLATION.getDescription());
 		}
 	}
@@ -109,7 +109,7 @@ class UserWriteServiceTest {
 
 			// when & then
 			assertThatThrownBy(() -> userWriteService.deleteUser(email))
-				.isInstanceOf(ApiException.class)
+				.isInstanceOf(OminBusinessException.class)
 				.hasMessageContaining(ErrorCode.USER_NOT_FOUND.getDescription());
 		}
 	}

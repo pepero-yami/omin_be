@@ -2,7 +2,7 @@ package com.sparta.omin.app.model.user.entity;
 
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.common.entity.BaseEntity;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -88,14 +88,14 @@ public class User extends BaseEntity implements UserDetails {
 	private void validateCheckEditRequest(String nickname, String password) {
 		if (nickname != null && !nickname.isBlank()) {
 			if (!nickname.matches("^[a-zA-Z0-9가-힣]{2,10}$")) {
-				throw new ApiException(ErrorCode.NICKNAME_POLICY_VIOLATION);
+				throw new OminBusinessException(ErrorCode.NICKNAME_POLICY_VIOLATION);
 			}
 		}
 
 		if (password != null && !password.isBlank()) {
 			if (!password.matches(
 				"^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$")) {
-				throw new ApiException(ErrorCode.PASSWORD_POLICY_VIOLATION);
+				throw new OminBusinessException(ErrorCode.PASSWORD_POLICY_VIOLATION);
 			}
 		}
 	}

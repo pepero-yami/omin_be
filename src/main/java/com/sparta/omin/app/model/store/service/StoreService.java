@@ -11,7 +11,7 @@ import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.service.UserPromoteService;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

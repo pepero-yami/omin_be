@@ -19,6 +19,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  servlet:
+    multipart: # 파일 용량을 지정
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
   # OPEN AI
 
   ai:
