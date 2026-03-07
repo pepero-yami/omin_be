@@ -11,19 +11,20 @@ public record PaymentResponse(
         UUID paymentId,
         UUID orderId,
         PaymentMethod paymentMethod,
-        int totalPrice,
+        double totalPrice, // double로 변경
         LocalDateTime createdAt,
-        PaymentStatus paymentStatus
+        PaymentStatus paymentStatus,
+        String paymentKey
 ) {
     public static PaymentResponse from(Payment payment) {
         return new PaymentResponse(
                 payment.getId(),
-//                payment.getOrder().getId(); TODO
                 payment.getOrderId(),
                 payment.getPaymentMethod(),
                 payment.getTotalPrice(),
                 payment.getCreatedAt(),
-                payment.getPaymentStatus()
+                payment.getPaymentStatus(),
+                payment.getPaymentKey()
         );
     }
 }

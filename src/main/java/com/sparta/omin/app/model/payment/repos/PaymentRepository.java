@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+    Optional<Payment> findByOrderIdAndIsDeletedFalse(UUID orderId);
     Optional<Payment> findByOrderIdAndUserIdAndIsDeletedFalse(UUID orderId, UUID userId);
     Page<Payment> findByUserIdAndIsDeletedFalse(UUID userId, Pageable pageable);
     Optional<Payment> findByIdAndIsDeletedFalse(UUID paymentId);
