@@ -47,6 +47,14 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
     // AI - 요청/검증 (400)
     INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+    // 결제 에러
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
+    PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
+    PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "이미 완료된 결제입니다."), // 추가
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."), // 추가
+    PAYMENT_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제를 진행할 수 없는 상태입니다."), // 추가
+    PAYMENT_ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 처리가 가능합니다."),
 
     // AI - 외부 의존성(OpenAI) (502/503/504/429)
     AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
@@ -72,9 +80,8 @@ public enum ErrorCode {
 	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
 	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
-	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.")
+	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.");
 
-	;
 	private final HttpStatus status;
 	private final String description;
 }

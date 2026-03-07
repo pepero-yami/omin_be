@@ -1,4 +1,4 @@
-package com.sparta.omin.region;
+package com.sparta.omin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
