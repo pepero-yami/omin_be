@@ -1,7 +1,7 @@
 package com.sparta.omin.app.controller.product;
 
 import com.sparta.omin.app.controller.product.payload.ProductCreateRequest;
-import com.sparta.omin.app.model.product.Service.ProductService;
+import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
