@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -53,6 +54,7 @@ public class ProductController {
      * 상품 수정 api 권한 : {@code ROLE_OWNER}
      */
     // @PreAuthorize("hasRole('OWNER')")
+    @Transactional
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(
         @RequestBody @Valid ProductUpdateRequest request,
@@ -69,6 +71,7 @@ public class ProductController {
      * 상품 상태 변경 api 권한 : {@code ROLE_OWNER}
      */
     // @Preauthorize("hasRole('OWNER')")
+    @Transactional
     @PatchMapping("/{productId}/status")
     public ResponseEntity<?> updateProductStatus(
         @RequestBody @Valid ProductUpdateStatusRequest request,
