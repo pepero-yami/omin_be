@@ -60,6 +60,6 @@ public class OrderController {
                                                                 @AuthenticationPrincipal User user,
                                                                 @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                 Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByOwner(storeId, user.getId(), user.getEmail(), pageable));
+        return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), pageable));
     }
 }
