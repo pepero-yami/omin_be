@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
 import com.sparta.omin.app.model.review.dto.ReviewCriteria;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
+import com.sparta.omin.app.model.review.dto.ReviewUpdateRequest;
 import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.app.model.review.repos.ReviewRepository;
 import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
@@ -121,16 +122,59 @@ public class ReviewService {
                     combinedSort
             );
             Page<Review> reviewPage = (storeId != null)
-                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, finalPageable):
+                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, finalPageable) :
                     reviewRepository.findAllByIsDeletedFalse(finalPageable);
             return reviewPage.map(ReviewResponse::from);
         }//if criteria != DEFAULT
 
-        else {
+        else { // 만약 criteria가 요청에 제공되지 않았을 경우
             Page<Review> reviewPage = (storeId != null)
-                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, pageable):
+                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, pageable) :
                     reviewRepository.findAllByIsDeletedFalse(pageable);
             return reviewPage.map(ReviewResponse::from);
         }
+    }
+
+    @Transactional
+    public ReviewResponse updateReview(UUID reviewId, User user, ReviewUpdateRequest request, List<MultipartFile> images) {
+        // 리뷰 조회
+        Review old = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND));
+
+        // 본인의 리뷰가 아니면 예외
+        if (!old.getUser().getId().equals(user.getId())) {
+            throw new OminBusinessException(ErrorCode.REVIEW_USER_MISMATCH);
+        }
+
+        // 주문일 + 2일 초과면 예외 --> status 변경시간 + 2일
+        if (old.getOrder().getCreatedAt().plusDays(2).isBefore(LocalDateTime.now())) {
+            throw new OminBusinessException(ErrorCode.REVIEW_UPDATE_PERIOD_EXPIRED);
+        }
+
+        if (images != null && images.size() - request.deleteImageUrls().size() > 5) {
+            throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+        }
+
+        // 통계 업데이트 (일단 비관적 락 사용)
+        if (request.rating() != null && !request.rating().equals(old.getRating())) {
+            double ratingDiff = request.rating() - old.getRating(); // 기존 평점과의 차이(양수: 올라감, 음수: 내려감)
+            StoreRatingStat stat = statRepository.findByStoreIdWithLock(old.getStore().getId())
+                    .orElseGet(() -> statRepository.save(StoreRatingStat.create(old.getStore().getId(), 0)));
+            stat.updateRatingByDiff(ratingDiff);
+        }
+
+        // TODO: 이미지 처리 로직
+        handleImageUpdates(old, request.updateImageUrls(), request.deleteImageUrls(), images);
+
+        old.updateReview(
+                request.rating() != null ? request.rating() : old.getRating(),
+                request.comment() != null ? request.comment() : old.getComment(),
+                user.getId()
+        );
+
+        return ReviewResponse.from(old);
+    }
+
+    private void handleImageUpdates(Review review, List<String> updateUrls, List<String> deleteUrls, List<MultipartFile> newFiles) {
     }
 }

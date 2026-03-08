@@ -3,6 +3,7 @@ package com.sparta.omin.app.controller.review;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
 import com.sparta.omin.app.model.review.dto.ReviewCriteria;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
+import com.sparta.omin.app.model.review.dto.ReviewUpdateRequest;
 import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
@@ -42,7 +43,7 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews/{reviewId}")
-    public ResponseEntity<ReviewResponse> get(@PathVariable UUID reviewId) {
+    public ResponseEntity<ReviewResponse> getReview(@PathVariable UUID reviewId) {
         ReviewResponse response = reviewService.getReview(reviewId);
         return ResponseEntity.ok(response);
     }
@@ -53,6 +54,15 @@ public class ReviewController {
             @RequestParam(required = false, defaultValue = "DEFAULT") ReviewCriteria criteria,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<ReviewResponse> response = reviewService.getReviews(criteria, pageable, storeId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/reviews/{reviewId}")
+    public ResponseEntity<ReviewResponse> updateReview(@PathVariable UUID reviewId,
+                                                 @AuthenticationPrincipal User user,
+                                                 @Valid @RequestPart ReviewUpdateRequest request,
+                                                 @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+        ReviewResponse response = reviewService.updateReview(reviewId, user, request, images);
         return ResponseEntity.ok(response);
     }
 }
