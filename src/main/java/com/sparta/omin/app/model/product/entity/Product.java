@@ -50,4 +50,8 @@ public class Product extends BaseEntity {
         this.status = (status != null) ? status : ProductStatus.ON_SALE;
         this.store = store;
     }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
 }

@@ -50,6 +50,10 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
     // AI - 요청/검증 (400)
     INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+	//결제 에러
+	PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
+	PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
+	PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
 
     // AI - 외부 의존성(OpenAI) (502/503/504/429)
     AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
