@@ -49,9 +49,10 @@ public class ReviewController {
 
     @GetMapping("/reviews")
     public ResponseEntity<Page<ReviewResponse>> getReviews(
+            @RequestParam(required = false) UUID storeId,
             @RequestParam(required = false, defaultValue = "DEFAULT") ReviewCriteria criteria,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ReviewResponse> response = reviewService.getReviews(criteria, pageable);
+        Page<ReviewResponse> response = reviewService.getReviews(criteria, pageable, storeId);
         return ResponseEntity.ok(response);
     }
 }

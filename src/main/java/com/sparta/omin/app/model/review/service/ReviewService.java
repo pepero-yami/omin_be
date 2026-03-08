@@ -101,7 +101,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ReviewResponse> getReviews(ReviewCriteria criteria, Pageable pageable) {
+    public Page<ReviewResponse> getReviews(ReviewCriteria criteria, Pageable pageable, UUID storeId) {
         if (!criteria.equals(ReviewCriteria.DEFAULT)) {
             // Criteria에 따른 정렬기준 하나 생성
             Sort.Order primaryOrder = switch (criteria) {
@@ -120,13 +120,16 @@ public class ReviewService {
                     pageable.getPageSize(),
                     combinedSort
             );
-
-            Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(finalPageable);
+            Page<Review> reviewPage = (storeId != null)
+                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, finalPageable):
+                    reviewRepository.findAllByIsDeletedFalse(finalPageable);
             return reviewPage.map(ReviewResponse::from);
         }//if criteria != DEFAULT
 
         else {
-            Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(pageable);
+            Page<Review> reviewPage = (storeId != null)
+                    ? reviewRepository.findAllByStoreIdAndIsDeletedFalse(storeId, pageable):
+                    reviewRepository.findAllByIsDeletedFalse(pageable);
             return reviewPage.map(ReviewResponse::from);
         }
     }

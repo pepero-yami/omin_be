@@ -19,4 +19,7 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
 
     @EntityGraph(attributePaths = {"user", "order"})
     Page<Review> findAllByIsDeletedFalse(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"user", "order", "store"})
+    Page<Review> findAllByStoreIdAndIsDeletedFalse(UUID storeId, Pageable pageable);
 }
