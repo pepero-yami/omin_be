@@ -55,4 +55,23 @@ public class ProductService {
             throw new OminBusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * 상품을 삭제 처리합니다.(소프트 딜리트)
+     * @param productId
+     * @param userId
+     */
+    @Transactional
+    public void deleteProduct(UUID productId, UUID userId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
+        UUID storeId = product.getStore().getId();
+        if(!storeReadService.isOwnedStore(storeId, userId)) {
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+
+        product.softDelete();
+    }
 }
