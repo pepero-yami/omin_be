@@ -6,7 +6,7 @@ import com.sparta.omin.app.model.cartItem.dto.CartItemResponse;
 import com.sparta.omin.app.model.cartItem.dto.CartItemUpdateRequest;
 import com.sparta.omin.app.model.cartItem.entity.CartItem;
 import com.sparta.omin.app.model.cartItem.repos.CartItemRepository;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class CartItemService {
         Cart cart = getActiveCart(userId);
 
         if (!cart.getId().equals(cartId)) {
-            throw new ApiException(ErrorCode.CART_NOT_FOUND);
+            throw new OminBusinessException(ErrorCode.CART_NOT_FOUND);
         }
 
         CartItem cartItem = getCartItem(cart.getId(), request.productId());
@@ -38,11 +38,11 @@ public class CartItemService {
     //===== helper method =====
     private Cart getActiveCart(UUID userId) {
         return cartRepository.findByUserIdAndIsDeletedFalseWithItems(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.CART_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.CART_NOT_FOUND));
     }
 
     private CartItem getCartItem(UUID cartId, UUID productId) {
         return cartItemRepository.findByCartIdAndProductId(cartId, productId)
-                .orElseThrow(() -> new ApiException(ErrorCode.CART_ITEM_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.CART_ITEM_NOT_FOUND));
     }
 }
