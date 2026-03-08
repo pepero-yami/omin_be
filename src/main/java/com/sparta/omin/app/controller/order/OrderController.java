@@ -48,6 +48,12 @@ public class OrderController {
         return ResponseEntity.ok(orderApplication.updateOrderByCustomer(user, orderId, request));
     }
 
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<Void> deleteOrderByCustomer(@AuthenticationPrincipal User user,
+                                                      @PathVariable UUID orderId) {
+        orderService.deleteOrderByCustomer(user, orderId);
+        return ResponseEntity.noContent().build();
+    }
 
     /**
      * 손님 & 사장님

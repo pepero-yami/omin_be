@@ -58,6 +58,7 @@ public class OrderService {
         return OrderCreateResponse.from(order);
     }
 
+    @Transactional
     public OrderResponse updateOrderByCustomer(User user, UUID orderId, Address address, String userRequest) {
         Order order = getOrder(orderId);
 
@@ -70,9 +71,19 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
-    public OrderDetailResponse getOrderDetail(UUID orderId) {
+    @Transactional
+    public void deleteOrderByCustomer(User user, UUID orderId) {
         Order order = getOrder(orderId);
-        return OrderDetailResponse.from(order);
+
+        if (!user.getId().equals(order.getUser().getId())) {
+            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
+        }
+
+        order.softDelete();
+    }
+
+    public OrderDetailResponse getOrderDetail(UUID orderId) {
+        return OrderDetailResponse.from(getOrder(orderId));
     }
 
     public Slice<OrderResponse> getOrdersHistory(UUID userId, Pageable pageable) {
@@ -90,4 +101,6 @@ public class OrderService {
         return orderRepository.findByIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
     }
+
+
 }

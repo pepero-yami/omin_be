@@ -75,9 +75,8 @@ public class Order extends BaseEntity {
     }
 
     public void update(Address address, String userRequest) {
-        if (this.getStatus() != OrderStatus.PENDING) {
-            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
-        }
+        validatePendingStatus();
+
         if (address != null) {
             this.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
         }
@@ -87,8 +86,9 @@ public class Order extends BaseEntity {
         }
     }
 
-    public void delete() {
-        this.isDeleted = true;
+    public void softDelete() {
+        validatePendingStatus();
+        this.isDeleted = false;
     }
 
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
@@ -107,4 +107,10 @@ public class Order extends BaseEntity {
         return false;
     }
 
+    //validation
+    private void validatePendingStatus() {
+        if (this.getStatus() != OrderStatus.PENDING) {
+            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
+        }
+    }
 }

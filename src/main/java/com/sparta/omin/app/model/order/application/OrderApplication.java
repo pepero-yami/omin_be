@@ -70,6 +70,7 @@ public class OrderApplication {
         return orderService.updateOrderByCustomer(user, orderId, address, request.userRequest());
     }
 
+
     //===== Helper Method =====
     private static void validateCart(RCart cart) {
         if (cart == null || cart.getProducts().isEmpty()) {
