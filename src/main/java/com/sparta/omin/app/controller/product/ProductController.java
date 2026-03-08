@@ -6,6 +6,7 @@ import com.sparta.omin.app.controller.product.payload.ProductResponse;
 import com.sparta.omin.app.model.product.Service.ProductReadService;
 import com.sparta.omin.app.model.product.Service.ProductService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
+import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,13 +42,13 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<?> createProduct(
         @RequestBody @Valid ProductCreateRequest request,
-        @AuthenticationPrincipal UserDetails userDetails
+        @AuthenticationPrincipal User user
     ) {
-        String userId = userDetails.getUsername();
+        UUID userId = user.getId();
         ProductCreateCommand command = request.toCommand();
         productService.createProduct(command, userId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("test");
+        return ResponseEntity.status(HttpStatus.CREATED).body("success");
     }
 
     /**
