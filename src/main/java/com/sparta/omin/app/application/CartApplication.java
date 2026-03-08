@@ -23,7 +23,8 @@ public class CartApplication {
 	private final ProductReadService productReadService;
 
 	public RCart addCart(UUID customerId, CartAddProductRequest request) {
-		Product product = productReadService.getProductInStore(request.productId(), request.storeId());
+		Product product = productReadService.getProductInStore(request.productId(),
+			request.storeId());
 		validateProductStatus(product);
 
 		RCart cart = cartService.getCartInCustomer(customerId, request.storeId());
@@ -33,8 +34,14 @@ public class CartApplication {
 			.filter(p -> p.getId().equals(request.productId()))
 			.findFirst()
 			.ifPresentOrElse(
-				existingProduct -> existingProduct.add(request.quantity()),
-				() -> addNewProduct(cart, product, request.quantity())
+				existingProduct -> existingProduct.addQuantity(request.quantity()),
+				() -> RCart.addNewCartItem(cart, RCart.CartItem.builder()
+					.id(product.getId())
+					.name(product.getName())
+					.price(product.getPrice())
+					.quantity(request.quantity())
+					.totalPrice(product.getPrice() * request.quantity())
+					.build())
 			);
 		cart.calculateTotalPrice();
 		return cartService.save(cart);
