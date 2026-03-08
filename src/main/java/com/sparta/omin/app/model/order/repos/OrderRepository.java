@@ -5,11 +5,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
+    @Query("SELECT o FROM Order o " +
+            "JOIN FETCH o.store " +
+            "WHERE o.user.id = :userId AND o.isDeleted = false " +
+            "AND o.store.isDeleted = false " +
+            "ORDER BY o.createdAt DESC")
+    Slice<Order> findByUserIdWithStore(@Param("userId") UUID userId, Pageable pageable);
     Slice<Order> findByUserIdAndIsDeletedFalse(UUID userId, Pageable pageable);
     @Query("SELECT o FROM Order o " +
             "JOIN FETCH o.store " +
