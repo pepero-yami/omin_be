@@ -24,9 +24,8 @@ public class AiLogService {
      * <i>"로그 저장 기능은 부가기능"</i> 이라는 전제 하에, 로그저장에 실패시, 로그를 남기고 넘어가도록 구현하였습니다.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createAiLog(String input, String output, RequestType requestType, String userEmail) {
+    public void createAiLog(String input, String output, RequestType requestType, UUID userId) {
         try{
-            UUID userId = userReadService.getUserInfo(userEmail).id();
             aiLogRepository.save(AiLog.builder()
                 .input(input)
                 .output(output)

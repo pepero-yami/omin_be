@@ -42,6 +42,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
 						.requestMatchers("/api/v1/me/addresses/**").hasRole("CUSTOMER") // address
 
+						.requestMatchers("/api/v1/payments/**").hasRole("CUSTOMER") // 결제 관련 권한 수정
+						.requestMatchers("/api/v1/admin/payments/**").hasAnyRole("MANAGER", "MASTER")
+
 						// Region 조회: CUSTOMER도 가능
 						.requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")
 						.requestMatchers(HttpMethod.GET, "/api/v1/regions").hasRole("CUSTOMER")
