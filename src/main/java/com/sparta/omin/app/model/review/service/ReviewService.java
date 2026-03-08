@@ -45,7 +45,8 @@ public class ReviewService {
         Order order = orderRepository.findById(request.orderId())
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
         // 로그인된 사용자 자신의 주문이 아니라면 예외
-        if (!loginUserId.equals(order.getUser().getId())) throw new OminBusinessException(ErrorCode.ORDER_USER_MISMATCH);
+        if (!loginUserId.equals(order.getUser().getId()))
+            throw new OminBusinessException(ErrorCode.ORDER_USER_MISMATCH);
         // 사용자 자신의 가게라면 예외
         if (user.getRole() == Role.OWNER && order.getStore().getOwnerId().equals(loginUserId)) {
             throw new OminBusinessException(ErrorCode.SELF_REVIEW_NOT_ALLOWED);
@@ -99,8 +100,9 @@ public class ReviewService {
         return ReviewResponse.from(review);
     }
 
+    @Transactional(readOnly = true)
     public Page<ReviewResponse> getReviews(ReviewCriteria criteria, Pageable pageable) {
-        if(!criteria.equals(ReviewCriteria.DEFAULT)) {
+        if (!criteria.equals(ReviewCriteria.DEFAULT)) {
             // Criteria에 따른 정렬기준 하나 생성
             Sort.Order primaryOrder = switch (criteria) {
                 case RATING_HIGH -> Sort.Order.desc("rating");
@@ -119,8 +121,8 @@ public class ReviewService {
                     combinedSort
             );
 
-        Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(finalPageable);
-        return reviewPage.map(ReviewResponse::from);
+            Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(finalPageable);
+            return reviewPage.map(ReviewResponse::from);
         }//if criteria != DEFAULT
 
         else {
