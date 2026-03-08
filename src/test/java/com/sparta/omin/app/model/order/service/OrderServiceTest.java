@@ -11,6 +11,7 @@ import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,14 +24,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -41,19 +45,15 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private Store mockStore;    // ← @Mock으로 변경
     private User mockUser;
-    private Store mockStore;
     private Address mockAddress;
 
     @BeforeEach
     void setUp() {
         mockUser = mock(User.class);
-        mockStore = mock(Store.class);
         mockAddress = mock(Address.class);
-
-        given(mockStore.getName()).willReturn("광화문 김치찌개");
-        given(mockAddress.getRoadAddress()).willReturn("서울시 종로구 세종대로 172");
-        given(mockAddress.getShippingDetailAddress()).willReturn("정부서울청사 1층");
     }
 
     @Test
@@ -145,18 +145,27 @@ class OrderServiceTest {
     void getOrderDetail_success() {
         // given
         UUID orderId = UUID.randomUUID();
+        UUID storeId = UUID.randomUUID();
+
         given(mockStore.getId()).willReturn(UUID.randomUUID());
 
         OrderItem orderItem = mock(OrderItem.class);
         Product product = mock(Product.class);
         given(product.getName()).willReturn("김치찌개");
+        given(mockStore.getName()).willReturn("광화문 김치찌개");
         given(orderItem.getProduct()).willReturn(product);
         given(orderItem.getQuantity()).willReturn(2);
         given(orderItem.getPrice()).willReturn(8000.0);
         given(orderItem.getTotalPrice()).willReturn(16000.0);
 
-        Order order = Order.create(mockUser, mockStore, "문 앞에 놔주세요", mockAddress);
-        order.getOrderItems().add(orderItem);
+        Order order = mock(Order.class);
+        given(order.getId()).willReturn(orderId);
+        given(order.getStore()).willReturn(mockStore);
+        given(order.getStatus()).willReturn(OrderStatus.PENDING);
+        given(order.getUserRequest()).willReturn("문 앞에 놔주세요");
+        given(order.getDeliveryAddress()).willReturn("서울시 종로구 세종대로 172 정부서울청사 1층");
+        given(order.getOrderItems()).willReturn(List.of(orderItem));
+        given(order.getTotalPrice()).willReturn(16000.0);
 
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
@@ -168,6 +177,11 @@ class OrderServiceTest {
         assertThat(response.orderStatus()).isEqualTo(OrderStatus.PENDING);
         assertThat(response.store().storeName()).isEqualTo("광화문 김치찌개");
         assertThat(response.deliveryAddress()).isEqualTo("서울시 종로구 세종대로 172 정부서울청사 1층");
+        assertThat(response.orderItems().size()).isEqualTo(1);
+        assertThat(response.orderItems().get(0).productName()).isEqualTo("김치찌개");
+        assertThat(response.orderItems().get(0).quantity()).isEqualTo(2);
+        assertThat(response.orderItems().get(0).itemPrice()).isEqualTo(8000.0);
+        assertThat(response.orderItems().get(0).totalPrice()).isEqualTo(16000.0);
 
         System.out.println("=== 주문 조회 결과 ===");
         System.out.println("주문 상태: " + response.orderStatus());
@@ -182,6 +196,7 @@ class OrderServiceTest {
             System.out.println("수량: " + item.quantity());
             System.out.println("단가: " + item.itemPrice());
             System.out.println("총액: " + item.totalPrice());
+
         });
     }
 
@@ -234,8 +249,132 @@ class OrderServiceTest {
         });
     }
 
-    // TODO: storeReadService.isOwnedStore() 머지 후 아래 테스트 활성화
-    // @Test
-    // @DisplayName("사장님 가게에 들어온 주문 요청 목록 조회 - 다른 가게 접근 실패")
-    // void getOrdersByOwner_accessDenied() { ... }
+    @Test
+    @DisplayName("주문 수정 성공 - 배송지, 요청사항 변경")
+    void updateOrderByCustomer_success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.fromString("32659ae9-3ac2-4fcc-bb51-5684601bcf3c");
+
+        given(mockUser.getId()).willReturn(userId);
+        given(mockStore.getName()).willReturn("광화문 김치찌개");
+
+        Order order = mock(Order.class);
+        given(order.getUser()).willReturn(mockUser);
+        given(order.getUser().getId()).willReturn(userId);
+        given(order.getId()).willReturn(orderId);
+        given(order.getStatus()).willReturn(OrderStatus.PENDING);
+        given(order.getUserRequest()).willReturn("경비실에 맡겨주세요");
+        given(order.getStore()).willReturn(mockStore);
+        given(order.getTotalPrice()).willReturn(16000.0);
+        given(order.getCreatedAt()).willReturn(LocalDateTime.now());
+        given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+
+        // when
+        OrderResponse response = orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요");
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.orderStatus()).isEqualTo(OrderStatus.PENDING);
+        assertThat(response.userRequest()).isEqualTo("경비실에 맡겨주세요");
+        assertThat(response.storeName()).isEqualTo("광화문 김치찌개");
+        assertThat(response.totalPrice()).isEqualTo(16000.0);
+        then(order).should().update(mockAddress, "경비실에 맡겨주세요");
+
+        System.out.println("=== 주문 수정 결과 ===");
+        System.out.println("주문 상태: " + response.orderStatus());
+        System.out.println("요청사항: " + response.userRequest());
+        System.out.println("가게명: " + response.storeName());
+        System.out.println("총액: " + response.totalPrice());
+    }
+
+    @Test
+    @DisplayName("주문 수정 실패 - 본인 주문 아님")
+    void updateOrderByCustomer_notOwned_throwsException() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        User orderOwner = mock(User.class);
+
+        given(mockUser.getId()).willReturn(UUID.randomUUID());   // 요청 유저
+        given(orderOwner.getId()).willReturn(UUID.randomUUID()); // 주문 소유자 (다른 유저)
+
+        Order order = mock(Order.class);
+        given(order.getUser()).willReturn(orderOwner);
+        given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+
+        // when & then
+        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요"))
+                .isInstanceOf(OminBusinessException.class);
+
+        then(order).should(never()).update(any(), any()); // update 호출 안됨
+    }
+
+    @Test
+    @DisplayName("주문 수정 실패 - PENDING 아닌 상태")
+    void updateOrderByCustomer_notPending_throwsException() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.fromString("32659ae9-3ac2-4fcc-bb51-5684601bcf3c");
+
+        given(mockUser.getId()).willReturn(userId);
+
+        Order order = mock(Order.class);
+        given(order.getUser()).willReturn(mockUser);
+        given(order.getUser().getId()).willReturn(userId);
+        given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+        doThrow(new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED))
+                .when(order).update(any(), any());
+
+        // when & then
+        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요"))
+                .isInstanceOf(OminBusinessException.class);
+
+        System.out.println("=== PENDING 아닌 상태 수정 실패 검증 완료 ===");
+    }
+
+    @Test
+    @DisplayName("주문 삭제 성공")
+    void deleteOrderByCustomer_success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        UUID userId = UUID.fromString("32659ae9-3ac2-4fcc-bb51-5684601bcf3c");
+
+        given(mockUser.getId()).willReturn(userId);
+
+        Order order = mock(Order.class);
+        given(order.getUser()).willReturn(mockUser);
+        given(order.getUser().getId()).willReturn(userId);
+        given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+
+        // when
+        orderService.deleteOrderByCustomer(mockUser, orderId);
+
+        // then
+        then(order).should().softDelete();
+
+        System.out.println("=== 주문 삭제 검증 완료 ===");
+    }
+
+    @Test
+    @DisplayName("주문 삭제 실패 - 본인 주문 아님")
+    void deleteOrderByCustomer_notOwned_throwsException() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        User orderOwner = mock(User.class);
+
+        given(mockUser.getId()).willReturn(UUID.randomUUID());   // 요청 유저
+        given(orderOwner.getId()).willReturn(UUID.randomUUID()); // 주문 소유자 (다른 유저)
+
+        Order order = mock(Order.class);
+        given(order.getUser()).willReturn(orderOwner);
+        given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
+
+        // when & then
+        assertThatThrownBy(() -> orderService.deleteOrderByCustomer(mockUser, orderId))
+                .isInstanceOf(OminBusinessException.class);
+
+        then(order).should(never()).softDelete(); // softDelete 호출 안됨
+
+        System.out.println("=== 본인 주문 아님 삭제 실패 검증 완료 ===");
+    }
 }
