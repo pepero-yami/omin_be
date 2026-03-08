@@ -67,9 +67,8 @@ public class Store extends BaseEntity {
         images.add(storeImage);
     }
 
-    public void removeImagesNotIn(Set<UUID> requestImageIds) {
-
-        images.removeIf(img -> !requestImageIds.contains(img.getId()));
+    public void removeImagesIn(Set<UUID> deleteIds) {
+        images.removeIf(img -> deleteIds.contains(img.getId()));
     }
 
     public void updateStore(Category category, String name, String roadAddress, String detailAddress, Point coordinates) {

@@ -10,7 +10,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,9 +50,9 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
             Pageable pageable
     );
 
-    List<Store> findByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
+    Slice<Store> findByOwnerIdOrderByCreatedAtDesc(UUID ownerId, Pageable pageable);
 
-    List<Store> findByStatusOrderByCreatedAtDesc(Status status);
+    Slice<Store> findByStatusOrderByCreatedAtDesc(Status status, Pageable pageable);
 
     boolean existsByRoadAddressAndDetailAddress(String roadAddress, String detailAddress);
 

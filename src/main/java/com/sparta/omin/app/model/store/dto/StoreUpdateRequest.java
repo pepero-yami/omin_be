@@ -23,13 +23,17 @@ public record StoreUpdateRequest(
         @Size(max = 100)
         String detailAddress,
         @NotEmpty
-        @Size(max = 10)
+        @Size(max = 20)
         List<StoreImageRequest> images
 ) {
+    public enum ImageAction {
+        KEEP, DELETE, ADD
+    }
+
     public record StoreImageRequest(
             UUID id,
-            boolean isNewUploaded
+            @NotNull
+            ImageAction action
     ) {
-
     }
 }

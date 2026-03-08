@@ -91,7 +91,7 @@ class StoreControllerTest extends StoreControllerHelper {
         @Test
         @DisplayName("성공: 존재하는 가게 조회 시 200 반환")
         void getStore_returns200() throws Exception {
-            given(storeService.findStore(NON_PENDING_STORE_ID))
+            given(storeService.findStore(eq(NON_PENDING_STORE_ID), any()))
                     .willReturn(buildStoreResponse(NON_PENDING_STORE_ID, "후와후와", Status.OPENED, Category.KOREAN));
 
             mockMvc.perform(get(STORE_URL.formatted(NON_PENDING_STORE_ID)))
@@ -106,7 +106,7 @@ class StoreControllerTest extends StoreControllerHelper {
         @DisplayName("실패: 존재하지 않는 가게 조회 시 404 반환")
         void getStore_notFound_returns404() throws Exception {
             UUID notExistId = UUID.randomUUID();
-            given(storeService.findStore(notExistId))
+            given(storeService.findStore(eq(notExistId), any()))
                     .willThrow(new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
 
             mockMvc.perform(get(STORE_URL.formatted(notExistId)))
@@ -127,7 +127,7 @@ class StoreControllerTest extends StoreControllerHelper {
             StoreUpdateRequest request = new StoreUpdateRequest(
                     Category.CHINESE, "수정후와후와",
                     "서울특별시 서초구 강남대로 465", "2층",
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
@@ -157,7 +157,7 @@ class StoreControllerTest extends StoreControllerHelper {
             StoreUpdateRequest request = new StoreUpdateRequest(
                     Category.KOREAN, "테스트",
                     "서울특별시 강남구 테헤란로 427", "1층",
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
@@ -186,7 +186,7 @@ class StoreControllerTest extends StoreControllerHelper {
             StoreUpdateRequest request = new StoreUpdateRequest(
                     Category.KOREAN, "없는가게",
                     "서울특별시 강남구 테헤란로 427", "1층",
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
@@ -259,16 +259,20 @@ class StoreControllerTest extends StoreControllerHelper {
         @DisplayName("성공: 내 매장 목록을 200으로 반환")
         void getMyStores_returns200() throws Exception {
             mockUser();
-            given(storeService.findMyStores(any())).willReturn(List.of(
-                    buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING),
-                    buildStoreListResponse(NON_PENDING_STORE_ID, "후와후와2호점", Status.OPENED)
-            ));
+            StoreListPageResponse pageResponse = new StoreListPageResponse(
+                    List.of(
+                            buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING),
+                            buildStoreListResponse(NON_PENDING_STORE_ID, "후와후와2호점", Status.OPENED)
+                    ), false, 0
+            );
+            given(storeService.findMyStores(any(), any())).willReturn(pageResponse);
 
             mockMvc.perform(get(STORE_OWNER_MY_URL))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.length()").value(2));
+                    .andExpect(jsonPath("$.content.length()").value(2))
+                    .andExpect(jsonPath("$.hasNext").value(false));
         }
     }
 
@@ -279,16 +283,19 @@ class StoreControllerTest extends StoreControllerHelper {
         @Test
         @DisplayName("성공: PENDING 매장 목록을 200으로 반환")
         void getPendingStores_returns200() throws Exception {
-            given(storeService.findPendingStores()).willReturn(List.of(
-                    buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING)
-            ));
+            StoreListPageResponse pageResponse = new StoreListPageResponse(
+                    List.of(buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING)),
+                    false, 0
+            );
+            given(storeService.findPendingStores(any())).willReturn(pageResponse);
 
             mockMvc.perform(get(STORE_ADMIN_PENDING_URL))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$.length()").value(1))
-                    .andExpect(jsonPath("$[0].status").value("PENDING"));
+                    .andExpect(jsonPath("$.content.length()").value(1))
+                    .andExpect(jsonPath("$.content[0].status").value("PENDING"))
+                    .andExpect(jsonPath("$.hasNext").value(false));
         }
     }
 

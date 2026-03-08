@@ -70,10 +70,18 @@ public class StoreService {
         return StoreResponse.of(savedStore);
     }
 
-    public StoreResponse findStore(UUID storeId) {
+    public StoreResponse findStore(UUID storeId, UserDetails user) {
         log.debug("매장 단건 조회 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
+        if (store.getStatus() == Status.PENDING) {
+            User loginUser = (User) user;
+            boolean isAdmin = loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER;
+            boolean isOwner = store.getOwnerId().equals(loginUser.getId());
+            if (!isAdmin && !isOwner) {
+                throw new OminBusinessException(ErrorCode.STORE_NOT_FOUND);
+            }
+        }
         return StoreResponse.of(store);
     }
 
@@ -87,17 +95,25 @@ public class StoreService {
         if (storeRepository.existsByRoadAddressAndDetailAddressAndIdNot(storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeId)) {
             throw new OminBusinessException(ErrorCode.STORE_DUPLICATE_ADDRESS);
         }
-        KakaoAddressClient.KakaoAddressResult kakao = kakaoAddressClient.searchAddress(storeUpdateRequest.roadAddress());
-        Point coordinates = toPoint(kakao);
+        boolean addressChanged = !savedStore.getRoadAddress().equals(storeUpdateRequest.roadAddress());
+        Point coordinates = addressChanged
+                ? toPoint(kakaoAddressClient.searchAddress(storeUpdateRequest.roadAddress()))
+                : savedStore.getCoordinates();
+        log.debug("주소 변경 여부 - changed: {}", addressChanged);
         savedStore.updateStore(storeUpdateRequest.category(), storeUpdateRequest.name(),
                 storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), coordinates);
 
-        //이미지 삭제요청 처리
         List<StoreUpdateRequest.StoreImageRequest> imageRequests = storeUpdateRequest.images();
-        handleDeleteImgRequest(savedStore, imageRequests);
-        //신규 이미지 등록 및 재정렬
-        List<String> newUrlList = sendImagesToS3(newImages != null ? newImages : List.of());
-        registerAndSortImgs(savedStore, imageRequests, newUrlList);
+        List<MultipartFile> imageFiles = newImages != null ? newImages : List.of();
+        //ADD 항목 수와 업로드 파일 수 일치 검증
+        long addCount = imageRequests.stream()
+                .filter(r -> r.action() == StoreUpdateRequest.ImageAction.ADD)
+                .count();
+        if (addCount != imageFiles.size()) {
+            throw new OminBusinessException(ErrorCode.STORE_IMAGE_COUNT_MISMATCH);
+        }
+        List<String> newUrlList = sendImagesToS3(imageFiles);
+        processImages(savedStore, imageRequests, newUrlList);
 
         log.info("매장 수정 완료 - storeId: {}", storeId);
         return StoreResponse.of(savedStore);
@@ -156,23 +172,28 @@ public class StoreService {
         return new StoreSearchPageResponse(content, result.hasNext(), nextLastDistance, nextLastId);
     }
 
-    // 점주용: 본인 등록 매장 전체 조회
-    public List<StoreListResponse> findMyStores(UserDetails user) {
+    // 점주용: 본인 등록 매장 목록 조회
+    public StoreListPageResponse findMyStores(StoreListPageRequest pageRequest, UserDetails user) {
         UUID ownerId = ((User) user).getId();
-        log.debug("본인 매장 목록 조회 - ownerId: {}", ownerId);
-        return storeRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId)
-                .stream()
-                .map(StoreListResponse::of)
-                .toList();
+        log.debug("본인 매장 목록 조회 - ownerId: {}, page: {}, size: {}", ownerId, pageRequest.page(), pageRequest.size());
+        Slice<Store> result = storeRepository.findByOwnerIdOrderByCreatedAtDesc(
+                ownerId, PageRequest.of(pageRequest.page(), pageRequest.size()));
+        return toPageResponse(result, pageRequest.page());
     }
 
-    // 관리자용: PENDING 상태 매장 전체 조회
-    public List<StoreListResponse> findPendingStores() {
-        log.debug("PENDING 매장 목록 조회");
-        return storeRepository.findByStatusOrderByCreatedAtDesc(Status.PENDING)
-                .stream()
+    // 관리자용: PENDING 상태 매장 목록 조회
+    public StoreListPageResponse findPendingStores(StoreListPageRequest pageRequest) {
+        log.debug("PENDING 매장 목록 조회 - page: {}, size: {}", pageRequest.page(), pageRequest.size());
+        Slice<Store> result = storeRepository.findByStatusOrderByCreatedAtDesc(
+                Status.PENDING, PageRequest.of(pageRequest.page(), pageRequest.size()));
+        return toPageResponse(result, pageRequest.page());
+    }
+
+    private static StoreListPageResponse toPageResponse(Slice<Store> slice, int page) {
+        List<StoreListResponse> content = slice.getContent().stream()
                 .map(StoreListResponse::of)
                 .toList();
+        return new StoreListPageResponse(content, slice.hasNext(), page);
     }
 
     // 관리자용: 승인 대기(PENDING) 매장을 CLOSED 상태로 승인 처리
@@ -238,42 +259,64 @@ public class StoreService {
         return imagesList;
     }
 
-    private static void handleDeleteImgRequest(
-            Store savedStore,
-            List<StoreUpdateRequest.StoreImageRequest> imageRequests
-    ) {
-        //request에 포함된 기존 이미지 id 수집
-        Set<UUID> requestImageIds = imageRequests.stream()
+    private static final int MAX_IMAGE_COUNT = 10;
+
+    private static void processImages(Store store, List<StoreUpdateRequest.StoreImageRequest> imageRequests, List<String> newUrlList) {
+        // action 유효성 검증: ADD는 id 없어야 하고, KEEP/DELETE는 id 필수 + 중복 id 금지
+        Set<UUID> seenIds = new HashSet<>();
+        for (StoreUpdateRequest.StoreImageRequest req : imageRequests) {
+            boolean isAdd = req.action() == StoreUpdateRequest.ImageAction.ADD;
+            if (isAdd && req.id() != null) {
+                throw new OminBusinessException(ErrorCode.STORE_IMAGE_INVALID_ACTION);
+            }
+            if (!isAdd && req.id() == null) {
+                throw new OminBusinessException(ErrorCode.STORE_IMAGE_INVALID_ACTION);
+            }
+            if (!isAdd && !seenIds.add(req.id())) {
+                throw new OminBusinessException(ErrorCode.STORE_IMAGE_DUPLICATE_ID);
+            }
+        }
+
+        // 최종 이미지 수 검증: KEEP + ADD 만 실제 이미지로 남음
+        long finalImageCount = imageRequests.stream()
+                .filter(r -> r.action() == StoreUpdateRequest.ImageAction.KEEP
+                          || r.action() == StoreUpdateRequest.ImageAction.ADD)
+                .count();
+        if (finalImageCount > MAX_IMAGE_COUNT) {
+            throw new OminBusinessException(ErrorCode.STORE_IMAGE_MAX_EXCEEDED);
+        }
+        log.debug("최종 이미지 수 검증 - finalCount: {}", finalImageCount);
+
+        // DELETE 처리: 명시적으로 DELETE 표시된 이미지 제거
+        Set<UUID> deleteIds = imageRequests.stream()
+                .filter(r -> r.action() == StoreUpdateRequest.ImageAction.DELETE)
                 .map(StoreUpdateRequest.StoreImageRequest::id)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        log.debug("이미지 삭제 처리 - keepIds: {}", requestImageIds);
-        //요청에 없는 이미지 id 컬렉션에서 제거
-        savedStore.removeImagesNotIn(requestImageIds);
-    }
+        log.debug("이미지 삭제 처리 - deleteIds: {}", deleteIds);
+        store.removeImagesIn(deleteIds);
 
-    private static void registerAndSortImgs(Store savedStore, List<StoreUpdateRequest.StoreImageRequest> imageRequests, List<String> newUrlList) {
-        Map<UUID, StoreImage> existingImageMap = savedStore.getImages().stream()
+        // KEEP/ADD 순서대로 sequence 부여
+        Map<UUID, StoreImage> existingImageMap = store.getImages().stream()
                 .collect(Collectors.toMap(StoreImage::getId, Function.identity()));
-        //request 순서대로 순번 반영 + 신규 추가
-        int currentNewImageSequence = 0;
-        for (int i = 0; i < imageRequests.size(); i++) {
-            StoreUpdateRequest.StoreImageRequest imageRequest = imageRequests.get(i);
-            int newSequence = i + 1;
 
-            if (!imageRequest.isNewUploaded()) {
-                StoreImage existingImage = existingImageMap.get(imageRequest.id());
-                // 기존 이미지: 순서 업데이트
-                if (existingImage == null) {
-                    log.debug("이미지 ID 불일치 - imageId: {}", imageRequest.id());
-                    throw new OminBusinessException(ErrorCode.STORE_IMAGE_NOT_FOUND);
+        int addIdx = 0;
+        int sequence = 1;
+        for (StoreUpdateRequest.StoreImageRequest req : imageRequests) {
+            switch (req.action()) {
+                case KEEP -> {
+                    StoreImage img = existingImageMap.get(req.id());
+                    if (img == null) {
+                        log.debug("이미지 ID 불일치 - imageId: {}", req.id());
+                        throw new OminBusinessException(ErrorCode.STORE_IMAGE_NOT_FOUND);
+                    }
+                    img.updateImageSorting(sequence++);
+                    log.debug("기존 이미지 순서 갱신 - imageId: {}, sequence: {}", req.id(), sequence - 1);
                 }
-                existingImage.updateImageSorting(newSequence);
-                log.debug("기존 이미지 순서 갱신 - imageId: {}, sequence: {}", imageRequest.id(), newSequence);
-            } else {
-                // 신규 이미지: newUrlList에서 꺼내서 추가
-                savedStore.addNewImage(newUrlList.get(currentNewImageSequence++), newSequence);
-                log.debug("신규 이미지 추가 - sequence: {}", newSequence);
+                case ADD -> {
+                    store.addNewImage(newUrlList.get(addIdx++), sequence++);
+                    log.debug("신규 이미지 추가 - sequence: {}", sequence - 1);
+                }
+                case DELETE -> { /* 이미 처리됨 */ }
             }
         }
     }

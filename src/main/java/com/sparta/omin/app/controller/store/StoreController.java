@@ -35,8 +35,10 @@ public class StoreController {
     }
 
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreResponse> getStore(@PathVariable UUID storeId) {
-        StoreResponse foundStore = storeService.findStore(storeId);
+    public ResponseEntity<StoreResponse> getStore(
+            @PathVariable UUID storeId,
+            @AuthenticationPrincipal UserDetails user) {
+        StoreResponse foundStore = storeService.findStore(storeId, user);
         return ResponseEntity.ok(foundStore);
     }
 
@@ -71,8 +73,10 @@ public class StoreController {
      * 점주용: 본인 등록 매장 리스트 조회
      */
     @GetMapping("/owner/my")
-    public ResponseEntity<List<StoreListResponse>> searchMyStores(@AuthenticationPrincipal UserDetails user) {
-        return ResponseEntity.ok(storeService.findMyStores(user));
+    public ResponseEntity<StoreListPageResponse> searchMyStores(
+            @Valid @ModelAttribute StoreListPageRequest pageRequest,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(storeService.findMyStores(pageRequest, user));
     }
 
     /**
@@ -91,8 +95,9 @@ public class StoreController {
      * 관리자용: PENDING 상태 매장 전체 조회
      */
     @GetMapping("/admin/pending")
-    public ResponseEntity<List<StoreListResponse>> searchPendingStores() {
-        return ResponseEntity.ok(storeService.findPendingStores());
+    public ResponseEntity<StoreListPageResponse> searchPendingStores(
+            @Valid @ModelAttribute StoreListPageRequest pageRequest) {
+        return ResponseEntity.ok(storeService.findPendingStores(pageRequest));
     }
 
     /**
