@@ -1,24 +1,27 @@
 package com.sparta.omin.region.controller;
 
-import com.sparta.omin.app.model.region.dto.RegionResponse;
-import com.sparta.omin.app.model.region.service.RegionSeedService;
-import com.sparta.omin.common.error.OminBusinessException;
-import com.sparta.omin.common.error.constants.ErrorCode;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.http.MediaType;
-
-import java.util.List;
-import java.util.UUID;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import com.sparta.omin.app.model.region.dto.RegionResponse;
+import com.sparta.omin.app.model.region.service.RegionSeedService;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 
 @DisplayName("Region:Controller")
 @AutoConfigureMockMvc(addFilters = false) // 보안 필터(Security) 해제 - API 로직 검증 위주

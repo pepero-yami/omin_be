@@ -30,7 +30,7 @@ class AddressControllerTest extends AddressControllerHelper {
         // 헬퍼 메서드로 로그인 유저를 세팅하고, 서비스 응답을 설정
         mockUser();
         UUID id = UUID.randomUUID();
-        given(addressService.createAddress(any(), any())).willReturn(createResponse(id, "우리집", true));
+        given(addressService.create(any(), any())).willReturn(createResponse(id, "우리집", true));
 
         // When
         // /api/v1/me/addresses 경로로 POST 요청 보냄
@@ -72,7 +72,7 @@ class AddressControllerTest extends AddressControllerHelper {
         UUID id = UUID.randomUUID();
         // Given
         // 해당 ID의 주소가 기본 배송지로 변경된 결과를 반환
-        given(addressService.setDefaultAddress(any(), eq(id))).willReturn(createResponse(id, "기본지", true));
+        given(addressService.setDefault(any(), eq(id))).willReturn(createResponse(id, "기본지", true));
 
         // When & Then
         // PATCH 요청 후 상태 변경을 확인

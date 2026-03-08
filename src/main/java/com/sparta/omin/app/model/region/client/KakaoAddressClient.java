@@ -31,8 +31,7 @@ public class KakaoAddressClient {
     }
 
     public record KakaoAddressResult(
-            String depth3Address,   // DB 조회용 (법정동)
-            String roadAddress,     // 정제된 도로명 주소 (중복 검사 및 저장용)
+            String depth3Address,
             BigDecimal latitude,
             BigDecimal longitude
     ) {}
@@ -40,36 +39,26 @@ public class KakaoAddressClient {
     public KakaoAddressResult searchAddress(String query) {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
-        // record 접근자 사용 (address() 메서드 호출)
-        if (first.address() == null) {
+        if (first.getAddress() == null) {
             throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
 
-        // DB 조회용 - 법정동
-        String depth3 = buildDepth3(first.address());
+        String depth3 = buildDepth3(first.getAddress());
+        BigDecimal longitude = parseBigDecimal(first.getX(), "longitude(x)");
+        BigDecimal latitude = parseBigDecimal(first.getY(), "latitude(y)");
 
-        // 카카오가 정제해준 표준 도로명 주소 (공백 등이 정리된 상태로 돌아옴!) - 도로명주소 있으면 도로명주소, 아니면 지번주소
-        String normalizedRoadAddress = (first.roadAddress() != null)
-                ? first.roadAddress().addressName()
-                : first.address().addressName();
-
-        // 위도/경도 파싱 (record 접근자 x(), y() 사용)
-        BigDecimal longitude = parseBigDecimal(first.x(), "longitude(x)");
-        BigDecimal latitude = parseBigDecimal(first.y(), "latitude(y)");
-
-        return new KakaoAddressResult(depth3, normalizedRoadAddress, latitude, longitude);
+        return new KakaoAddressResult(depth3, latitude, longitude);
     }
 
-    // Region이 사용 중인 기존 메서드 - 주소 문자열을 받아 법정동(depth1 + depth2 + depth3) 형태의 정규화된 문자열만 반환
+    //Region이 사용 중인 기존 메서드 - 주소 문자열만 반환
     public String normalizeToRegionDepth3(String query) {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
-        // .address() 로 수정 (record 방식)
-        if (first.address() == null) {
+        if (first.getAddress() == null) {
             throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
 
-        return buildDepth3(first.address());
+        return buildDepth3(first.getAddress());
     }
 
     private KakaoAddressSearchResponse.Document requestFirstDocument(String query) {
@@ -101,7 +90,8 @@ public class KakaoAddressClient {
             throw new OminBusinessException(ErrorCode.KAKAO_INVALID_RESPONSE);
         }
 
-        KakaoAddressSearchResponse.Document first = response.getBody().firstDocumentOrNull();
+        KakaoAddressSearchResponse body = response.getBody();
+        KakaoAddressSearchResponse.Document first = body.firstDocumentOrNull();
         if (first == null) {
             throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
@@ -110,12 +100,11 @@ public class KakaoAddressClient {
 
     //법정동 우선, 비었다면 행정동(HName)
     private String buildDepth3(KakaoAddressSearchResponse.Address addr) {
-        // record 접근자 사용
-        String depth1 = trimToNull(addr.region1depthName());
-        String depth2 = trimToNull(addr.region2depthName());
-        String depth3 = trimToNull(StringUtils.hasText(addr.region3depthName())
-                ? addr.region3depthName()
-                : addr.region3depthHName());
+        String depth1 = trimToNull(addr.getRegion1depthName());
+        String depth2 = trimToNull(addr.getRegion2depthName());
+        String depth3 = trimToNull(StringUtils.hasText(addr.getRegion3depthName())
+                ? addr.getRegion3depthName()
+                : addr.getRegion3depthHName());
 
         // depth1, depth3은 필수로 간주
         if (!StringUtils.hasText(depth1) || !StringUtils.hasText(depth3)) {

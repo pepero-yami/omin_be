@@ -27,7 +27,7 @@ public class AddressController {
             @Valid @RequestBody AddressCreateRequest request,
             @AuthenticationPrincipal User user
     ) {
-        AddressResponse created = addressService.createAddress(user.getId(), request);
+        AddressResponse created = addressService.create(user.getId(), request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -50,7 +50,7 @@ public class AddressController {
             @Valid @RequestBody AddressUpdateRequest request,
             @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(addressService.updateAddress(user.getId(), addressId, request));
+        return ResponseEntity.ok(addressService.update(user.getId(), addressId, request));
     }
 
     @DeleteMapping("/{addressId}")
@@ -58,7 +58,7 @@ public class AddressController {
             @PathVariable UUID addressId,
             @AuthenticationPrincipal User user
     ) {
-        addressService.deleteAddress(user.getId(), addressId);
+        addressService.delete(user.getId(), addressId);
         return ResponseEntity.noContent().build();
     }
 
@@ -67,6 +67,6 @@ public class AddressController {
             @PathVariable UUID addressId,
             @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(addressService.setDefaultAddress(user.getId(), addressId));
+        return ResponseEntity.ok(addressService.setDefault(user.getId(), addressId));
     }
 }
