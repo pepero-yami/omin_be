@@ -48,7 +48,7 @@ public class PaymentController {
     }
 
     // 결제 취소 요청
-    @DeleteMapping("/payments/{paymentId}")
+    @PatchMapping("/payments/{paymentId}/cancel")
     public ResponseEntity<PaymentResponse> cancelPayment(@PathVariable UUID paymentId,
                                                          @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(paymentService.cancelPayment(paymentId, user.getId()));
