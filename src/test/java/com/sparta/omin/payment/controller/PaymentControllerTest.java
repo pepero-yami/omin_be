@@ -21,13 +21,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("Payment:Controller")
-//@AutoConfigureMockMvc(addFilters = false) // 필터 제외로 시큐리티 복잡성 회피
-        // addFilters = false를 제거! (시큐리티가 작동해야 @AuthenticationPrincipal이 바인딩됨)
 class PaymentControllerTest extends PaymentControllerHelper {
 
     @Test
@@ -105,8 +104,48 @@ class PaymentControllerTest extends PaymentControllerHelper {
     }
 
     @Test
-    @DisplayName("권한 없는 사용자가 결제 정보 조회 시 실패 (404 Not Found)")
-    void getPayment_unauthorized_returns404() throws Exception {
+    @DisplayName("결제 정보 조회 성공 (200 OK)")
+    void getPayment_success() throws Exception {
+        // Given
+        User user = mockUser();
+        UUID orderId = UUID.randomUUID();
+        PaymentResponse response = new PaymentResponse(
+                UUID.randomUUID(), orderId, PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.SUCCESS, "key");
+
+        given(paymentService.getPayment(eq(orderId), any())).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(get(PAYMENTS_BASE_URL + "/" + orderId)
+                        .with(user(user)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").value(orderId.toString()));
+    }
+
+    @Test
+    @DisplayName("결제 취소 성공 (200 OK)")
+    void cancelPayment_success() throws Exception {
+        // Given
+        User user = mockUser();
+        UUID paymentId = UUID.randomUUID();
+        PaymentResponse response = new PaymentResponse(
+                paymentId, UUID.randomUUID(), PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.CANCELED, "key");
+
+        given(paymentService.cancelPayment(eq(paymentId), any())).willReturn(response);
+
+        // When & Then
+        mockMvc.perform(patch(PAYMENTS_BASE_URL + "/" + paymentId + "/cancel")
+                        .with(user(user))
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentStatus").value("CANCELED"));
+    }
+
+
+    @Test
+    @DisplayName("존재하지 않는 결제 정보 조회 시 실패 (404 Not Found)")
+    void getPayment_notFound_returns404() throws Exception {
         // Given
         User user = mockUser();
         UUID orderId = UUID.randomUUID();
@@ -121,5 +160,24 @@ class PaymentControllerTest extends PaymentControllerHelper {
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("PAYMENT_NOT_FOUND"));
+    }
+
+    @Test
+    @DisplayName("권한 없는 사용자가 결제 취소 시도 시 실패 (403 Forbidden)")
+    void cancelPayment_unauthorized_returns403() throws Exception {
+        // Given
+        User user = mockUser();
+        UUID paymentId = UUID.randomUUID();
+
+        given(paymentService.cancelPayment(any(), any()))
+                .willThrow(new OminBusinessException(ErrorCode.PAYMENT_UNAUTHORIZED));
+
+        // When & Then
+        mockMvc.perform(patch(PAYMENTS_BASE_URL + "/" + paymentId + "/cancel")
+                        .with(user(user))
+                        .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("PAYMENT_UNAUTHORIZED"));
     }
 }
