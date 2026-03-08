@@ -2,7 +2,9 @@ package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.product.dto.ProductResult;
 import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
+import com.sparta.omin.app.model.store.service.StoreReadService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.List;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductReadService {
 
     private final ProductRepository productRepository;
+    private final StoreReadService  storeReadService;
 
     /**
      * 메뉴의 상세 정보를 반환합니다.<br>
@@ -47,10 +50,20 @@ public class ProductReadService {
      * @return {@code List<ProductResult>}
      */
     public List<ProductResult> getProducts(UUID storeId) {
-        //TODO : 존재하는 가게인지 검증하는 로직 작성
+        // 운영중인 가게인지 검증
+        if(storeReadService.isStatusPending(storeId)) {
+            throw new OminBusinessException(ErrorCode.BAD_REQUEST);
+        }
+
         return productRepository.findByStoreIdAndIsDeletedFalse(storeId)
             .stream()
             .map(ProductResult::from)
             .toList();
+    }
+
+    public Product getProductInStore(UUID productId, UUID storeId) {
+        return productRepository.findByIdAndStoreId(productId, storeId).orElseThrow(
+            () -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND)
+        );
     }
 }

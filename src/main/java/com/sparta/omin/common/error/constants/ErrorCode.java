@@ -21,7 +21,6 @@ public enum ErrorCode {
 	CART_STORE_CONFLICT(HttpStatus.CONFLICT, "다른 가게의 상품이 담겨있습니다."),
 	CART_CHANGE_FAIL(HttpStatus.CONFLICT, "장바구니를 추가할 수 없습니다."),
 	//상품에러
-	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
     // Region 에러
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 지역(regionId)입니다."),
@@ -84,7 +83,9 @@ public enum ErrorCode {
 	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
 	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
-	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다.");
+	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다."),
+
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
 
 	private final HttpStatus status;
 	private final String description;

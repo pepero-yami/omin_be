@@ -7,7 +7,8 @@ import lombok.Builder;
 
 @Builder
 public record ProductResponse(
-    UUID id,
+    UUID productId,
+    UUID storeId,
     String name,
     String description,
     Double price,
@@ -16,7 +17,8 @@ public record ProductResponse(
 
     public static ProductResponse from(ProductResult dto) {
         return ProductResponse.builder()
-            .id(dto.id())
+            .productId(dto.id())
+            .storeId(dto.storeId())
             .name(dto.name())
             .description(dto.description())
             .price(dto.price())

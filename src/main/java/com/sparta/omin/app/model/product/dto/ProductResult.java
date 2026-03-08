@@ -9,6 +9,7 @@ import lombok.Data;
 @Builder
 public record ProductResult(
     UUID id,
+    UUID storeId,
     String name,
     String description,
     Double price,
@@ -18,6 +19,7 @@ public record ProductResult(
     public static ProductResult from(Product product) {
         return ProductResult.builder()
             .id(product.getId())
+            .storeId(product.getStore().getId())
             .name(product.getName())
             .description(product.getDescription())
             .price(product.getPrice())
