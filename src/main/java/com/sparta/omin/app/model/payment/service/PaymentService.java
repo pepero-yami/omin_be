@@ -36,7 +36,7 @@ public class PaymentService {
 
         // 본인 주문 확인 (Dto의 정보를 활용)
         if (!order.userId().equals(userId)) {
-            throw new OminBusinessException(ErrorCode.ORDER_USER_MISMATCH);
+            throw new OminBusinessException(ErrorCode.PAYMENT_ORDER_USER_MISMATCH);
         }
 
         // 2) 중복 결제 요청 확인 (멱등성 - 이미 성공한 내역이 있는 경우)
