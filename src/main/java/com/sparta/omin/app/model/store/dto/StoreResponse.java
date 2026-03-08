@@ -6,6 +6,7 @@ import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.entity.StoreImage;
 import lombok.Builder;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +45,9 @@ public record StoreResponse(
                 .roadAddress(store.getRoadAddress())
                 .detailAddress(store.getDetailAddress())
                 .status(store.getStatus())
-                .images(store.getImages().stream().map(StoreResponse.StoreImageResponse::of).toList())
+                .images(store.getImages().stream()
+                        .sorted(Comparator.comparingInt(StoreImage::getSequence))
+                        .map(StoreImageResponse::of).toList())
                 .build();
     }
 

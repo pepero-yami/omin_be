@@ -1,9 +1,8 @@
 package com.sparta.omin.app.model.address.service;
-
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.app.model.address.dto.CoordinatesSearchDto;
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.address.repos.AddressRepository;
-import com.sparta.omin.common.error.ApiException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,7 @@ public class CoordinatesSearchService {
 
     public CoordinatesSearchDto getCoordinates(UUID addressId, UUID userId) {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
         return CoordinatesSearchDto.of(address);
     }
 }

@@ -5,18 +5,18 @@ import com.sparta.omin.app.model.store.service.StoreService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stores")
@@ -62,7 +62,7 @@ public class StoreController {
      */
     @GetMapping
     public ResponseEntity<StoreSearchPageResponse> searchStoreList(
-            @ModelAttribute StoreSearchRequest storeSearchRequest,
+            @Valid @ModelAttribute StoreSearchRequest storeSearchRequest,
             @AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(storeService.searchStoreList(storeSearchRequest, user));
     }

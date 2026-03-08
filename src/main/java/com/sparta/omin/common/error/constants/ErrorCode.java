@@ -74,7 +74,8 @@ public enum ErrorCode {
 	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
 	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다."),
-	STORE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다.")
+	STORE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다."),
+	STORE_IMAGE_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "isNewUploaded 항목 수와 업로드된 파일 수가 일치하지 않습니다.")
 
 	;
 	private final HttpStatus status;
