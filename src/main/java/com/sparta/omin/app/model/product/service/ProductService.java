@@ -87,6 +87,7 @@ public class ProductService {
      * @param userId
      * @param status
      */
+    @Transactional
     public void updateProductStatus(UUID productId, UUID userId, ProductStatus status) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));

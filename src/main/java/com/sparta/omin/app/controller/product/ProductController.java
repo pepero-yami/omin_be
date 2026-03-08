@@ -54,7 +54,6 @@ public class ProductController {
      * 상품 수정 api 권한 : {@code ROLE_OWNER}
      */
     // @PreAuthorize("hasRole('OWNER')")
-    @Transactional
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(
         @RequestBody @Valid ProductUpdateRequest request,
@@ -71,7 +70,6 @@ public class ProductController {
      * 상품 상태 변경 api 권한 : {@code ROLE_OWNER}
      */
     // @Preauthorize("hasRole('OWNER')")
-    @Transactional
     @PatchMapping("/{productId}/status")
     public ResponseEntity<?> updateProductStatus(
         @RequestBody @Valid ProductUpdateStatusRequest request,
