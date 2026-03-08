@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.cart.dto.CartAddProductRequest;
 import com.sparta.omin.app.model.cart.entity.RCart;
 import com.sparta.omin.app.model.cart.service.RCartService;
 import com.sparta.omin.app.model.user.entity.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,7 @@ public class RCartController {
 	@PostMapping
 	public ResponseEntity<RCart> addCartProduct(
 		@AuthenticationPrincipal User user,
-		@RequestBody CartAddProductRequest request) {
+		@Valid @RequestBody CartAddProductRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED)
 			.body(cartApplication.addCart(user.getId(), request));
 	}
