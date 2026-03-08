@@ -62,5 +62,7 @@ dependencyManagement {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform() {
+        excludeTags 'external'
+    }
 }

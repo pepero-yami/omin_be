@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import com.sparta.omin.app.model.ai.code.RequestType;
 import com.sparta.omin.app.model.ai.entity.AiLog;
 import com.sparta.omin.app.model.ai.repos.AiLogRepository;
-import com.sparta.omin.app.model.user.entity.User;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class AiServiceImplUnitTest {
+class AiLogServiceUnitTest {
 
     @Mock
     private AiLogRepository aiLogRepository;
