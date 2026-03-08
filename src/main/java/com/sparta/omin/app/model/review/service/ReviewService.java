@@ -3,6 +3,7 @@ package com.sparta.omin.app.model.review.service;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
+import com.sparta.omin.app.model.review.dto.ReviewCriteria;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
 import com.sparta.omin.app.model.review.entity.Review;
 import com.sparta.omin.app.model.review.repos.ReviewRepository;
@@ -96,7 +97,7 @@ public class ReviewService {
         return ReviewResponse.from(review);
     }
 
-    public Page<ReviewResponse> getReviews(Pageable pageable) {
+    public Page<ReviewResponse> getReviews(ReviewCriteria criteria, Pageable pageable) {
         Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(pageable);
         return reviewPage.map(ReviewResponse::from);
     }

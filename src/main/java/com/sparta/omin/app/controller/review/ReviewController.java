@@ -1,6 +1,7 @@
 package com.sparta.omin.app.controller.review;
 
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
+import com.sparta.omin.app.model.review.dto.ReviewCriteria;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
 import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.entity.User;
@@ -47,8 +48,10 @@ public class ReviewController {
     }
 
     @GetMapping("/reviews")
-    public ResponseEntity<Page<ReviewResponse>> getReviews(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<ReviewResponse> response = reviewService.getReviews(pageable);
+    public ResponseEntity<Page<ReviewResponse>> getReviews(
+            @RequestParam(required = false, defaultValue = "recent") ReviewCriteria criteria,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<ReviewResponse> response = reviewService.getReviews(criteria, pageable);
         return ResponseEntity.ok(response);
     }
 }
