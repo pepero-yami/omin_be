@@ -51,7 +51,7 @@ public class StoreService {
 
         //주소 중복 등록 방지
         if (storeRepository.existsByRoadAddressAndDetailAddress(storeCreateRequest.roadAddress(), storeCreateRequest.detailAddress())) {
-            throw new ApiException(ErrorCode.STORE_DUPLICATE_ADDRESS);
+            throw new OminBusinessException(ErrorCode.STORE_DUPLICATE_ADDRESS);
         }
         //kakao API
         KakaoAddressClient.KakaoAddressResult kakao = kakaoAddressClient.searchAddress(storeCreateRequest.roadAddress());
@@ -70,7 +70,7 @@ public class StoreService {
     public StoreResponse findStore(UUID storeId) {
         log.debug("매장 단건 조회 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         return StoreResponse.of(store);
     }
 
@@ -79,10 +79,10 @@ public class StoreService {
         log.info("매장 수정 요청 - storeId: {}", storeId);
         //다른매장의 동일한 주소로 수정 불가
         if (storeRepository.existsByRoadAddressAndDetailAddressAndIdNot(storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeId)) {
-            throw new ApiException(ErrorCode.STORE_DUPLICATE_ADDRESS);
+            throw new OminBusinessException(ErrorCode.STORE_DUPLICATE_ADDRESS);
         }
         Store savedStore = storeRepository.findByIdWithImages(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, savedStore);
 
         KakaoAddressClient.KakaoAddressResult kakao = kakaoAddressClient.searchAddress(storeUpdateRequest.roadAddress());
@@ -105,7 +105,7 @@ public class StoreService {
     public void deleteStore(UUID storeId, UserDetails user) {
         log.info("매장 삭제 요청 - storeId: {}", storeId);
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         storeRepository.delete(store);
         log.info("매장 삭제 완료 - storeId: {}", storeId);
@@ -178,12 +178,12 @@ public class StoreService {
         User loginUser = (User) user;
         log.info("매장 승인 요청 - storeId: {}, adminId: {}", storeId, loginUser.getId());
         if (loginUser.getRole() != Role.MANAGER && loginUser.getRole() != Role.MASTER) {
-            throw new ApiException(ErrorCode.STORE_ACCESS_DENIED);
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         if (store.getStatus() != Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_NOT_PENDING);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_NOT_PENDING);
         }
         //pending -> closed로 변경
         store.updateStatus(Status.CLOSED);
@@ -198,14 +198,14 @@ public class StoreService {
     public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId, UserDetails user) {
         log.info("매장 상태 변경 요청 - storeId: {}, targetStatus: {}", storeId, storeStatusUpdateRequest.status());
         Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ApiException(ErrorCode.STORE_NOT_FOUND));
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
         if (storeStatusUpdateRequest.status() == Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
         }
         //가게 상태가 PENDING 일 때 예외발생
         if (store.getStatus() == Status.PENDING) {
-            throw new ApiException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
+            throw new OminBusinessException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
         }
         Status prevStatus = store.getStatus();
         store.updateStatus(storeStatusUpdateRequest.status());
@@ -222,7 +222,7 @@ public class StoreService {
         }
         //관리자가 아니라면 반드시 가게 주인이어야 함
         if (!store.getOwnerId().equals(loginUser.getId())) {
-            throw new ApiException(ErrorCode.STORE_ACCESS_DENIED);
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
     }
 
@@ -261,7 +261,7 @@ public class StoreService {
                 StoreImage existingImage = existingImageMap.get(imageRequest.id());
                 if (existingImage == null) {
                     log.debug("이미지 ID 불일치 - imageId: {}", imageRequest.id());
-                    throw new ApiException(ErrorCode.STORE_IMAGE_NOT_FOUND);
+                    throw new OminBusinessException(ErrorCode.STORE_IMAGE_NOT_FOUND);
                 }
                 existingImage.updateImageSorting(newSequence);
                 log.debug("기존 이미지 순서 갱신 - imageId: {}, sequence: {}", imageRequest.id(), newSequence);
