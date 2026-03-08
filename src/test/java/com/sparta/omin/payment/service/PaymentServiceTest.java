@@ -75,7 +75,7 @@ class PaymentServiceTest {
             // When & Then
             assertThatThrownBy(() -> paymentService.requestPayment(orderId, requestUserId, 25000.0))
                     .isInstanceOf(OminBusinessException.class)
-                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORDER_USER_MISMATCH);
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.PAYMENT_ORDER_USER_MISMATCH);
         }
     }
 
