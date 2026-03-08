@@ -3,8 +3,7 @@ package com.sparta.omin.app.model.ai.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.sparta.omin.app.model.ai.repos.AiLogRepository;
-import com.sparta.omin.app.model.user.service.UserReadService;
+import com.sparta.omin.app.model.ai.code.RequestType;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,21 +19,18 @@ import org.springframework.ai.chat.prompt.Prompt;
  * 프롬프트 생성 확인 및 전달 과정 확인 테스트 (API 호출 x)
  */
 @ExtendWith(MockitoExtension.class)
-class AiServiceImplTest {
+class AiServiceTest {
 
     private AiService aiService;
-    private AiLogService aiLogService;
 
+    @Mock
+    private AiLogService aiLogService;
     @Mock
     private ChatClient chatClient;
     @Mock
     private ChatClient.ChatClientRequestSpec requestSpec;
     @Mock
     private ChatClient.CallResponseSpec responseSpec;
-    @Mock
-    private AiLogRepository aiLogRepository;
-    @Mock
-    private UserReadService userReadService;
 
     @BeforeEach
     void setUp() {
@@ -53,6 +49,10 @@ class AiServiceImplTest {
         when(chatClient.prompt(any(Prompt.class))).thenReturn(requestSpec);
         when(requestSpec.call()).thenReturn(responseSpec);
         when(responseSpec.content()).thenReturn(expectedContent);
+
+        // 로그 저장 로직은 실행되지 않도록 막기
+        doNothing().when(aiLogService)
+            .createAiLog(anyString(), anyString(), any(RequestType.class), any(UUID.class));
 
         // 2. When
         String result = aiService.generateMenuDescription(userPrompt, UUID.randomUUID());
