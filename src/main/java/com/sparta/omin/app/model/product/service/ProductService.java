@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.product.Service;
+package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.code.ProductStatus;
@@ -68,7 +68,7 @@ public class ProductService {
     public void updateProduct(UUID productId, ProductUpdateCommand command, UUID userId) {
 
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         UUID storeId = product.getStore().getId();
 
@@ -89,7 +89,7 @@ public class ProductService {
      */
     public void updateProductStatus(UUID productId, UUID userId, ProductStatus status) {
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         UUID storeId = product.getStore().getId();
 
