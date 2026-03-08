@@ -5,7 +5,6 @@ import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
