@@ -2,6 +2,7 @@ package com.sparta.omin.app.controller.product;
 
 import com.sparta.omin.app.controller.product.payload.ProductCreateRequest;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateRequest;
+import com.sparta.omin.app.controller.product.payload.ProductUpdateStatusRequest;
 import com.sparta.omin.app.model.product.Service.ProductService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
 import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -61,6 +63,20 @@ public class ProductController {
         ProductUpdateCommand command = request.toCommand();
         productService.updateProduct(productId, command, user.getId());
 
+        return ResponseEntity.status(HttpStatus.OK).body("success");
+    }
+
+    /**
+     * 상품 상태 변경 api 권한 : {@code ROLE_OWNER}
+     */
+    // @Preauthorize("hasRole('OWNER')")
+    @PatchMapping("/{productId}/status")
+    public ResponseEntity<?> updateProductStatus(
+        @RequestBody @Valid ProductUpdateStatusRequest request,
+        @PathVariable UUID productId,
+        @AuthenticationPrincipal User user
+    ) {
+        productService.updateProductStatus(productId, user.getId(), request.getProductStatus());
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 }

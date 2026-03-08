@@ -57,4 +57,8 @@ public class Product extends BaseEntity {
         this.description = command.description() != null && !command.description().isBlank() ? command.description() : this.description;
         this.price = command.price();
     }
+
+    public void updateStatus(ProductStatus status) {
+        this.status = status;
+    }
 }
