@@ -1,10 +1,8 @@
 package com.sparta.omin.app.model.review.dto;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 
-@Getter
 @RequiredArgsConstructor
 public enum ReviewCriteria {
     RATING_HIGH("rating", "평점 높은순", Sort.Direction.DESC),
