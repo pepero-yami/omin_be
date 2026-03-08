@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.product.Service;
+package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.ai.service.AiService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
@@ -64,7 +64,7 @@ public class ProductService {
     @Transactional
     public void deleteProduct(UUID productId, UUID userId) {
         Product product = productRepository.findById(productId)
-            .orElseThrow(() -> ErrorCode.PRODUCT_NOT_FOUND);
+            .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
         UUID storeId = product.getStore().getId();
