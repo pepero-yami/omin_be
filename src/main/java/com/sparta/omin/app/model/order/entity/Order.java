@@ -1,7 +1,9 @@
 package com.sparta.omin.app.model.order.entity;
 
+import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.orderItem.entity.OrderItem;
+import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
@@ -13,6 +15,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -42,11 +45,8 @@ public class Order extends BaseEntity {
     @Column(name = "user_request", length = 200)
     private String userRequest;
 
-    @Column(name = "delivery_address", length = 100)
+    @Column(name = "delivery_address", length = 200)
     private String deliveryAddress;
-
-    @Column(name = "delivery_address_detail", length = 100)
-    private String deliveryAddressDetail;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
@@ -57,24 +57,35 @@ public class Order extends BaseEntity {
     public static Order create(User user,
                                Store store,
                                String userRequest,
-                               String deliveryAddress,
-                               String deliveryAddressDetail
+                               Address address
     ) {
         Order order = new Order();
 
         order.user = user;
         order.store = store;
         order.userRequest = userRequest;
-        order.deliveryAddress = deliveryAddress;
-        order.deliveryAddressDetail = deliveryAddressDetail;
+        order.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+        order.orderItems = new ArrayList<>();
         order.status = OrderStatus.PENDING;
         order.isDeleted = false;
 
         return order;
     }
 
+
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
+        products.forEach(product ->
+                this.orderItems.add(OrderItem.create(this, product, quantityMap.get(product.getId())))
+        );
+
+        // 주문 총액 다시 계산
+        this.totalPrice = this.orderItems.stream()
+                .mapToDouble(OrderItem::getTotalPrice)
+                .sum();
     }
 
     //에러방지
