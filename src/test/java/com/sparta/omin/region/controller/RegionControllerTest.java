@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.sparta.omin.app.model.region.dto.RegionResponse;
 import com.sparta.omin.app.model.region.service.RegionSeedService;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import java.util.List;
 import java.util.UUID;
@@ -71,7 +71,7 @@ class RegionControllerTest extends RegionControllerHelper {
         // 서비스에서 REGION_NOT_FOUND 예외를 던지도록 설정
         UUID id = UUID.randomUUID();
         given(regionService.getRegion(id))
-                .willThrow(new ApiException(ErrorCode.REGION_NOT_FOUND));
+                .willThrow(new OminBusinessException(ErrorCode.REGION_NOT_FOUND));
 
         // When & Then
         // 404 상태 코드와 에러 메시지를 확인
@@ -90,7 +90,7 @@ class RegionControllerTest extends RegionControllerHelper {
         // 서비스에서 이미 존재하는 지역 에러를 던지도록 설정
         UUID id = UUID.randomUUID();
         given(regionService.updateRegion(eq(id), any()))
-                .willThrow(new ApiException(ErrorCode.REGION_ALREADY_EXISTS));
+                .willThrow(new OminBusinessException(ErrorCode.REGION_ALREADY_EXISTS));
 
         // When & Then
         // 409 상태 코드 확인

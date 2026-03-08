@@ -8,7 +8,7 @@ import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.config.SecurityConfig;
 import com.sparta.omin.app.security.jwt.JwtUtil;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.GlobalExceptionHandler;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
@@ -156,7 +156,7 @@ class ReviewControllerTest {
                 new ReviewCreateRequest(orderId, reqRating, reqComment);
 
         given(reviewService.createReview(any(), any(), any()))
-                .willThrow(new ApiException(ErrorCode.REVIEW_ALREADY_EXISTS));
+                .willThrow(new OminBusinessException(ErrorCode.REVIEW_ALREADY_EXISTS));
 
         mockMvc.perform(multipart(BASE_URL)
                         .file(createJsonPart(request)))

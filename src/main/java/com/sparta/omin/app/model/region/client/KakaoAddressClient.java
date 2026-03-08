@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.region.client;
 
 import com.sparta.omin.app.model.region.client.dto.KakaoAddressSearchResponse;
-import com.sparta.omin.common.error.ApiException;
+import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,7 +40,7 @@ public class KakaoAddressClient {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
         if (first.getAddress() == null) {
-            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
+            throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
 
         String depth3 = buildDepth3(first.getAddress());
@@ -55,7 +55,7 @@ public class KakaoAddressClient {
         KakaoAddressSearchResponse.Document first = requestFirstDocument(query);
 
         if (first.getAddress() == null) {
-            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
+            throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
 
         return buildDepth3(first.getAddress());
@@ -63,7 +63,7 @@ public class KakaoAddressClient {
 
     private KakaoAddressSearchResponse.Document requestFirstDocument(String query) {
         if (!StringUtils.hasText(query)) {
-            throw new ApiException(ErrorCode.KAKAO_EMPTY_QUERY);
+            throw new OminBusinessException(ErrorCode.KAKAO_EMPTY_QUERY);
         }
 
         URI uri = UriComponentsBuilder
@@ -83,17 +83,17 @@ public class KakaoAddressClient {
         try {
             response = restTemplate.exchange(uri, HttpMethod.GET, entity, KakaoAddressSearchResponse.class);
         } catch (RestClientException e) {
-            throw new ApiException(ErrorCode.KAKAO_API_CALL_FAILED);
+            throw new OminBusinessException(ErrorCode.KAKAO_API_CALL_FAILED);
         }
 
         if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-            throw new ApiException(ErrorCode.KAKAO_INVALID_RESPONSE);
+            throw new OminBusinessException(ErrorCode.KAKAO_INVALID_RESPONSE);
         }
 
         KakaoAddressSearchResponse body = response.getBody();
         KakaoAddressSearchResponse.Document first = body.firstDocumentOrNull();
         if (first == null) {
-            throw new ApiException(ErrorCode.KAKAO_NO_RESULT);
+            throw new OminBusinessException(ErrorCode.KAKAO_NO_RESULT);
         }
         return first;
     }
@@ -108,7 +108,7 @@ public class KakaoAddressClient {
 
         // depth1, depth3은 필수로 간주
         if (!StringUtils.hasText(depth1) || !StringUtils.hasText(depth3)) {
-            throw new ApiException(ErrorCode.REGION_INVALID_ADDRESS);
+            throw new OminBusinessException(ErrorCode.REGION_INVALID_ADDRESS);
         }
 
         List<String> parts = new ArrayList<>();
@@ -128,14 +128,14 @@ public class KakaoAddressClient {
     private BigDecimal parseBigDecimal(String value, String fieldName) {
         if (!StringUtils.hasText(value)) {
             // x(경도)와 y(위도) 구분에 따른 에러 코드 매핑
-            throw new ApiException(fieldName.contains("x")
+            throw new OminBusinessException(fieldName.contains("x")
                     ? ErrorCode.KAKAO_NO_LONGITUDE
                     : ErrorCode.KAKAO_NO_LATITUDE);
         }
         try {
             return new BigDecimal(value.trim());
         } catch (NumberFormatException e) {
-            throw new ApiException(ErrorCode.KAKAO_INVALID_COORDINATE);
+            throw new OminBusinessException(ErrorCode.KAKAO_INVALID_COORDINATE);
         }
     }
 }
