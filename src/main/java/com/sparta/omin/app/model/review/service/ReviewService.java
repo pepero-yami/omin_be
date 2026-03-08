@@ -16,7 +16,9 @@ import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -98,7 +100,32 @@ public class ReviewService {
     }
 
     public Page<ReviewResponse> getReviews(ReviewCriteria criteria, Pageable pageable) {
-        Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(pageable);
+        if(!criteria.equals(ReviewCriteria.DEFAULT)) {
+            // Criteria에 따른 정렬기준 하나 생성
+            Sort.Order primaryOrder = switch (criteria) {
+                case RATING_HIGH -> Sort.Order.desc("rating");
+                case RATING_LOW -> Sort.Order.asc("rating");
+                default -> Sort.Order.desc("createdAt");
+            };
+
+            // Criteria를 우선으로 새로운 Pageable에 쓰일 Sort을 만든다.
+            // (pageable.getSort()의 기본값은 컨트롤러에서 @PageableDefault로 초기화되어있음)
+            Sort combinedSort = Sort.by(primaryOrder).and(pageable.getSort());
+
+            // 구현체 PageRequest로 combinedSort를 가진 새로운 Pagable생성
+            Pageable finalPageable = PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    combinedSort
+            );
+
+        Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(finalPageable);
         return reviewPage.map(ReviewResponse::from);
+        }//if criteria != DEFAULT
+
+        else {
+            Page<Review> reviewPage = reviewRepository.findAllByIsDeletedFalse(pageable);
+            return reviewPage.map(ReviewResponse::from);
+        }
     }
 }
