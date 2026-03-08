@@ -8,7 +8,7 @@ import com.sparta.omin.app.model.address.repos.AddressRepository;
 import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.entity.Region;
-import com.sparta.omin.app.model.region.repos.RegionRepository;
+import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ import static org.mockito.BDDMockito.given;
 class AddressServiceTest {
 
     @Mock private AddressRepository addressRepository;
-    @Mock private RegionRepository regionRepository;
+    @Mock private RegionService regionService;
     @Mock private KakaoAddressClient kakaoAddressClient;
     @InjectMocks private AddressService addressService;
 
@@ -45,8 +45,13 @@ class AddressServiceTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-        region = Region.create("서울 강남구 역삼동");
-        kakaoResult = new KakaoAddressClient.KakaoAddressResult("서울 강남구 역삼동", new BigDecimal("37.5"), new BigDecimal("127.1"));
+        // KakaoAddressResult 생성자에 roadAddress(정제주소) 필드 추가됨
+        kakaoResult = new KakaoAddressClient.KakaoAddressResult(
+                "서울 강남구 역삼동",
+                "서울 강남구 역삼로 123", // 추가된 필드
+                new BigDecimal("37.5"),
+                new BigDecimal("127.1")
+        );
     }
 
     @Nested
@@ -66,7 +71,7 @@ class AddressServiceTest {
             given(addressRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
             // When
-            AddressResponse response = addressService.create(userId, request);
+            AddressResponse response = addressService.createAddress(userId, request);
 
             // Then
             // 사용자는 false로 보냈지만, 첫 주소이므로 결과는 true여야 함!
@@ -84,7 +89,7 @@ class AddressServiceTest {
                     .willReturn(true);
 
             // When & Then
-            assertThatThrownBy(() -> addressService.create(userId, request))
+            assertThatThrownBy(() -> addressService.createAddress(userId, request))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DUPLICATED);
         }
@@ -105,7 +110,7 @@ class AddressServiceTest {
             mockKakaoAndRegion();
 
             // When & Then
-            assertThatThrownBy(() -> addressService.update(userId, addressId, request))
+            assertThatThrownBy(() -> addressService.updateAddress(userId, addressId, request))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_MUST_EXIST);
         }
@@ -122,7 +127,7 @@ class AddressServiceTest {
             given(addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)).willReturn(Optional.of(defaultAddress));
 
             // When & Then
-            assertThatThrownBy(() -> addressService.delete(userId, addressId))
+            assertThatThrownBy(() -> addressService.deleteAddress(userId, addressId))
                     .isInstanceOf(OminBusinessException.class)
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DEFAULT_CANNOT_DELETE);
         }
@@ -143,7 +148,7 @@ class AddressServiceTest {
             given(addressRepository.findByUserIdAndIsDefaultTrueAndIsDeletedFalse(userId)).willReturn(Optional.of(oldDefaultAddress));
 
             // When
-            addressService.setDefault(userId, newDefaultId);
+            addressService.setDefaultAddress(userId, newDefaultId);
 
             // Then
             assertThat(newDefaultAddress.isDefault()).isTrue();
@@ -153,7 +158,7 @@ class AddressServiceTest {
 
     private void mockKakaoAndRegion() {
         given(kakaoAddressClient.searchAddress(any())).willReturn(kakaoResult);
-        given(regionRepository.findByAddressAndIsDeletedFalse(any())).willReturn(Optional.of(region));
+        given(regionService.getRegionIdByAddress(any())).willReturn(UUID.randomUUID());
     }
 
     private Address createMockAddress(boolean isDefault) {
