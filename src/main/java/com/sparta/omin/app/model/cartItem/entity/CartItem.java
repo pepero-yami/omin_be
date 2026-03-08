@@ -35,6 +35,12 @@ public class CartItem extends BaseEntity {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
+    @Column(name = "price", nullable = false)
+    private double price;
+
+    @Column(name = "total_price", nullable = false)
+    private int totalPrice;
+
     @Column(name = "created_by", nullable = false)
     private UUID createdBy;
 
@@ -51,6 +57,7 @@ public class CartItem extends BaseEntity {
 //        cartItem.product = product; todo
         cartItem.productId = productId;
         cartItem.quantity = quantity;
+        cartItem.price = 1;
         cartItem.createdBy = cart.getUserId();
         cartItem.updatedBy = cart.getUserId();
         cartItem.isDeleted = false;

@@ -1,9 +1,9 @@
 package com.sparta.omin.app.controller.product;
 
 import com.sparta.omin.app.controller.product.payload.ProductCreateRequest;
+import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateRequest;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateStatusRequest;
-import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
 import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
 import com.sparta.omin.app.model.user.entity.User;
@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -75,6 +76,15 @@ public class ProductController {
         @AuthenticationPrincipal User user
     ) {
         productService.updateProductStatus(productId, user.getId(), request.getProductStatus());
+        return ResponseEntity.status(HttpStatus.OK).body("success");
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> deleteProduct(
+        @PathVariable UUID productId,
+        @AuthenticationPrincipal User user
+    ) {
+        productService.deleteProduct(productId, user.getId());
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 }

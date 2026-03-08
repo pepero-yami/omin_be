@@ -52,6 +52,10 @@ public class Product extends BaseEntity {
         this.store = store;
     }
 
+    public void softDelete() {
+        this.isDeleted = true;
+    }
+
     public void update(ProductUpdateCommand command) {
         this.name = command.name();
         this.description = command.description() != null && !command.description().isBlank() ? command.description() : this.description;
