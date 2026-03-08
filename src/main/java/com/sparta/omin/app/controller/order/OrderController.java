@@ -1,10 +1,7 @@
 package com.sparta.omin.app.controller.order;
 
 import com.sparta.omin.app.model.order.application.OrderApplication;
-import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
-import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
-import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
-import com.sparta.omin.app.model.order.dto.OrderResponse;
+import com.sparta.omin.app.model.order.dto.*;
 import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
@@ -40,9 +37,17 @@ public class OrderController {
     @GetMapping("/history")
     public ResponseEntity<Slice<OrderResponse>> getOrdersHistory(@AuthenticationPrincipal User user,
                                                                  @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-                                                                   Pageable pageable) {
+                                                                 Pageable pageable) {
         return ResponseEntity.ok(orderService.getOrdersHistory(user.getId(), pageable));
     }
+
+    @PatchMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> updateOrderByCustomer(@AuthenticationPrincipal User user,
+                                                               @PathVariable UUID orderId,
+                                                               @Valid @RequestBody OrderUpdateRequest request) {
+        return ResponseEntity.ok(orderApplication.updateOrderByCustomer(user, orderId, request));
+    }
+
 
     /**
      * 손님 & 사장님
@@ -57,9 +62,9 @@ public class OrderController {
      */
     @GetMapping
     public ResponseEntity<Slice<OrderResponse>> getOrdersByOwner(@RequestParam UUID storeId,
-                                                                @AuthenticationPrincipal User user,
-                                                                @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-                                                                Pageable pageable) {
+                                                                 @AuthenticationPrincipal User user,
+                                                                 @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+                                                                 Pageable pageable) {
         return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), pageable));
     }
 }

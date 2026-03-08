@@ -7,6 +7,8 @@ import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -72,6 +74,18 @@ public class Order extends BaseEntity {
         return order;
     }
 
+    public void update(Address address, String userRequest) {
+        if (this.getStatus() != OrderStatus.PENDING) {
+            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
+        }
+        if (address != null) {
+            this.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+        }
+
+        if (userRequest != null) {
+            this.userRequest = userRequest;
+        }
+    }
 
     public void delete() {
         this.isDeleted = true;
@@ -92,4 +106,5 @@ public class Order extends BaseEntity {
     public boolean isCompleted() {
         return false;
     }
+
 }
