@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
 
-    @PostMapping("/reviews")
+    @PostMapping
     public ResponseEntity<ReviewResponse> create(@AuthenticationPrincipal User user,
                                                  @Valid @RequestPart ReviewCreateRequest request,
                                                  @RequestPart(value = "images", required = false) List<MultipartFile> images) {
@@ -42,13 +42,13 @@ public class ReviewController {
         return ResponseEntity.created(uri).body(response);
     }
 
-    @GetMapping("/reviews/{reviewId}")
+    @GetMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> getReview(@PathVariable UUID reviewId) {
         ReviewResponse response = reviewService.getReview(reviewId);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/reviews")
+    @GetMapping
     public ResponseEntity<Page<ReviewResponse>> getReviews(
             @RequestParam(required = false) UUID storeId,
             @RequestParam(required = false, defaultValue = "DEFAULT") ReviewCriteria criteria,
@@ -57,7 +57,7 @@ public class ReviewController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/reviews/{reviewId}")
+    @PatchMapping("/{reviewId}")
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable UUID reviewId,
                                                        @AuthenticationPrincipal User user,
                                                        @Valid @RequestPart(required = false) ReviewUpdateRequest request,
@@ -66,7 +66,7 @@ public class ReviewController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/reviews/{reviewId}")
+    @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(@PathVariable UUID reviewId, @AuthenticationPrincipal User user) {
         reviewService.deleteReview(reviewId, user);
         return ResponseEntity.ok().build();
