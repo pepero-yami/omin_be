@@ -5,9 +5,11 @@ import com.sparta.omin.app.model.cart.entity.RCart;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RCartService {
 
 	private final CartRedisClient redisClient;
@@ -23,13 +25,15 @@ public class RCartService {
 			.orElseGet(() -> RCart.create(userId, storeId));
 	}
 
+	@Transactional
 	public RCart save(RCart cart) {
 		redisClient.put(cart.getCustomerId(), cart);
 		return getCartInfo(cart.getCustomerId());
 	}
 
+	@Transactional
 	public RCart refresh(UUID userId) {
-		redisClient.put(userId, new RCart(userId));
+		redisClient.put(userId, RCart.create(userId, null));
 		return getCartInfo(userId);
 	}
 }
