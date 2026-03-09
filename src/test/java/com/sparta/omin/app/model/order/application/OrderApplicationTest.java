@@ -145,6 +145,7 @@ class OrderApplicationTest {
         // given
         UUID orderId = UUID.randomUUID();
         UUID addressId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
         OrderUpdateRequest updateRequest = new OrderUpdateRequest(addressId, "경비실에 맡겨주세요");
 
         given(addressReadService.getMyAddress(mockUser.getId(), addressId)).willReturn(mockAddress);
@@ -157,11 +158,11 @@ class OrderApplicationTest {
                 16000.0,
                 LocalDateTime.now()
         );
-        given(orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, updateRequest.userRequest()))
+        given(orderService.updateOrderByCustomer(userId, orderId, mockAddress, updateRequest.userRequest()))
                 .willReturn(expectedResponse);
 
         // when
-        OrderResponse response = orderApplication.updateOrderByCustomer(mockUser, orderId, updateRequest);
+        OrderResponse response = orderApplication.updateOrderByCustomer(userId, orderId, updateRequest);
 
         // then
         assertThat(response).isNotNull();

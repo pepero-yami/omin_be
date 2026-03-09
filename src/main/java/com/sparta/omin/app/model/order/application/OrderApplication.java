@@ -64,10 +64,10 @@ public class OrderApplication {
         return orderService.getOrdersByOwner(storeId, pageable);
     }
 
-    public OrderResponse updateOrderByCustomer(User user, UUID orderId, OrderUpdateRequest request) {
-        Address address = getAddress(user.getId(), request.addressId());
+    public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, OrderUpdateRequest request) {
+        Address address = getAddress(userId, request.addressId());
 
-        return orderService.updateOrderByCustomer(user, orderId, address, request.userRequest());
+        return orderService.updateOrderByCustomer(userId, orderId, address, request.userRequest());
     }
 
 
