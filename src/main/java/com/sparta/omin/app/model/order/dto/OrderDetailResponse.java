@@ -7,10 +7,13 @@ import com.sparta.omin.app.model.orderItem.entity.OrderItem;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ *
+ */
 public record OrderDetailResponse(
         UUID orderId,
         StoreInfo store,
-        AddressInfo address,
+        String deliveryAddress,
         OrderStatus orderStatus,
         String userRequest,
         List<OrderItemInfo> orderItems,
@@ -20,10 +23,7 @@ public record OrderDetailResponse(
         return new OrderDetailResponse(
                 order.getId(),
                 new StoreInfo(order.getStore().getId(), order.getStore().getName()),
-                new AddressInfo(
-                        order.getDeliveryAddress(),
-                        order.getDeliveryAddressDetail()
-                ),
+                order.getDeliveryAddress(),
                 order.getStatus(),
                 order.getUserRequest(),
                 order.getOrderItems().stream()
@@ -36,11 +36,6 @@ public record OrderDetailResponse(
     public record StoreInfo(
             UUID storeId,
             String storeName
-    ) { }
-
-    public record AddressInfo(
-            String shippingAddress,
-            String shippingDetailAddress
     ) { }
 
     public record OrderItemInfo(

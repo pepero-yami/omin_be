@@ -22,7 +22,7 @@ public class RCart {
 	private UUID storeId;
 	private Double totalPrice;
 	@Builder.Default
-	private List<Product> products = new ArrayList<>();
+	private List<CartItem> products = new ArrayList<>();
 
 	public RCart(UUID id) {
 		this.customerId = id;
@@ -30,15 +30,26 @@ public class RCart {
 
 	public void calculateTotalPrice() {
 		this.totalPrice = products.stream()
-			.mapToDouble(Product::getTotalPrice)
+			.mapToDouble(CartItem::getTotalPrice)
 			.sum();
+	}
+
+	public static RCart create(UUID customerId, UUID storeId) {
+		return RCart.builder()
+			.customerId(customerId)
+			.storeId(storeId)
+			.build();
+	}
+
+	public static void addNewCartItem(RCart cart, CartItem cartItem) {
+		cart.getProducts().add(cartItem);
 	}
 
 	@Getter
 	@NoArgsConstructor
 	@AllArgsConstructor
 	@Builder
-	public static class Product {
+	public static class CartItem {
 
 		private UUID id;
 		private String name;
@@ -46,7 +57,7 @@ public class RCart {
 		private Double totalPrice;
 		private int quantity;
 
-		public void add(int quantity) {
+		public void addQuantity(int quantity) {
 			this.quantity += quantity;
 			this.totalPrice = this.price * this.quantity;
 		}

@@ -2,6 +2,7 @@ package com.sparta.omin.app.controller.cart;
 
 import com.sparta.omin.app.application.CartApplication;
 import com.sparta.omin.app.model.cart.dto.CartAddProductRequest;
+import com.sparta.omin.app.model.cart.dto.request.CartProductDeleteRequest;
 import com.sparta.omin.app.model.cart.entity.RCart;
 import com.sparta.omin.app.model.cart.service.RCartService;
 import com.sparta.omin.app.model.user.entity.User;
@@ -42,6 +43,16 @@ public class RCartController {
 	public ResponseEntity<RCart> refreshCart(@AuthenticationPrincipal User user) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(
 			cartService.refresh(user.getId())
+		);
+	}
+
+	@PostMapping("/products")
+	public ResponseEntity<RCart> deleteProductInCart(
+		@AuthenticationPrincipal User user,
+		@Valid @RequestBody CartProductDeleteRequest request
+	) {
+		return ResponseEntity.ok().body(
+			cartApplication.deleteProductInCart(user.getId(), request)
 		);
 	}
 }

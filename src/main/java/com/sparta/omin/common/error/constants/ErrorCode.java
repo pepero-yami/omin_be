@@ -21,7 +21,6 @@ public enum ErrorCode {
 	CART_STORE_CONFLICT(HttpStatus.CONFLICT, "다른 가게의 상품이 담겨있습니다."),
 	CART_CHANGE_FAIL(HttpStatus.CONFLICT, "장바구니를 추가할 수 없습니다."),
 	//상품에러
-	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
 	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
     // Region 에러
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 지역(regionId)입니다."),
@@ -46,10 +45,15 @@ public enum ErrorCode {
     KAKAO_NO_LONGITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 경도(x) 값이 없습니다."),
     KAKAO_INVALID_COORDINATE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과의 좌표 값이 올바르지 않습니다."),
 
-    //서버 에러
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
-    // AI - 요청/검증 (400)
-    INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+	//서버 에러
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+
+	// Product
+	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
+
+	// AI - 요청/검증 (400)
+	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+
 	//결제 에러
 	PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
 	PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),

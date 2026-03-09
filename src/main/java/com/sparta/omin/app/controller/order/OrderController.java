@@ -1,6 +1,8 @@
 package com.sparta.omin.app.controller.order;
 
+import com.sparta.omin.app.model.order.application.OrderApplication;
 import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
+import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
 import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.service.OrderService;
@@ -24,14 +26,15 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderApplication orderApplication;
 
     /**
      * 손님
      */
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreateRequest request,
-                                                     @AuthenticationPrincipal User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.createOrder(user.getId(), request));
+    public ResponseEntity<OrderCreateResponse> createOrder(@Valid @RequestBody OrderCreateRequest request,
+                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderApplication.createOrder(user, request));
     }
 
     @GetMapping("/history")
@@ -57,6 +60,6 @@ public class OrderController {
                                                                 @AuthenticationPrincipal User user,
                                                                 @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
                                                                 Pageable pageable) {
-        return ResponseEntity.ok(orderService.getOrdersByOwner(storeId, user.getId(), user.getEmail(), pageable));
+        return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), pageable));
     }
 }

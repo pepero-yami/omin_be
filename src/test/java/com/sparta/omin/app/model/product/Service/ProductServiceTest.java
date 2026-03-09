@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.product.Service;
+package com.sparta.omin.app.model.product.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
