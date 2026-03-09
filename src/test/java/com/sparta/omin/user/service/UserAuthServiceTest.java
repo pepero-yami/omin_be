@@ -1,5 +1,6 @@
 package com.sparta.omin.user.service;
 
+import com.sparta.omin.app.model.user.client.JwtRedisClient;
 import com.sparta.omin.app.model.user.dto.UserDto;
 import com.sparta.omin.app.model.user.dto.UserRegister;
 import com.sparta.omin.app.model.user.dto.request.UserLoginRequest;
@@ -46,10 +47,7 @@ class UserAuthServiceTest {
 	private JwtUtil jwtUtil;
 
 	@Mock
-	private RedisTemplate<String, Object> redisTemplate;
-
-	@Mock
-	private ValueOperations<String, Object> valueOperations;
+	private JwtRedisClient jwtRedisClient;
 
 	@Nested
 	@DisplayName("회원가입 테스트")
@@ -117,9 +115,6 @@ class UserAuthServiceTest {
 			TokenResponse tokenResponse = new TokenResponse("access-token", "refresh-token");
 			given(jwtUtil.generateToken(any(), anyString(), anyString())).willReturn(tokenResponse);
 
-			// RedisTemplate.opsForValue()가 valueOperations를 반환하도록 설정
-			given(redisTemplate.opsForValue()).willReturn(valueOperations);
-
 			// when
 			TokenResponse result = userAuthService.login(request);
 
@@ -128,11 +123,8 @@ class UserAuthServiceTest {
 			assertThat(result.refreshToken()).isEqualTo("refresh-token");
 
 			// Redis 저장 로직 검증
-			verify(valueOperations, times(1)).set(
-				eq("RT:" + email),
-				eq("refresh-token"),
-				eq(12L * 60 * 60 * 1000), // 1000 * 60 * 60 * 12
-				eq(TimeUnit.MILLISECONDS)
+			verify(jwtRedisClient, times(1)).put(
+				eq(userId), eq(tokenResponse)
 			);
 		}
 
