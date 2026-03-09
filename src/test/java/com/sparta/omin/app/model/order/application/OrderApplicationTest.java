@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.order.application;
 
+import com.sparta.omin.app.application.OrderApplication;
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.address.service.AddressReadService;
 import com.sparta.omin.app.model.cart.entity.RCart;

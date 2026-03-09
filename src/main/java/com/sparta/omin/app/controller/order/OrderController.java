@@ -1,6 +1,6 @@
 package com.sparta.omin.app.controller.order;
 
-import com.sparta.omin.app.model.order.application.OrderApplication;
+import com.sparta.omin.app.application.OrderApplication;
 import com.sparta.omin.app.model.order.dto.*;
 import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.user.entity.User;
