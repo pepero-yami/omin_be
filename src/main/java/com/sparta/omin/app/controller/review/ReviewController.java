@@ -59,9 +59,9 @@ public class ReviewController {
 
     @PatchMapping("/reviews/{reviewId}")
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable UUID reviewId,
-                                                 @AuthenticationPrincipal User user,
-                                                 @Valid @RequestPart ReviewUpdateRequest request,
-                                                 @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+                                                       @AuthenticationPrincipal User user,
+                                                       @Valid @RequestPart(required = false) ReviewUpdateRequest request,
+                                                       @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         ReviewResponse response = reviewService.updateReview(reviewId, user, request, images);
         return ResponseEntity.ok(response);
     }

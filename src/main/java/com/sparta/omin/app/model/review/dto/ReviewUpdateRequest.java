@@ -4,7 +4,6 @@ import com.sparta.omin.app.model.review.entity.ReviewImage;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public record ReviewUpdateRequest(
@@ -16,10 +15,10 @@ public record ReviewUpdateRequest(
         List<String> deleteImages
 ) {
     public List<String> deleteImageUrls() {
-        return new ArrayList<>();
+        return deleteImages;
     }
 
-    public List<String> updateImageUrls() {
-        return  new ArrayList<>();
+    public List<ReviewImage> updateImages() {
+        return updateImages;
     }
 }
