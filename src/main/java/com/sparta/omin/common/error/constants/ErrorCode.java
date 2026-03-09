@@ -54,9 +54,9 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
     PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
     PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
-    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "이미 완료된 결제입니다."), // 추가
-    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."), // 추가
-    PAYMENT_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제를 진행할 수 없는 상태입니다."), // 추가
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."),
+    PAYMENT_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제를 진행할 수 없는 상태입니다."),
     PAYMENT_ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 처리가 가능합니다."),
 
 	// Product
