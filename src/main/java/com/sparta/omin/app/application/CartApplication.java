@@ -27,6 +27,10 @@ public class CartApplication {
 			request.storeId());
 		validateProductStatus(product);
 
+		if (request.force()) {
+			cartService.refresh(customerId);
+		}
+
 		RCart cart = cartService.getCartInCustomer(customerId, request.storeId());
 		validateCartStore(cart, request.storeId());
 
