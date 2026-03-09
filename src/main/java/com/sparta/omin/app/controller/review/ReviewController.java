@@ -7,6 +7,7 @@ import com.sparta.omin.app.model.review.dto.ReviewUpdateRequest;
 import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<ReviewResponse> create(@AuthenticationPrincipal User user,
                                                  @Valid @RequestPart ReviewCreateRequest request,
+                                                 @Size(max = 5, message = "이미지는 최대 5개까지 업로드할 수 있습니다.")
                                                  @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         ReviewResponse response =
                 reviewService.createReview(user, request, images);
@@ -61,6 +63,7 @@ public class ReviewController {
     public ResponseEntity<ReviewResponse> updateReview(@PathVariable UUID reviewId,
                                                        @AuthenticationPrincipal User user,
                                                        @Valid @RequestPart(required = false) ReviewUpdateRequest request,
+                                                       @Size(max = 5, message = "이미지는 최대 5개까지 업로드할 수 있습니다.")
                                                        @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         ReviewResponse response = reviewService.updateReview(reviewId, user, request, images);
         return ResponseEntity.ok(response);
