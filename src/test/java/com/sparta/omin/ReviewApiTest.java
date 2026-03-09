@@ -35,9 +35,9 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -367,5 +367,52 @@ class ReviewControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+
+    @DisplayName("리뷰 삭제 성공 시 200 반환")
+    void deleteReview_success() throws Exception {
+
+        // when & then
+        mockMvc.perform(delete(BASE_URL + "/" + reviewId))
+                .andDo(print())
+                .andExpect(status().isOk());
+        verify(reviewService).deleteReview(eq(reviewId), any());
+
+    }
+
+
+    @Test
+
+    @DisplayName("리뷰 삭제 실패 - 작성자 불일치 시 403 반환")
+    void deleteReview_fail_userMismatch() throws Exception {
+        // void 메서드: doThrow()
+        doThrow(new OminBusinessException(ErrorCode.REVIEW_USER_MISMATCH))
+                .when(reviewService).deleteReview(eq(reviewId), any());
+
+        // when & then
+        mockMvc.perform(delete(BASE_URL + "/" + reviewId))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("REVIEW_USER_MISMATCH"));
+
+    }
+
+    @Test
+    @DisplayName("리뷰 삭제 실패 - 존재하지 않는 리뷰일 경우 404 반환")
+    void deleteReview_fail_notFound() throws Exception {
+
+        // given
+        doThrow(new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND))
+                .when(reviewService).deleteReview(eq(reviewId), any());
+
+        // when & then
+
+        mockMvc.perform(delete(BASE_URL + "/" + reviewId))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("REVIEW_NOT_FOUND"));
+
     }
 }
