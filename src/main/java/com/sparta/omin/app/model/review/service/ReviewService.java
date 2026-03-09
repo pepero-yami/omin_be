@@ -13,7 +13,6 @@ import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.repos.StoreRatingStatRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
@@ -40,7 +39,6 @@ public class ReviewService {
     private final StoreRatingStatRepository statRepository;
     private final OrderRepository orderRepository;
     private final ImageUploader imageUploader;
-    private final UserRepository userRepository;
 
     @Transactional
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
@@ -78,7 +76,7 @@ public class ReviewService {
         reviewRepository.save(newReview);
 
         // 주문에 해당하는 가게에 기존 평점 통계가 존재하는지 확인 후 평점 생성 / 업데이트
-        Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreId(order.getStore().getId());
+        Optional<StoreRatingStat> oldStoreRatingStat = statRepository.findByStoreIdWithLock(order.getStore().getId());
         if (oldStoreRatingStat.isPresent()) {
             oldStoreRatingStat.get().increase(request.rating());
         } else {
@@ -151,7 +149,7 @@ public class ReviewService {
             old.updateReview(request.rating() != null ? request.rating() : old.getRating(), request.comment() != null ? request.comment() : old.getComment());
             handleReviewImageUpdates(old, request.updateImages(), request.deleteImageUrls(), images);
         } // request != null (아래 부터 request가 Nullable)
-        reviewRepository.saveAndFlush(old);// saveAndFlush를 하면 이 시점에 updatedAt이 세팅됩니다.
+        reviewRepository.saveAndFlush(old);// saveAndFlush를 하면 dto를 반환하기 전에 updatedAt이 세팅됩니다.
         return ReviewResponse.from(old);
     }
 
@@ -164,20 +162,25 @@ public class ReviewService {
                 throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
             }
 
-            int lastSequence = old.getImages().stream().mapToInt(ReviewImage::getSequence).max().orElse(-1);
-
-            for (int i = 0; i < newFiles.size(); i++) {
-                MultipartFile file = newFiles.get(i);
-                if (!file.isEmpty()) {
-                    String url = imageUploader.uploadReviewImage(file);
-                    ReviewImage.create(old, url, lastSequence + i + 1);
-                    isUpdated = true;
-                }
-            }
+            isUpdated = isUpdated(old, newFiles, isUpdated);
             if (isUpdated) {
                 old.markUpdated();
             }
         }
+    }
+
+    private boolean isUpdated(Review old, List<MultipartFile> newFiles, boolean isUpdated) {
+        int lastSequence = old.getImages().stream().mapToInt(ReviewImage::getSequence).max().orElse(-1);
+
+        for (int i = 0; i < newFiles.size(); i++) {
+            MultipartFile file = newFiles.get(i);
+            if (!file.isEmpty()) {
+                String url = imageUploader.uploadReviewImage(file);
+                ReviewImage.create(old, url, lastSequence + i + 1);
+                isUpdated = true;
+            }
+        }
+        return isUpdated;
     }
 
     private void handleReviewImageUpdates(Review review, List<ReviewImage> updateImages, // 클라이언트가 원하는 순서대로 바꾼 ReviewImage
@@ -190,10 +193,7 @@ public class ReviewService {
         if (deleteUrls != null && !deleteUrls.isEmpty()) {
             for (String url : deleteUrls) {
                 // isDeleted 상태 변경
-                review.getImages().stream()
-                        .filter(img -> img.getImageUrl().equals(url))
-                        .findFirst()
-                        .ifPresent(ReviewImage::delete);
+                review.getImages().stream().filter(img -> img.getImageUrl().equals(url)).findFirst().ifPresent(ReviewImage::delete);
                 isUpdated = true;
             }
         }
@@ -229,16 +229,7 @@ public class ReviewService {
                 throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
             }
 
-            int lastSequence = review.getImages().stream().mapToInt(ReviewImage::getSequence).max().orElse(-1);
-
-            for (int i = 0; i < newFiles.size(); i++) {
-                MultipartFile file = newFiles.get(i);
-                if (!file.isEmpty()) {
-                    String url = imageUploader.uploadReviewImage(file);
-                    ReviewImage.create(review, url, lastSequence + i + 1);
-                    isUpdated = true;
-                }
-            }
+            isUpdated = isUpdated(review, newFiles, isUpdated);
         }
 
         // 4️⃣ 업데이트 발생 시 리뷰 updatedAt 갱신
@@ -249,13 +240,11 @@ public class ReviewService {
 
     @Transactional
     public void deleteReview(UUID reviewId, User user) {
-        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND));
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId).orElseThrow(() -> new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND));
         if (!review.getUser().getId().equals(user.getId())) {
             throw new OminBusinessException(ErrorCode.REVIEW_USER_MISMATCH);
         }
-        statRepository.findByStoreIdWithLock(review.getStore().getId())
-                .ifPresent(stat -> stat.updateRatingByDiff(-review.getRating()));
+        statRepository.findByStoreIdWithLock(review.getStore().getId()).ifPresent(stat -> stat.updateRatingByDiff(-review.getRating()));
         review.delete();
         review.getImages().forEach(ReviewImage::delete);
     }

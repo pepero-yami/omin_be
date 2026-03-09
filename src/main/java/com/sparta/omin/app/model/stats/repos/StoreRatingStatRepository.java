@@ -11,8 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface StoreRatingStatRepository extends JpaRepository<StoreRatingStat, UUID> {
-    Optional<StoreRatingStat> findByStoreId(UUID storeId);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from StoreRatingStat s where s.storeId = :storeId")
     Optional<StoreRatingStat> findByStoreIdWithLock(@Param("storeId") UUID id);
