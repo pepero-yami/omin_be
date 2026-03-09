@@ -72,14 +72,14 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrderByCustomer(User user, UUID orderId) {
+    public void cancelOrderByCustomer(User user, UUID orderId) {
         Order order = getOrder(orderId);
 
         if (!user.getId().equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
 
-        order.softDelete();
+        order.cancel();
     }
 
     public OrderDetailResponse getOrderDetail(UUID orderId) {

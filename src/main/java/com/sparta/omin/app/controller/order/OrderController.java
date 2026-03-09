@@ -49,9 +49,9 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> deleteOrderByCustomer(@AuthenticationPrincipal User user,
+    public ResponseEntity<Void> cancelOrderByCustomer(@AuthenticationPrincipal User user,
                                                       @PathVariable UUID orderId) {
-        orderService.deleteOrderByCustomer(user, orderId);
+        orderService.cancelOrderByCustomer(user, orderId);
         return ResponseEntity.noContent().build();
     }
 

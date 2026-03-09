@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -86,9 +87,14 @@ public class Order extends BaseEntity {
         }
     }
 
-    public void softDelete() {
+    public void cancel() {
         validatePendingStatus();
-        this.isDeleted = false;
+
+        if (this.createdAt.plusMinutes(5).isBefore(LocalDateTime.now())) {
+            throw new OminBusinessException(ErrorCode.ORDER_PERIOD_EXPIRED);
+        }
+
+        this.status = OrderStatus.CANCELLED;
     }
 
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {

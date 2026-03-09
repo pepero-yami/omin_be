@@ -81,6 +81,7 @@ public enum ErrorCode {
     ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 리뷰를 작성할 수 있습니다."),
     ORDER_NOT_OWNED(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다."),
     ORDER_UPDATE_DENIED(HttpStatus.FORBIDDEN, "해당 주문은 수정할 수 없습니다."),
+    ORDER_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "주문한지 5분 이상 된 주문은 취소할 수 없습니다."),
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),

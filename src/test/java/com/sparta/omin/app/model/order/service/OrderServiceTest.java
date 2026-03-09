@@ -347,7 +347,7 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when
-        orderService.deleteOrderByCustomer(mockUser, orderId);
+        orderService.cancelOrderByCustomer(mockUser, orderId);
 
         // then
         then(order).should().softDelete();
@@ -370,7 +370,7 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when & then
-        assertThatThrownBy(() -> orderService.deleteOrderByCustomer(mockUser, orderId))
+        assertThatThrownBy(() -> orderService.cancelOrderByCustomer(mockUser, orderId))
                 .isInstanceOf(OminBusinessException.class);
 
         then(order).should(never()).softDelete(); // softDelete 호출 안됨
