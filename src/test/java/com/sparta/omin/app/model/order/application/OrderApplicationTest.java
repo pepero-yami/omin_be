@@ -6,6 +6,8 @@ import com.sparta.omin.app.model.cart.entity.RCart;
 import com.sparta.omin.app.model.cart.service.RCartService;
 import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
 import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
+import com.sparta.omin.app.model.order.dto.OrderResponse;
+import com.sparta.omin.app.model.order.dto.OrderUpdateRequest;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.store.entity.Store;
@@ -137,4 +139,37 @@ class OrderApplicationTest {
         then(cartService).should(never()).refresh(any());
     }
 
+    @Test
+    @DisplayName("주문 수정 성공")
+    void updateOrderByCustomer_success() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        UUID addressId = UUID.randomUUID();
+        OrderUpdateRequest updateRequest = new OrderUpdateRequest(addressId, "경비실에 맡겨주세요");
+
+        given(addressReadService.getMyAddress(mockUser.getId(), addressId)).willReturn(mockAddress);
+
+        OrderResponse expectedResponse = new OrderResponse(
+                orderId,
+                OrderStatus.PENDING,
+                "경비실에 맡겨주세요",
+                "광화문 김치찌개",
+                16000.0,
+                LocalDateTime.now()
+        );
+        given(orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, updateRequest.userRequest()))
+                .willReturn(expectedResponse);
+
+        // when
+        OrderResponse response = orderApplication.updateOrderByCustomer(mockUser, orderId, updateRequest);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.userRequest()).isEqualTo("경비실에 맡겨주세요");
+        assertThat(response.orderStatus()).isEqualTo(OrderStatus.PENDING);
+
+        System.out.println("=== 주문 수정 결과 ===");
+        System.out.println("요청사항: " + response.userRequest());
+        System.out.println("주문 상태: " + response.orderStatus());
+    }
 }
