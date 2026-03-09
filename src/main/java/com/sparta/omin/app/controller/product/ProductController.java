@@ -13,6 +13,7 @@ import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
 import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -53,12 +54,12 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<?> createProduct(
         @RequestBody @Valid ProductCreateRequest request,
-        @RequestPart(required = false) MultipartFile file,
+        @RequestPart(required = false) List<MultipartFile> images,
         @AuthenticationPrincipal User user
     ) {
         UUID userId = user.getId();
         ProductCreateCommand command = request.toCommand();
-        productService.createProduct(command, userId, file);
+        productService.createProduct(command, userId, images);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("success");
     }
@@ -105,10 +106,11 @@ public class ProductController {
     public ResponseEntity<?> updateProduct(
         @RequestBody @Valid ProductUpdateRequest request,
         @PathVariable UUID productId,
+        @RequestPart(required = false) List<MultipartFile> files,
         @AuthenticationPrincipal User user
     ) {
         ProductUpdateCommand command = request.toCommand();
-        productService.updateProduct(productId, command, user.getId());
+        productService.updateProduct(productId, command, user.getId(), files);
 
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }

@@ -41,4 +41,8 @@ public class ProductImage extends BaseEntity {
         this.url = url;
         this.product = product;
     }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
 }

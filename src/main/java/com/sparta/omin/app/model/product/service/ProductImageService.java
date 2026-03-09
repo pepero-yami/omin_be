@@ -22,25 +22,57 @@ public class ProductImageService {
      * @param image
      */
     @Transactional
-    public void create(Product product, MultipartFile image) {
-        if(image != null && !image.isEmpty()) {
-            String imgUrl = imageUploader.uploadReviewImage(image);
-            productImageRepository.save(ProductImage.builder()
+    public void createImages(Product product, List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+
+        List<ProductImage> images = files.stream()
+            .map(imageUploader::uploadReviewImage)
+            .map(imgUrl -> ProductImage.builder()
                 .url(imgUrl)
                 .product(product)
-                .build()
-            );
-        }
+                .build())
+            .toList();
+
+        productImageRepository.saveAll(images);
     }
 
     /**
      * @param productId
      * @return s3에 저장된 이미지의 url을 {@code List<String>}으로 반환합니다.
      */
+    @Transactional(readOnly = true)
     public List<String> getImgUrl(UUID productId) {
-        return productImageRepository.findByIdAndIsDeletedFalse(productId)
+        return productImageRepository.findByProductIdAndIsDeletedFalse(productId)
             .stream()
             .map(ProductImage::getUrl)
             .toList();
+    }
+
+    /**
+     * 상품의 사진(들)을 수정합니다.<br>
+     * 수정은 기존 사진을 제거하거나, 새로운 사진을 추가함을 의미합니다.
+     * @param product
+     * @param imgIds
+     * @param files
+     */
+    @Transactional
+    public void updateImages(Product product, List<UUID> imgIds, List<MultipartFile> files) {
+        deleteImages(imgIds);
+        createImages(product, files);
+    }
+
+    /**
+     * 상품의 사진을 제거(soft delete)합니다.
+     * @param imgIds 삭제하려는 이미지(들)의 id입니다
+     */
+    @Transactional
+    public void deleteImages(List<UUID> imgIds) {
+        if (imgIds == null || imgIds.isEmpty()) {
+            return;
+        }
+        List<ProductImage> images = productImageRepository.findAllByIdInAndIsDeletedFalse(imgIds);
+        images.forEach(ProductImage::softDelete);
     }
 }

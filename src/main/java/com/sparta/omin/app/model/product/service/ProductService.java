@@ -8,6 +8,7 @@ import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
+import java.util.List;
 import java.util.UUID;
 import com.sparta.omin.app.model.store.service.StoreReadService;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,7 @@ public class ProductService {
     public void createProduct(
         ProductCreateCommand command,
         UUID userId,
-        MultipartFile image
+        List<MultipartFile> images
     ) {
         // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(command.storeId(), userId)) {
@@ -58,7 +59,7 @@ public class ProductService {
             );
 
             // 상품 사진이 있는 경우 함께 저장
-            productImageService.create(product, image);
+            productImageService.createImages(product, images);
 
         } catch (Exception e) {
             throw new OminBusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -72,7 +73,7 @@ public class ProductService {
      * @param userId
      */
     @Transactional
-    public void updateProduct(UUID productId, ProductUpdateCommand command, UUID userId) {
+    public void updateProduct(UUID productId, ProductUpdateCommand command, UUID userId, List<MultipartFile> files) {
 
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -85,6 +86,7 @@ public class ProductService {
         }
 
         product.update(command);
+        productImageService.updateImages(product, command.imgIds(), files);
     }
 
     /**
