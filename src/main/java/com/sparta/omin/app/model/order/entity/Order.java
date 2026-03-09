@@ -108,6 +108,8 @@ public class Order extends BaseEntity {
             case PENDING -> accepted();
             case ACCEPTED -> cooking();
             case COOKING -> completed();
+            case COMPLETED -> throw new OminBusinessException(ErrorCode.ORDER_ALREADY_COMPLETED);
+            case REJECT -> throw new OminBusinessException(ErrorCode.ORDER_OWNER_REJECTED);
             default -> throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
     }
