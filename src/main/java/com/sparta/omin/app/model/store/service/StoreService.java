@@ -3,7 +3,7 @@ package com.sparta.omin.app.model.store.service;
 import com.sparta.omin.app.model.address.dto.CoordinatesSearchDto;
 import com.sparta.omin.app.model.address.service.CoordinatesSearchService;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
-import com.sparta.omin.app.model.order.repos.OrderRepository;
+import com.sparta.omin.app.model.order.service.OrderStatusCheckService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.service.StoreRatingStatService;
@@ -50,8 +50,8 @@ public class StoreService {
     private final KakaoAddressClient kakaoAddressClient;
     private final CoordinatesSearchService coordinatesSearchService;
     private final UserPromoteService userPromoteService;
+    private final OrderStatusCheckService orderStatusCheckService;
     private final StoreRatingStatService storeRatingStatService;
-    private final OrderRepository orderRepository;
     private final ImageUploader imageUploader;
 
     //point로 변환
@@ -284,7 +284,7 @@ public class StoreService {
         }
         if (storeStatusUpdateRequest.status() == Status.CLOSED) {
             // 주문 수락, 조리중 일 때  CLOSED로 상태 변경 불가
-            if (orderRepository.existsByStoreIdAndStatusInAndIsDeletedFalse(storeId, ACTIVE_ORDER_STATUSES)) {
+            if (orderStatusCheckService.existsProcessingOrder(storeId, ACTIVE_ORDER_STATUSES)) {
                 throw new OminBusinessException(ErrorCode.STORE_HAS_ACTIVE_ORDERS);
             }
         }
