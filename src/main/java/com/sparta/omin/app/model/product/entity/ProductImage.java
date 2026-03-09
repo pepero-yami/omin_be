@@ -32,13 +32,21 @@ public class ProductImage extends BaseEntity {
     @Column(name="url", nullable = false)
     private String url;
 
+    @Column(name="is_primary", nullable = false)
+    private boolean isPrimary;
+
+    @Column(name = "sort_order", nullable = false)
+    private Integer sortOrder;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
     @Builder
-    public ProductImage(ProductStatus productStatus, String url, Product product) {
+    public ProductImage(ProductStatus productStatus, String url, Product product, Integer sortOrder, Boolean isPrimary) {
         this.url = url;
+        this.isPrimary = isPrimary;
+        this.sortOrder = sortOrder;
         this.product = product;
     }
 

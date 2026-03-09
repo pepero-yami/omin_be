@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -51,7 +52,7 @@ public class ProductController {
      * 권한 : {@code Role Owner}
      */
     @PreAuthorize("hasRole('OWNER')")
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct(
         @RequestBody @Valid ProductCreateRequest request,
         @RequestPart(required = false) List<MultipartFile> images,
