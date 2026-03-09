@@ -58,10 +58,32 @@ public class OrderService {
         return OrderCreateResponse.from(order);
     }
 
+    @Transactional
+    public OrderResponse updateOrderByCustomer(User user, UUID orderId, Address address, String userRequest) {
+        Order order = getOrder(orderId);
+
+        if (!user.getId().equals(order.getUser().getId())) {
+            throw new OminBusinessException(ErrorCode.ORDER_NOT_OWNED);
+        }
+
+        order.update(address, userRequest);
+
+        return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public void cancelOrderByCustomer(User user, UUID orderId) {
+        Order order = getOrder(orderId);
+
+        if (!user.getId().equals(order.getUser().getId())) {
+            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
+        }
+
+        order.cancel();
+    }
+
     public OrderDetailResponse getOrderDetail(UUID orderId) {
-        Order order = orderRepository.findByIdAndIsDeletedFalse(orderId)
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
-        return OrderDetailResponse.from(order);
+        return OrderDetailResponse.from(getOrder(orderId));
     }
 
     public Slice<OrderResponse> getOrdersHistory(UUID userId, Pageable pageable) {
@@ -73,4 +95,12 @@ public class OrderService {
         return orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable)
                 .map(OrderResponse::from);
     }
+
+    //==== Helper method ====
+    private Order getOrder(UUID orderId) {
+        return orderRepository.findByIdAndIsDeletedFalse(orderId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
+    }
+
+
 }

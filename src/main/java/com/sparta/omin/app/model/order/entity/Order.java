@@ -7,12 +7,15 @@ import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.entity.BaseEntity;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +75,26 @@ public class Order extends BaseEntity {
         return order;
     }
 
+    public void update(Address address, String userRequest) {
+        validatePendingStatus();
 
-    public void delete() {
-        this.isDeleted = true;
+        if (address != null) {
+            this.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+        }
+
+        if (userRequest != null) {
+            this.userRequest = userRequest;
+        }
+    }
+
+    public void cancel() {
+        validatePendingStatus();
+
+        if (this.createdAt.plusMinutes(5).isBefore(LocalDateTime.now())) {
+            throw new OminBusinessException(ErrorCode.ORDER_PERIOD_EXPIRED);
+        }
+
+        this.status = OrderStatus.CANCELLED;
     }
 
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
@@ -91,5 +111,12 @@ public class Order extends BaseEntity {
     //에러방지
     public boolean isCompleted() {
         return false;
+    }
+
+    //validation
+    private void validatePendingStatus() {
+        if (this.getStatus() != OrderStatus.PENDING) {
+            throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
+        }
     }
 }

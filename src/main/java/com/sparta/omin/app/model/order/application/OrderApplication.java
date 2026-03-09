@@ -7,6 +7,7 @@ import com.sparta.omin.app.model.cart.service.RCartService;
 import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
 import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
+import com.sparta.omin.app.model.order.dto.OrderUpdateRequest;
 import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.service.StoreReadService;
@@ -44,7 +45,7 @@ public class OrderApplication {
         validateCart(cart);
 
         //TODO 내 주소지에서 찾기
-        Address address = addressReadService.getMyAddress(user.getId(), request.addressId());
+        Address address = getAddress(user.getId(), request.addressId());
 
         Store store = storeReadService.getStoreReference(request.storeId());
 
@@ -63,10 +64,21 @@ public class OrderApplication {
         return orderService.getOrdersByOwner(storeId, pageable);
     }
 
+    public OrderResponse updateOrderByCustomer(User user, UUID orderId, OrderUpdateRequest request) {
+        Address address = getAddress(user.getId(), request.addressId());
+
+        return orderService.updateOrderByCustomer(user, orderId, address, request.userRequest());
+    }
+
+
     //===== Helper Method =====
     private static void validateCart(RCart cart) {
         if (cart == null || cart.getProducts().isEmpty()) {
             throw new OminBusinessException(ErrorCode.CART_NOT_FOUND);
         }
+    }
+
+    private Address getAddress(UUID userId, UUID addressId) {
+        return addressReadService.getMyAddress(userId, addressId);
     }
 }
