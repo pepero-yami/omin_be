@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.omin.app.controller.review.ReviewController;
 import com.sparta.omin.app.model.review.dto.ReviewCreateRequest;
 import com.sparta.omin.app.model.review.dto.ReviewResponse;
+import com.sparta.omin.app.model.review.dto.ReviewUpdateRequest;
 import com.sparta.omin.app.model.review.service.ReviewService;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
 import com.sparta.omin.app.security.config.SecurityConfig;
@@ -24,6 +25,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -75,11 +77,11 @@ class ReviewControllerTest {
         );
     }
 
-    private List<MockMultipartFile> createImageParts(String name, int count) {
+    private List<MockMultipartFile> createImageParts(int count) {
         List<MockMultipartFile> parts = new ArrayList<>();
         for (int i = 0; i < count; i++) {
             parts.add(new MockMultipartFile(
-                    name,
+                    "images",
                     "image" + i + ".jpg",
                     MediaType.IMAGE_JPEG_VALUE,
                     ("content" + i).getBytes()
@@ -99,7 +101,7 @@ class ReviewControllerTest {
         MockMultipartFile requestPart = createJsonPart(request);
 
         // 이미지 파트 생성 (헬퍼 메서드 활용)
-        List<MockMultipartFile> imageParts = createImageParts("images", 2);
+        List<MockMultipartFile> imageParts = createImageParts(2);
 
         ReviewResponse response =
                 new ReviewResponse(
@@ -170,6 +172,35 @@ class ReviewControllerTest {
                 .andDo(print())
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("REVIEW_ALREADY_EXISTS"));
+    }
+
+    @Test
+    @DisplayName("리뷰 단건 조회 성공시 200 반환")
+    void getReview_success() throws Exception {
+
+        ReviewResponse response =
+                new ReviewResponse(
+                        reviewId,
+                        orderId,
+                        userId,
+                        nickName,
+                        reqRating,
+                        reqComment,
+                        List.of("http://image.url"),
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                );
+
+        given(reviewService.getReview(reviewId))
+                .willReturn(response);
+
+        mockMvc.perform(get(BASE_URL + "/" + reviewId))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reviewId").value(reviewId.toString()))
+                .andExpect(jsonPath("$.rating").value(reqRating))
+                .andExpect(jsonPath("$.comment").value(reqComment))
+                .andExpect(jsonPath("$.images[0]").value("http://image.url"));
     }
 
     @Test
@@ -259,5 +290,82 @@ class ReviewControllerTest {
         mockMvc.perform(get(BASE_URL))
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 성공 시 200 반환")
+    void updateReview_success() throws Exception {
+
+        ReviewUpdateRequest request =
+                new ReviewUpdateRequest(
+                        4.5,
+                        "수정된 리뷰",
+                        null,
+                        List.of()
+                );
+
+        MockMultipartFile requestPart = createJsonPart(request);
+        List<MockMultipartFile> imageParts = createImageParts(1);
+
+        ReviewResponse response =
+                new ReviewResponse(
+                        reviewId,
+                        orderId,
+                        userId,
+                        nickName,
+                        4.5,
+                        "수정된 리뷰",
+                        List.of("http://image.url"),
+                        LocalDateTime.now(),
+                        LocalDateTime.now()
+                );
+
+        given(reviewService.updateReview(any(), any(), any(), any()))
+                .willReturn(response);
+
+        MockMultipartHttpServletRequestBuilder requestBuilder =
+                (MockMultipartHttpServletRequestBuilder) multipart(BASE_URL + "/" + reviewId)
+                        .file(requestPart)
+                        .with(req -> {
+                            req.setMethod("PATCH");
+                            return req;
+                        });
+
+        for (MockMultipartFile image : imageParts) {
+            requestBuilder.file(image);
+        }
+
+        mockMvc.perform(requestBuilder)
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.reviewId").value(reviewId.toString()))
+                .andExpect(jsonPath("$.rating").value(4.5))
+                .andExpect(jsonPath("$.comment").value("수정된 리뷰"));
+    }
+
+    @Test
+    @DisplayName("리뷰 수정 validation 실패 시 400 반환")
+    void updateReview_validationFail() throws Exception {
+
+        ReviewUpdateRequest request =
+                new ReviewUpdateRequest(
+                        10.0, // invalid
+                        "잘못된 평점",
+                        null,
+                        List.of()
+                );
+
+        MockMultipartFile requestPart = createJsonPart(request);
+
+        mockMvc.perform(
+                        multipart(BASE_URL + "/" + reviewId)
+                                .file(requestPart)
+                                .with(req -> {
+                                    req.setMethod("PATCH");
+                                    return req;
+                                })
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
     }
 }
