@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.store.service;
 
+import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.common.error.OminBusinessException;
@@ -27,5 +28,10 @@ public class StoreReadService {
      */
     public Store getStoreReference(UUID storeId) {
         return storeRepository.getReferenceById(storeId);
+    }
+
+    public Boolean isStatusPending(UUID storeId) {
+        Store store = storeRepository.findByIdAndIsDeletedFalse(storeId).orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
+        return store.getStatus() == Status.PENDING;
     }
 }
