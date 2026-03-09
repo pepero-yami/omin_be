@@ -65,6 +65,18 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
 						.requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
 
+						//order
+						.requestMatchers(HttpMethod.POST, "/api/v1/orders").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.GET, "/api/v1/orders/history").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole("CUSTOMER")
+						.requestMatchers(HttpMethod.DELETE, "/api/v1/orders/*").hasRole("CUSTOMER")
+
+						.requestMatchers(HttpMethod.GET, "/api/v1/orders").hasRole("OWNER")
+						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasRole("OWNER")
+						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
+
+						.requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
+
 						.anyRequest().permitAll()
                 )
 
