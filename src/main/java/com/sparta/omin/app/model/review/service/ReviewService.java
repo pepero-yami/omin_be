@@ -145,13 +145,37 @@ public class ReviewService {
                 stat.updateRatingByDiff(ratingDiff);
             }
 
-            old.updateReview(request.rating() != null ? request.rating() : old.getRating(), request.comment() != null ? request.comment() : old.getComment(), user.getId());
+            old.updateReview(request.rating() != null ? request.rating() : old.getRating(), request.comment() != null ? request.comment() : old.getComment());
+            // TODO: 이미지 처리 로직
+            handleReviewImageUpdates(old, request.updateImages(), request.deleteImageUrls(), images);
         } // request != null (아래 부터 request가 Nullable)
-
-        // TODO: 이미지 처리 로직
-        handleReviewImageUpdates(old, request.updateImages(), request.deleteImageUrls(), images);
+        handleReviewImageAdd(old, images);
         reviewRepository.saveAndFlush(old);// saveAndFlush를 하면 이 시점에 updatedAt이 세팅됩니다.
         return ReviewResponse.from(old);
+    }
+
+    private void handleReviewImageAdd(Review old, List<MultipartFile> newFiles) {
+        boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
+        // 새 이미지 추가
+        if (newFiles != null && !newFiles.isEmpty()) {
+            if (old.getImages().size() + newFiles.size() > 5) {
+                throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+            }
+
+            int lastSequence = old.getImages().stream().mapToInt(ReviewImage::getSequence).max().orElse(-1);
+
+            for (int i = 0; i < newFiles.size(); i++) {
+                MultipartFile file = newFiles.get(i);
+                if (!file.isEmpty()) {
+                    String url = imageUploader.uploadReviewImage(file);
+                    ReviewImage.create(old, url, lastSequence + i + 1);
+                    isUpdated = true;
+                }
+            }
+            if (isUpdated) {
+                old.markUpdated();
+            }
+        }
     }
 
     private void handleReviewImageUpdates(Review review, List<ReviewImage> updateImages, // 클라이언트가 원하는 순서대로 바꾼 ReviewImage
@@ -160,13 +184,20 @@ public class ReviewService {
     ) {
         boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
 
-        // 1️⃣ 삭제
+        // 1️⃣ 소프트 삭제
         if (deleteUrls != null && !deleteUrls.isEmpty()) {
             for (String url : deleteUrls) {
-                imageUploader.deleteReviewImage(url); // TODO: S3 삭제 -> soft Delete 처리 후 연관 이미지 불러올 때 isDeletedFalse?
-                boolean removed = review.getImages().removeIf(img -> img.getImageUrl().equals(url));
-                if (removed) isUpdated = true;
+                // isDeleted 상태 변경
+                review.getImages().stream()
+                        .filter(img -> img.getImageUrl().equals(url))
+                        .findFirst()
+                        .ifPresent(ReviewImage::delete);
+                isUpdated = true;
             }
+        }
+        // 영속성 컨텍스트 반영 (메모리)
+        if (deleteUrls != null && !deleteUrls.isEmpty()) {
+            review.getImages().removeIf(ReviewImage::isDeleted);
         }
 
         // 2️⃣ 기존 이미지 순서 재배치

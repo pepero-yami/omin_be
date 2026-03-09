@@ -41,9 +41,14 @@ public class ReviewImage extends BaseEntity {
         review.getImages().add(image);
         return image;
     }
+
     public void reorder(int newSequence) {
         if (this.sequence != newSequence) {
             this.sequence = newSequence;
         }
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }

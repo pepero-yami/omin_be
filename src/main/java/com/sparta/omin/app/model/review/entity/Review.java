@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -47,9 +48,10 @@ public class Review extends BaseEntity {
     @Column(name = "review_comment", length = 300)
     private String comment;
 
+    @SQLRestriction("is_deleted = false")
     @BatchSize(size = 100)
     @OrderBy("sequence ASC")
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     private List<ReviewImage> images = new ArrayList<>();
 
     public static Review create(
@@ -78,7 +80,7 @@ public class Review extends BaseEntity {
         }
     }
 
-    public void updateReview(double newRating, String newComment, UUID actorId) {
+    public void updateReview(double newRating, String newComment) {
         this.rating = newRating;
         this.comment = newComment;
     }
