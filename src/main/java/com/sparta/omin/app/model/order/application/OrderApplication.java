@@ -47,14 +47,12 @@ public class OrderApplication {
 
         validateCart(cart);
 
-        //TODO 내 주소지에서 찾기
         Address address = getAddress(user.getId(), request.addressId());
 
         Store store = storeReadService.getStoreReference(request.storeId());
 
         OrderCreateResponse response = orderService.createOrder(user, cart, address, store, request);
 
-        // TODO 리스너 상의하기
         cartService.refresh(user.getId());
 
         return response;
