@@ -50,7 +50,9 @@ public class Store extends BaseEntity {
     @Column(name = "status", nullable = false)
     private Status status = Status.PENDING;
 
-    @Column(name = "coordinates", columnDefinition = "geography(Point, 4326)", nullable = false)
+//    @Column(name = "coordinates", columnDefinition = "geography(Point, 4326)", nullable = false)
+//    private Point coordinates;
+
     private Point coordinates;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
