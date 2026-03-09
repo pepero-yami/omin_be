@@ -40,14 +40,14 @@ public class OrderItem extends BaseEntity {
     @Column(name = "total_price", nullable = false)
     private double totalPrice; // 단가 * 수량
 
-    public static OrderItem create(Order order, Product product, int quantity, double price) {
+    public static OrderItem create(Order order, Product product, int quantity) {
         OrderItem orderItem = new OrderItem();
 
         orderItem.order = order;
         orderItem.product = product;
         orderItem.quantity = quantity;
-        orderItem.price = price;
-        orderItem.totalPrice = quantity * price;
+        orderItem.price = product.getPrice();
+        orderItem.totalPrice = quantity * (product.getPrice());
         orderItem.isDeleted = false;
 
         return orderItem;
