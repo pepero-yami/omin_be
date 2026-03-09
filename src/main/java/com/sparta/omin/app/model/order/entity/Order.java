@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -67,7 +68,7 @@ public class Order extends BaseEntity {
         order.user = user;
         order.store = store;
         order.userRequest = userRequest;
-        order.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+        order.deliveryAddress = getDeliveryAddress(address);
         order.orderItems = new ArrayList<>();
         order.status = OrderStatus.PENDING;
         order.isDeleted = false;
@@ -79,7 +80,7 @@ public class Order extends BaseEntity {
         validatePendingStatus();
 
         if (address != null) {
-            this.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+            this.deliveryAddress = getDeliveryAddress(address);
         }
 
         if (userRequest != null) {
@@ -149,10 +150,15 @@ public class Order extends BaseEntity {
         return false;
     }
 
+    //=====Helper method=====
     //validation
     private void validatePendingStatus() {
         if (this.getStatus() != OrderStatus.PENDING) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
+    }
+
+    private static @NonNull String getDeliveryAddress(Address address) {
+        return address.getRoadAddress() + " " + address.getShippingDetailAddress();
     }
 }
