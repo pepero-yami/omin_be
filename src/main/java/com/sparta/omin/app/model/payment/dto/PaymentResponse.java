@@ -11,7 +11,7 @@ public record PaymentResponse(
         UUID paymentId,
         UUID orderId,
         PaymentMethod paymentMethod,
-        double totalPrice, // double로 변경
+        double totalPrice,
         LocalDateTime createdAt,
         PaymentStatus paymentStatus,
         String paymentKey

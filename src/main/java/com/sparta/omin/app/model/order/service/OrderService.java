@@ -112,7 +112,7 @@ public class OrderService {
     }
 
     public OrderInternalDto getOrderForPayment(UUID orderId) {
-        Order order = getOrderEntity(orderId); // 기존에 만든 엔티티 조회 메서드 활용
+        Order order = getOrderEntity(orderId);
         return new OrderInternalDto(
                 order.getId(),
                 order.getUser().getId(),
