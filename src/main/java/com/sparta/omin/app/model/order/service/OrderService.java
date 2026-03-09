@@ -119,12 +119,4 @@ public class OrderService {
                 order.getTotalPrice()
         );
     }
-
-    //FIXME 리스너 사용 확정이면 이 부분 삭제!
-//    // 테스트 API 및 리스너에서 상태 변경을 위해 호출
-//    @Transactional
-//    public void updateOrderStatus(UUID orderId, OrderStatus status) {
-//        Order order = getOrderEntity(orderId);
-//        order.updateStatus(status);
-//    }
 }
