@@ -8,6 +8,7 @@ import com.sparta.omin.app.model.payment.entity.PaymentStatus;
 import com.sparta.omin.app.model.payment.event.PaymentCanceledEvent;
 import com.sparta.omin.app.model.payment.event.PaymentCompletedEvent;
 import com.sparta.omin.app.model.payment.repos.PaymentRepository;
+import com.sparta.omin.app.model.user.service.UserReadService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderService orderService;
+    private final UserReadService userReadService;
     private final ApplicationEventPublisher eventPublisher;
 
     // 1. 결제 요청 (READY 상태 생성)
@@ -39,19 +41,37 @@ public class PaymentService {
             throw new OminBusinessException(ErrorCode.PAYMENT_ORDER_USER_MISMATCH);
         }
 
-        // 2) 중복 결제 요청 확인 (멱등성 - 이미 성공한 내역이 있는 경우)
-        paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)
-                .ifPresent(p -> {
-                    if (p.getPaymentStatus() == PaymentStatus.SUCCESS) {
-                        throw new OminBusinessException(ErrorCode.PAYMENT_ALREADY_COMPLETED); // 이미 완료된 결제
-                    }
-                });
+        // 금액 검증 - 주문 서비스의 실제 금액과 요청 금액이 일치하는지 확인
+        if (order.totalPrice() != amount) {
+            throw new OminBusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
+        }
 
+        // 2) 중복 결제 요청 확인 (멱등성)
+        var existingPayment = paymentRepository.findByOrderIdAndIsDeletedFalse(orderId);
+
+        if (existingPayment.isPresent()) {
+            Payment p = existingPayment.get();
+
+            // 이미 성공한 경우 -> 에러
+            if (p.getPaymentStatus() == PaymentStatus.SUCCESS) {
+                throw new OminBusinessException(ErrorCode.PAYMENT_ALREADY_COMPLETED);
+            }
+            // 이미 취소된 주문인 경우 -> 에러 (새로 주문하도록 유도)
+            if (p.getPaymentStatus() == PaymentStatus.CANCELED) {
+                throw new OminBusinessException(ErrorCode.PAYMENT_ORDER_ALREADY_CANCELED);
+            }
+            // 이미 READY 상태라면 새로 저장하지 않고 기존 것을 그대로 반환
+            if (p.getPaymentStatus() == PaymentStatus.READY) {
+                return PaymentResponse.from(p);
+            }
+        }
+
+        // 기존 내역이 없거나 특이사항이 없으면 새로 생성
         Payment payment = Payment.create(orderId, userId, amount);
         return PaymentResponse.from(paymentRepository.save(payment));
     }
 
-    // 2. 결제 승인 (Toss 결제 완료 후 호출됨)
+    // 2. 결제 승인 (Toss등 외부에서 결제 완료 후 호출됨)
     @Transactional
     public PaymentResponse confirmPayment(UUID orderId, String paymentKey, double amount, UUID userId) {
         Payment payment = paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)
@@ -116,6 +136,10 @@ public class PaymentService {
 
     @Transactional(readOnly = true)
     public Page<PaymentResponse> getPayments(UUID customerId, Pageable pageable) {
+        // 1. UserReadService를 통해 유저 존재 여부 확인 (MSA 인터페이스 지향)
+        userReadService.validateUserExists(customerId);
+
+        // 2. 결제 내역 조회 및 반환
         return paymentRepository.findByUserIdAndIsDeletedFalse(customerId, pageable)
                 .map(PaymentResponse::from);
     }

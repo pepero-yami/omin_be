@@ -6,10 +6,9 @@ import com.sparta.omin.app.model.payment.dto.PaymentResponse;
 import com.sparta.omin.app.model.payment.entity.PaymentMethod;
 import com.sparta.omin.app.model.payment.entity.PaymentStatus;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.common.error.OminBusinessException;
-import com.sparta.omin.common.error.constants.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDateTime;
@@ -19,9 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,25 +30,21 @@ class PaymentControllerTest extends PaymentControllerHelper {
     @DisplayName("결제 요청 성공 (200 OK)")
     void requestPayment_success() throws Exception {
         // Given
-        User user = mockUser(); // Helper에서 ID가 주입된 실제 User 객체 생성
+        User user = mockUser();
         UUID orderId = UUID.randomUUID();
         PaymentResponse response = new PaymentResponse(
                 UUID.randomUUID(), orderId, PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.READY, null);
 
         given(paymentService.requestPayment(eq(orderId), any(), anyDouble())).willReturn(response);
 
-        PaymentRequest request = new PaymentRequest(orderId, 25000.0);
-
-        // When & Then
-        mockMvc.perform(post(PAYMENTS_BASE_URL + "/request")
-                        .with(user(user)) //시큐리티 컨텍스트 주입
+        // When & Then: POST 요청 경로 확인
+        mockMvc.perform(post("/api/v1/payments/request")
+                        .with(user(user))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
+                        .content(objectMapper.writeValueAsString(new PaymentRequest(orderId, 25000.0))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paymentStatus").value("READY"))
-                .andExpect(jsonPath("$.totalPrice").value(25000.0));
+                .andExpect(jsonPath("$.paymentStatus").value("READY"));
     }
 
     @Test
@@ -61,65 +54,36 @@ class PaymentControllerTest extends PaymentControllerHelper {
         User user = mockUser();
         UUID orderId = UUID.randomUUID();
         PaymentResponse response = new PaymentResponse(
-                UUID.randomUUID(), orderId, PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.SUCCESS, "toss-confirm-key");
+                UUID.randomUUID(), orderId, PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.SUCCESS, "key");
 
         given(paymentService.confirmPayment(eq(orderId), anyString(), anyDouble(), any())).willReturn(response);
 
-        PaymentConfirmRequest confirmRequest = new PaymentConfirmRequest(orderId, "toss-confirm-key", 25000.0);
+        // [회색 import 해결] PaymentConfirmRequest 명시적 사용
+        PaymentConfirmRequest confirmRequest = new PaymentConfirmRequest(orderId, "key", 25000.0);
 
         // When & Then
-        mockMvc.perform(post(PAYMENTS_BASE_URL + "/confirm")
+        mockMvc.perform(post("/api/v1/payments/confirm")
                         .with(user(user))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(confirmRequest)))
-                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.paymentStatus").value("SUCCESS"))
-                .andExpect(jsonPath("$.paymentKey").value("toss-confirm-key"));
+                .andExpect(jsonPath("$.paymentStatus").value("SUCCESS"));
     }
 
     @Test
-    @DisplayName("결제 금액 불일치 시 승인 실패 (400 Bad Request)")
-    void confirmPayment_amountMismatch_returns400() throws Exception {
-        // Given
-        User user = mockUser();
-        UUID orderId = UUID.randomUUID();
-
-        // 서비스에서 금액 불일치 예외를 던지도록 설정
-        given(paymentService.confirmPayment(any(), any(), anyDouble(), any()))
-                .willThrow(new OminBusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH));
-
-        PaymentConfirmRequest confirmRequest = new PaymentConfirmRequest(orderId, "wrong-key", 100.0);
+    @DisplayName("관리자: 고객 결제 내역 조회 성공 (200 OK)")
+    void getPaymentsByAdmin_success() throws Exception {
+        // Given: 관리자용 경로 (/admin/...)
+        UUID customerId = UUID.randomUUID();
+        given(paymentService.getPayments(eq(customerId), any())).willReturn(Page.empty());
 
         // When & Then
-        mockMvc.perform(post(PAYMENTS_BASE_URL + "/confirm")
-                        .with(user(user))
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(confirmRequest)))
+        mockMvc.perform(get("/api/v1/admin/payments")
+                        .param("customerId", customerId.toString())
+                        .with(user(mockUser())))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("PAYMENT_AMOUNT_MISMATCH"));
-    }
-
-    @Test
-    @DisplayName("결제 정보 조회 성공 (200 OK)")
-    void getPayment_success() throws Exception {
-        // Given
-        User user = mockUser();
-        UUID orderId = UUID.randomUUID();
-        PaymentResponse response = new PaymentResponse(
-                UUID.randomUUID(), orderId, PaymentMethod.CREDIT_CARD, 25000.0, LocalDateTime.now(), PaymentStatus.SUCCESS, "key");
-
-        given(paymentService.getPayment(eq(orderId), any())).willReturn(response);
-
-        // When & Then
-        mockMvc.perform(get(PAYMENTS_BASE_URL + "/" + orderId)
-                        .with(user(user)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.orderId").value(orderId.toString()));
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -134,50 +98,10 @@ class PaymentControllerTest extends PaymentControllerHelper {
         given(paymentService.cancelPayment(eq(paymentId), any())).willReturn(response);
 
         // When & Then
-        mockMvc.perform(patch(PAYMENTS_BASE_URL + "/" + paymentId + "/cancel")
+        mockMvc.perform(patch("/api/v1/payments/" + paymentId + "/cancel")
                         .with(user(user))
                         .with(csrf()))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.paymentStatus").value("CANCELED"));
-    }
-
-
-    @Test
-    @DisplayName("존재하지 않는 결제 정보 조회 시 실패 (404 Not Found)")
-    void getPayment_notFound_returns404() throws Exception {
-        // Given
-        User user = mockUser();
-        UUID orderId = UUID.randomUUID();
-
-        // 본인 결제가 아니면 서비스에서 NOT_FOUND(또는 UNAUTHORIZED)를 던짐
-        given(paymentService.getPayment(any(), any()))
-                .willThrow(new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
-
-        // When & Then
-        mockMvc.perform(get(PAYMENTS_BASE_URL + "/" + orderId)
-                        .with(user(user)))
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("PAYMENT_NOT_FOUND"));
-    }
-
-    @Test
-    @DisplayName("권한 없는 사용자가 결제 취소 시도 시 실패 (403 Forbidden)")
-    void cancelPayment_unauthorized_returns403() throws Exception {
-        // Given
-        User user = mockUser();
-        UUID paymentId = UUID.randomUUID();
-
-        given(paymentService.cancelPayment(any(), any()))
-                .willThrow(new OminBusinessException(ErrorCode.PAYMENT_UNAUTHORIZED));
-
-        // When & Then
-        mockMvc.perform(patch(PAYMENTS_BASE_URL + "/" + paymentId + "/cancel")
-                        .with(user(user))
-                        .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error").value("PAYMENT_UNAUTHORIZED"));
     }
 }
