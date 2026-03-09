@@ -2,7 +2,6 @@ package com.sparta.omin.app.model.store.dto.response;
 
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
-import org.locationtech.jts.geom.Point;
 
 import java.util.UUID;
 
