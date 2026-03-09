@@ -2,10 +2,7 @@ package com.sparta.omin.app.model.order.service;
 
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.cart.entity.RCart;
-import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
-import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
-import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
-import com.sparta.omin.app.model.order.dto.OrderResponse;
+import com.sparta.omin.app.model.order.dto.*;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.product.entity.Product;
@@ -20,6 +17,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,10 +57,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrderByCustomer(User user, UUID orderId, Address address, String userRequest) {
+    public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, Address address, String userRequest) {
         Order order = getOrder(orderId);
 
-        if (!user.getId().equals(order.getUser().getId())) {
+        if (!userId.equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_NOT_OWNED);
         }
 
@@ -72,14 +70,25 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrderByCustomer(User user, UUID orderId) {
+    public void cancelOrderByCustomer(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
 
-        if (!user.getId().equals(order.getUser().getId())) {
+        if (userId.equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
 
-        order.cancel();
+        order.cancel(LocalDateTime.now());
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(UUID userId, UUID orderId, OrderStatusRequest request) {
+        return null;
+    }
+
+    @Transactional
+    public void rejectOrder(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        order.reject();
     }
 
     public OrderDetailResponse getOrderDetail(UUID orderId) {

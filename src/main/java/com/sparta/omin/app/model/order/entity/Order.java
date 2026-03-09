@@ -87,14 +87,19 @@ public class Order extends BaseEntity {
         }
     }
 
-    public void cancel() {
+    public void cancel(LocalDateTime now) {
         validatePendingStatus();
 
-        if (this.createdAt.plusMinutes(5).isBefore(LocalDateTime.now())) {
+        if (this.createdAt.plusMinutes(5).isBefore(now)) {
             throw new OminBusinessException(ErrorCode.ORDER_PERIOD_EXPIRED);
         }
 
         this.status = OrderStatus.CANCELLED;
+    }
+
+    public void reject() {
+        validatePendingStatus();
+        this.status = OrderStatus.REJECT;
     }
 
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
