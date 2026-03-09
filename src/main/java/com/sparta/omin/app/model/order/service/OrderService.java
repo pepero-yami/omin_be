@@ -37,13 +37,13 @@ public class OrderService {
     public OrderCreateResponse createOrder(User user, RCart cart, Address address, Store store, OrderCreateRequest request) {
 
         List<UUID> productIds = cart.getProducts().stream()
-                .map(RCart.Product::getId)
+                .map(RCart.CartItem::getId)
                 .toList();
 
         List<Product> products = productReadService.getProductsInStore(productIds, store.getId());
 
         Map<UUID, Integer> quantityMap = cart.getProducts().stream()
-                .collect(Collectors.toMap(RCart.Product::getId, RCart.Product::getQuantity));
+                .collect(Collectors.toMap(RCart.CartItem::getId, RCart.CartItem::getQuantity));
 
         Order order = Order.create(
                 user,
