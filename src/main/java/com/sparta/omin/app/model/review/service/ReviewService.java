@@ -133,6 +133,7 @@ public class ReviewService {
         }
         if (request == null) {
             if (images.size() > 5) throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
+            handleReviewImageAdd(old, images); // request 없이 이미지만 추가
         } else {
             if (images != null && request.deleteImageUrls() != null && images.size() - request.deleteImageUrls().size() > 5) {
                 throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
@@ -146,14 +147,13 @@ public class ReviewService {
             }
 
             old.updateReview(request.rating() != null ? request.rating() : old.getRating(), request.comment() != null ? request.comment() : old.getComment());
-            // TODO: 이미지 처리 로직
             handleReviewImageUpdates(old, request.updateImages(), request.deleteImageUrls(), images);
         } // request != null (아래 부터 request가 Nullable)
-        handleReviewImageAdd(old, images);
         reviewRepository.saveAndFlush(old);// saveAndFlush를 하면 이 시점에 updatedAt이 세팅됩니다.
         return ReviewResponse.from(old);
     }
 
+// TODO: 이미지 처리 로직
     private void handleReviewImageAdd(Review old, List<MultipartFile> newFiles) {
         boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
         // 새 이미지 추가
@@ -183,7 +183,7 @@ public class ReviewService {
                                           List<MultipartFile> newFiles // 클라이언트가 추가하길 원하는 이미지 파일
     ) {
         boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
-
+                        int deleteCount = deleteUrls == null ? 0 : deleteUrls.size();
         // 1️⃣ 소프트 삭제
         if (deleteUrls != null && !deleteUrls.isEmpty()) {
             for (String url : deleteUrls) {
@@ -223,7 +223,7 @@ public class ReviewService {
 
         // 3️⃣ 새 이미지 추가
         if (newFiles != null && !newFiles.isEmpty()) {
-            if (review.getImages().size() + newFiles.size() > 5) {
+            if (review.getImages().size() - deleteCount + newFiles.size() > 5) {
                 throw new OminBusinessException(ErrorCode.REVIEW_IMAGE_COUNT_EXCEEDED);
             }
 
