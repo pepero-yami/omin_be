@@ -10,7 +10,6 @@ import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateRequest;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateStatusRequest;
 import com.sparta.omin.app.model.product.dto.ProductCreateCommand;
-import com.sparta.omin.app.model.product.dto.ProductUpdateCommand;
 import com.sparta.omin.app.model.user.entity.User;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -48,13 +47,13 @@ public class ProductController {
     private final ProductImageService productImageService;
 
     /**
-     * @apiNote 상품 생성 api 입니다.
+     * @apiNote <b>상품 생성 api</b> 입니다.
      */
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct(
-        @RequestBody @Valid ProductCreateRequest request,
-        @RequestPart(required = false) List<MultipartFile> images,
+        @RequestPart("request") @Valid ProductCreateRequest request,
+        @RequestPart(value = "files", required = false) List<MultipartFile> images,
         @AuthenticationPrincipal User user
     ) {
         UUID userId = user.getId();
