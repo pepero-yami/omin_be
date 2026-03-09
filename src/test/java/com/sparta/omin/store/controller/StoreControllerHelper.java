@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.omin.app.controller.store.StoreController;
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
-import com.sparta.omin.app.model.store.dto.StoreListResponse;
-import com.sparta.omin.app.model.store.dto.StoreResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreOwnerAdminSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreResponse;
 import com.sparta.omin.app.model.store.service.StoreService;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
@@ -78,8 +78,8 @@ public abstract class StoreControllerHelper{
                 .build();
     }
 
-    protected StoreListResponse buildStoreListResponse(UUID storeId, String name, Status status) {
-        return StoreListResponse.builder()
+    protected StoreOwnerAdminSearchResponse buildStoreListResponse(UUID storeId, String name, Status status) {
+        return StoreOwnerAdminSearchResponse.builder()
                 .id(storeId)
                 .name(name)
                 .category(Category.KOREAN)

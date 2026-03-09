@@ -1,7 +1,8 @@
-package com.sparta.omin.app.model.store.dto;
+package com.sparta.omin.app.model.store.dto.response;
 
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
+import org.locationtech.jts.geom.Point;
 
 import java.util.UUID;
 
@@ -11,8 +12,10 @@ public record StoreSearchResponse(
         String name,
         String roadAddress,
         String detailAddress,
-        //double rating,
         Status status,
+        double distance,
+        double avgRating,
+        long totalReview,
         String mainImage                // 대표이미지
 ) {
 

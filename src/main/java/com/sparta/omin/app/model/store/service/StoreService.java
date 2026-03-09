@@ -2,17 +2,25 @@ package com.sparta.omin.app.model.store.service;
 
 import com.sparta.omin.app.model.address.dto.CoordinatesSearchDto;
 import com.sparta.omin.app.model.address.service.CoordinatesSearchService;
+import com.sparta.omin.app.model.order.entity.status.OrderStatus;
+import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
+import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
+import com.sparta.omin.app.model.stats.service.StoreRatingStatService;
 import com.sparta.omin.app.model.store.code.Status;
-import com.sparta.omin.app.model.store.dto.*;
+import com.sparta.omin.app.model.store.dto.request.*;
+import com.sparta.omin.app.model.store.dto.response.StoreOwnerAdminSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSliceResponse;
 import com.sparta.omin.app.model.store.entity.Store;
-import com.sparta.omin.app.model.store.entity.StoreImage;
 import com.sparta.omin.app.model.store.repos.StoreRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.app.model.user.service.UserPromoteService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
+import com.sparta.omin.common.util.ImageUploader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -26,9 +34,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -37,39 +46,47 @@ import java.util.stream.Collectors;
 public class StoreService {
 
     private final StoreRepository storeRepository;
+    private final StoreWriter storeWriter;
+    private final KakaoAddressClient kakaoAddressClient;
     private final CoordinatesSearchService coordinatesSearchService;
     private final UserPromoteService userPromoteService;
-    private final KakaoAddressClient kakaoAddressClient;
+    private final StoreRatingStatService storeRatingStatService;
+    private final OrderRepository orderRepository;
+    private final ImageUploader imageUploader;
 
     //point로 변환
     //4326 : 좌표 표준 코드
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
 
-    @Transactional
+    //이미지 업로드 허용 타입
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of("image/jpeg", "image/png", "image/webp");
+
+    //수락, 조리중일 땐 가게 상태를 영업종료로 변경할 수 없음
+    private static final List<OrderStatus> ACTIVE_ORDER_STATUSES =
+            List.of(OrderStatus.ACCEPTED, OrderStatus.COOKING);
+
+    // 가게 생성
+    // 외부 API/S3 호출을 트랜잭션 밖에서 실행할 수 있게 DB 저장은 StoreWriter에 위임
     public StoreResponse registerStore(StoreCreateRequest storeCreateRequest, List<MultipartFile> images, UserDetails user) {
         User loginUser = (User) user;
         log.debug("매장 등록 요청 - ownerId: {}, name: {}", loginUser.getId(), storeCreateRequest.name());
 
-        //동일한 도로명 주소 + 상세 주소 조합이 이미 DB에 있으면
+        //주소 중복 검증
         if (storeRepository.existsByRoadAddressAndDetailAddress(storeCreateRequest.roadAddress(), storeCreateRequest.detailAddress())) {
             throw new OminBusinessException(ErrorCode.STORE_DUPLICATE_ADDRESS);
         }
-
-        //kakao API
+        //업로드 파일 타입 검증
+        validateImageContentType(images);
+        //카카오 api 호출
         KakaoAddressClient.KakaoAddressResult kakao = kakaoAddressClient.searchAddress(storeCreateRequest.roadAddress());
         Point coordinates = toPoint(kakao);
+        //S3에 이미지 업로드
+        List<String> imageUrlList = images.stream().map(imageUploader::uploadStoreImage).toList();
 
-        Store store = toEntity(storeCreateRequest, loginUser.getId(), coordinates);
-
-        List<String> imageUrlList = sendImagesToS3(images);
-        for (String imageUrl : imageUrlList) {
-            store.addImage(new StoreImage(imageUrl));
-        }
-        Store savedStore = storeRepository.save(store);
-        log.debug("매장 등록 완료 - storeId: {}", savedStore.getId());
-        return StoreResponse.of(savedStore);
+        return storeWriter.save(storeCreateRequest, loginUser.getId(), coordinates, imageUrlList);
     }
 
+    // 단건조회
     public StoreResponse findStore(UUID storeId, UserDetails user) {
         log.debug("매장 단건 조회 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
@@ -82,55 +99,71 @@ public class StoreService {
                 throw new OminBusinessException(ErrorCode.STORE_NOT_FOUND);
             }
         }
-        return StoreResponse.of(store);
+        //평균평점, 총 리뷰 수
+        StoreRatingStat stat = storeRatingStatService.getStat(storeId).orElse(null);
+        double avgRating = stat != null ? stat.getAvgRating() : 0.0;
+        long totalReview = stat != null ? stat.getTotalReview() : 0L;
+        return StoreResponse.of(store, avgRating, totalReview);
     }
 
-    @Transactional
+    // 가게 수정
+    // 외부 API/S3 호출을 트랜잭션 밖에서 실행, DB 수정은 StoreWriter에 위임
     public StoreResponse modifyStore(UUID storeId, StoreUpdateRequest storeUpdateRequest, List<MultipartFile> newImages, UserDetails user) {
         log.info("매장 수정 요청 - storeId: {}", storeId);
         Store savedStore = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, savedStore);
-        //다른매장의 동일한 주소로 수정 불가
+
         if (storeRepository.existsByRoadAddressAndDetailAddressAndIdNot(storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), storeId)) {
             throw new OminBusinessException(ErrorCode.STORE_DUPLICATE_ADDRESS);
         }
+        //위경도 추출이 목적. 도로명주소만 비교.
         boolean addressChanged = !savedStore.getRoadAddress().equals(storeUpdateRequest.roadAddress());
         Point coordinates = addressChanged
                 ? toPoint(kakaoAddressClient.searchAddress(storeUpdateRequest.roadAddress()))
                 : savedStore.getCoordinates();
         log.debug("주소 변경 여부 - changed: {}", addressChanged);
-        savedStore.updateStore(storeUpdateRequest.category(), storeUpdateRequest.name(),
-                storeUpdateRequest.roadAddress(), storeUpdateRequest.detailAddress(), coordinates);
 
-        List<StoreUpdateRequest.StoreImageRequest> imageRequests = storeUpdateRequest.images();
         List<MultipartFile> imageFiles = newImages != null ? newImages : List.of();
-        //ADD 항목 수와 업로드 파일 수 일치 검증
-        long addCount = imageRequests.stream()
+        //추가한 이미지 수와 업로드된 파일 수가 일치하는지 검증
+        long addCount = storeUpdateRequest.images().stream()
                 .filter(r -> r.action() == StoreUpdateRequest.ImageAction.ADD)
                 .count();
         if (addCount != imageFiles.size()) {
             throw new OminBusinessException(ErrorCode.STORE_IMAGE_COUNT_MISMATCH);
         }
-        List<String> newUrlList = sendImagesToS3(imageFiles);
-        processImages(savedStore, imageRequests, newUrlList);
+        //새로 업로드 한 이미지 타입 검증
+        if (!imageFiles.isEmpty()) {
+            validateImageContentType(imageFiles);
+        }
+        //S3에 이미지 업로드
+        List<String> newUrlList = imageFiles.stream().map(imageUploader::uploadStoreImage).toList();
 
-        log.info("매장 수정 완료 - storeId: {}", storeId);
-        return StoreResponse.of(savedStore);
+        return storeWriter.update(storeId, storeUpdateRequest, coordinates, newUrlList);
     }
 
+    // 가게 삭제
     @Transactional
     public void deleteStore(UUID storeId, UserDetails user) {
         log.info("매장 삭제 요청 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
+        if (store.getStatus() == Status.OPENED) {
+            throw new OminBusinessException(ErrorCode.STORE_OPENED_CANNOT_DELETE);
+        }
+        UUID ownerId = store.getOwnerId();
         storeRepository.delete(store);
         log.info("매장 삭제 완료 - storeId: {}", storeId);
+
+        // 삭제 후 점주의 잔여 가게가 없으면 OWNER -> CUSTOMER 강등
+        if (storeRepository.countByOwnerId(ownerId) == 0) {
+            userPromoteService.demoteToCustomerIfOwner(ownerId);
+        }
     }
 
-    //customer용 매장 조회 리스트
-    public StoreSearchPageResponse searchStoreList(StoreSearchRequest storeSearchRequest, UserDetails user) {
+    // customer용 매장 조회 리스트
+    public StoreSliceResponse<StoreSearchResponse> searchStoreList(StoreSearchRequest storeSearchRequest, UserDetails user) {
         UUID userId = ((User) user).getId();
         //배송지 좌표조회
         CoordinatesSearchDto addressCoordinate = coordinatesSearchService.getCoordinates(storeSearchRequest.addressId(), userId);
@@ -157,7 +190,10 @@ public class StoreService {
         List<StoreSearchResponse> content = result.getContent().stream()
                 .map(projection -> new StoreSearchResponse(
                         projection.getStoreId(), projection.getCategory(), projection.getName(),
-                        projection.getRoadAddress(), projection.getDetailAddress(), projection.getStatus(), projection.getMainImage()
+                        projection.getRoadAddress(), projection.getDetailAddress(), projection.getStatus(), projection.getDistance(),
+                        projection.getAvgRating() != null ? projection.getAvgRating() : 0.0,
+                        projection.getTotalReview() != null ? projection.getTotalReview() : 0L,
+                        projection.getMainImage()
                 ))
                 .toList();
 
@@ -165,35 +201,47 @@ public class StoreService {
         Double nextLastDistance = null;
         UUID nextLastId = null;
         if (result.hasNext() && !result.getContent().isEmpty()) {
+            //리스트의 제일 마지막 줄
             StoreRepository.StoreSearchProjection lastProjection = result.getContent().get(result.getContent().size() - 1);
+            //다음페이지
             nextLastDistance = lastProjection.getDistance();
             nextLastId = lastProjection.getStoreId();
         }
-        return new StoreSearchPageResponse(content, result.hasNext(), nextLastDistance, nextLastId);
+        return StoreSliceResponse.ofDistanceCursor(content, result.hasNext(), nextLastDistance, nextLastId);
     }
 
     // 점주용: 본인 등록 매장 목록 조회
-    public StoreListPageResponse findMyStores(StoreListPageRequest pageRequest, UserDetails user) {
+    public StoreSliceResponse<StoreOwnerAdminSearchResponse> findMyStores(StoreOwnerAdminSearchRequest cursorRequest, UserDetails user) {
         UUID ownerId = ((User) user).getId();
-        log.debug("본인 매장 목록 조회 - ownerId: {}, page: {}, size: {}", ownerId, pageRequest.page(), pageRequest.size());
-        Slice<Store> result = storeRepository.findByOwnerIdOrderByCreatedAtDesc(
-                ownerId, PageRequest.of(pageRequest.page(), pageRequest.size()));
-        return toPageResponse(result, pageRequest.page());
+        log.debug("본인 매장 목록 조회 - ownerId: {}, lastCreatedAt: {}, size: {}", ownerId, cursorRequest.lastCreatedAt(), cursorRequest.size());
+        Slice<Store> result = storeRepository.findByOwnerIdCursor(
+                ownerId, cursorRequest.lastCreatedAt(), cursorRequest.lastId(),
+                PageRequest.of(0, cursorRequest.size()));
+        return toCreatedAtCursorResponse(result);
     }
 
     // 관리자용: PENDING 상태 매장 목록 조회
-    public StoreListPageResponse findPendingStores(StoreListPageRequest pageRequest) {
-        log.debug("PENDING 매장 목록 조회 - page: {}, size: {}", pageRequest.page(), pageRequest.size());
-        Slice<Store> result = storeRepository.findByStatusOrderByCreatedAtDesc(
-                Status.PENDING, PageRequest.of(pageRequest.page(), pageRequest.size()));
-        return toPageResponse(result, pageRequest.page());
+    public StoreSliceResponse<StoreOwnerAdminSearchResponse> findPendingStores(StoreOwnerAdminSearchRequest cursorRequest) {
+        log.debug("PENDING 매장 목록 조회 - lastCreatedAt: {}, size: {}", cursorRequest.lastCreatedAt(), cursorRequest.size());
+        Slice<Store> result = storeRepository.findByStatusCursor(
+                Status.PENDING, cursorRequest.lastCreatedAt(), cursorRequest.lastId(),
+                PageRequest.of(0, cursorRequest.size()));
+        return toCreatedAtCursorResponse(result);
     }
 
-    private static StoreListPageResponse toPageResponse(Slice<Store> slice, int page) {
-        List<StoreListResponse> content = slice.getContent().stream()
-                .map(StoreListResponse::of)
+    //생성일 기반 커서 페이징처리
+    private static StoreSliceResponse<StoreOwnerAdminSearchResponse> toCreatedAtCursorResponse(Slice<Store> slice) {
+        List<StoreOwnerAdminSearchResponse> content = slice.getContent().stream()
+                .map(StoreOwnerAdminSearchResponse::of)
                 .toList();
-        return new StoreListPageResponse(content, slice.hasNext(), page);
+        LocalDateTime nextLastCreatedAt = null;
+        UUID nextLastId = null;
+        if (slice.hasNext() && !slice.getContent().isEmpty()) {
+            Store last = slice.getContent().get(slice.getContent().size() - 1);
+            nextLastCreatedAt = last.getCreatedAt();
+            nextLastId = last.getId();
+        }
+        return StoreSliceResponse.ofCreatedAtCursor(content, slice.hasNext(), nextLastCreatedAt, nextLastId);
     }
 
     // 관리자용: 승인 대기(PENDING) 매장을 CLOSED 상태로 승인 처리
@@ -220,16 +268,25 @@ public class StoreService {
     //점포 상태 (CLOSED) -> (OPENED)
     @Transactional
     public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId, UserDetails user) {
+        User loginUser = (User) user;
         log.info("매장 상태 변경 요청 - storeId: {}, targetStatus: {}", storeId, storeStatusUpdateRequest.status());
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
-        if (storeStatusUpdateRequest.status() == Status.PENDING) {
+
+        //점주는 가게상태를 승인대기로는 변경못함.
+        if (storeStatusUpdateRequest.status() == Status.PENDING && !(loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER)) {
             throw new OminBusinessException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
         }
         //가게 상태가 PENDING 일 때 예외발생
         if (store.getStatus() == Status.PENDING) {
             throw new OminBusinessException(ErrorCode.STORE_STATUS_PENDING_CANNOT_MODIFY);
+        }
+        if (storeStatusUpdateRequest.status() == Status.CLOSED) {
+            // 주문 수락, 조리중 일 때  CLOSED로 상태 변경 불가
+            if (orderRepository.existsByStoreIdAndStatusInAndIsDeletedFalse(storeId, ACTIVE_ORDER_STATUSES)) {
+                throw new OminBusinessException(ErrorCode.STORE_HAS_ACTIVE_ORDERS);
+            }
         }
         Status prevStatus = store.getStatus();
         store.updateStatus(storeStatusUpdateRequest.status());
@@ -237,6 +294,7 @@ public class StoreService {
         return StoreResponse.of(store);
     }
 
+    // 권한 검증
     private static void hasStoreAuth(UserDetails user, Store store) {
         User loginUser = (User) user;
 
@@ -250,88 +308,22 @@ public class StoreService {
         }
     }
 
-    //임시코드 : s3연동 되면 변경 예정.
-    private static List<String> sendImagesToS3(List<MultipartFile> images) {
-        List<String> imagesList = new ArrayList<>();
-        for (MultipartFile file : images) {
-            imagesList.add(file.getOriginalFilename());
-        }
-        return imagesList;
-    }
-
-    private static final int MAX_IMAGE_COUNT = 10;
-
-    private static void processImages(Store store, List<StoreUpdateRequest.StoreImageRequest> imageRequests, List<String> newUrlList) {
-        // action 유효성 검증: ADD는 id 없어야 하고, KEEP/DELETE는 id 필수 + 중복 id 금지
-        Set<UUID> seenIds = new HashSet<>();
-        for (StoreUpdateRequest.StoreImageRequest req : imageRequests) {
-            boolean isAdd = req.action() == StoreUpdateRequest.ImageAction.ADD;
-            if (isAdd && req.id() != null) {
-                throw new OminBusinessException(ErrorCode.STORE_IMAGE_INVALID_ACTION);
+    // 업로드 타입 검증
+    private static void validateImageContentType(List<MultipartFile> images) {
+        for (MultipartFile image : images) {
+            //빈 파일 업로드 x
+            if (image.isEmpty()) {
+                throw new OminBusinessException(ErrorCode.STORE_IMAGE_EMPTY);
             }
-            if (!isAdd && req.id() == null) {
-                throw new OminBusinessException(ErrorCode.STORE_IMAGE_INVALID_ACTION);
-            }
-            if (!isAdd && !seenIds.add(req.id())) {
-                throw new OminBusinessException(ErrorCode.STORE_IMAGE_DUPLICATE_ID);
-            }
-        }
-
-        // 최종 이미지 수 검증: KEEP + ADD 만 실제 이미지로 남음
-        long finalImageCount = imageRequests.stream()
-                .filter(r -> r.action() == StoreUpdateRequest.ImageAction.KEEP
-                          || r.action() == StoreUpdateRequest.ImageAction.ADD)
-                .count();
-        if (finalImageCount > MAX_IMAGE_COUNT) {
-            throw new OminBusinessException(ErrorCode.STORE_IMAGE_MAX_EXCEEDED);
-        }
-        log.debug("최종 이미지 수 검증 - finalCount: {}", finalImageCount);
-
-        // DELETE 처리: 명시적으로 DELETE 표시된 이미지 제거
-        Set<UUID> deleteIds = imageRequests.stream()
-                .filter(r -> r.action() == StoreUpdateRequest.ImageAction.DELETE)
-                .map(StoreUpdateRequest.StoreImageRequest::id)
-                .collect(Collectors.toSet());
-        log.debug("이미지 삭제 처리 - deleteIds: {}", deleteIds);
-        store.removeImagesIn(deleteIds);
-
-        // KEEP/ADD 순서대로 sequence 부여
-        Map<UUID, StoreImage> existingImageMap = store.getImages().stream()
-                .collect(Collectors.toMap(StoreImage::getId, Function.identity()));
-
-        int addIdx = 0;
-        int sequence = 1;
-        for (StoreUpdateRequest.StoreImageRequest req : imageRequests) {
-            switch (req.action()) {
-                case KEEP -> {
-                    StoreImage img = existingImageMap.get(req.id());
-                    if (img == null) {
-                        log.debug("이미지 ID 불일치 - imageId: {}", req.id());
-                        throw new OminBusinessException(ErrorCode.STORE_IMAGE_NOT_FOUND);
-                    }
-                    img.updateImageSorting(sequence++);
-                    log.debug("기존 이미지 순서 갱신 - imageId: {}, sequence: {}", req.id(), sequence - 1);
-                }
-                case ADD -> {
-                    store.addNewImage(newUrlList.get(addIdx++), sequence++);
-                    log.debug("신규 이미지 추가 - sequence: {}", sequence - 1);
-                }
-                case DELETE -> { /* 이미 처리됨 */ }
+            String contentType = image.getContentType();
+            //잘못된 파일 형식이 넘어왔을 경우
+            if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
+                throw new OminBusinessException(ErrorCode.STORE_IMAGE_INVALID_TYPE);
             }
         }
     }
 
-    private static Store toEntity(StoreCreateRequest request, UUID ownerId, Point coordinates) {
-        return Store.builder()
-                .ownerId(ownerId)
-                .category(request.category())
-                .name(request.name())
-                .roadAddress(request.roadAddress())
-                .detailAddress(request.detailAddress())
-                .coordinates(coordinates)
-                .build();
-    }
-
+    //위경도를 좌표객체타입으로 변환
     private static Point toPoint(KakaoAddressClient.KakaoAddressResult kakao) {
         return GEOMETRY_FACTORY.createPoint(new Coordinate(
                 kakao.longitude().doubleValue(),

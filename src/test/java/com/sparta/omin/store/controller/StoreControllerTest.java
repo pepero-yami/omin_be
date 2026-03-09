@@ -2,7 +2,15 @@ package com.sparta.omin.store.controller;
 
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
-import com.sparta.omin.app.model.store.dto.*;
+import com.sparta.omin.app.model.store.dto.request.StoreCreateRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreOwnerAdminSearchRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreStatusUpdateRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreUpdateRequest;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
+import com.sparta.omin.app.model.store.dto.response.StoreOwnerAdminSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSliceResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -259,13 +267,13 @@ class StoreControllerTest extends StoreControllerHelper {
         @DisplayName("성공: 내 매장 목록을 200으로 반환")
         void getMyStores_returns200() throws Exception {
             mockUser();
-            StoreListPageResponse pageResponse = new StoreListPageResponse(
+            StoreSliceResponse<StoreOwnerAdminSearchResponse> cursorResponse = StoreSliceResponse.ofCreatedAtCursor(
                     List.of(
                             buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING),
                             buildStoreListResponse(NON_PENDING_STORE_ID, "후와후와2호점", Status.OPENED)
-                    ), false, 0
+                    ), false, null, null
             );
-            given(storeService.findMyStores(any(), any())).willReturn(pageResponse);
+            given(storeService.findMyStores(any(StoreOwnerAdminSearchRequest.class), any())).willReturn(cursorResponse);
 
             mockMvc.perform(get(STORE_OWNER_MY_URL))
                     .andDo(print())
@@ -283,11 +291,11 @@ class StoreControllerTest extends StoreControllerHelper {
         @Test
         @DisplayName("성공: PENDING 매장 목록을 200으로 반환")
         void getPendingStores_returns200() throws Exception {
-            StoreListPageResponse pageResponse = new StoreListPageResponse(
+            StoreSliceResponse<StoreOwnerAdminSearchResponse> cursorResponse = StoreSliceResponse.ofCreatedAtCursor(
                     List.of(buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING)),
-                    false, 0
+                    false, null, null
             );
-            given(storeService.findPendingStores(any())).willReturn(pageResponse);
+            given(storeService.findPendingStores(any(StoreOwnerAdminSearchRequest.class))).willReturn(cursorResponse);
 
             mockMvc.perform(get(STORE_ADMIN_PENDING_URL))
                     .andDo(print())
@@ -308,10 +316,10 @@ class StoreControllerTest extends StoreControllerHelper {
         void searchStores_returns200() throws Exception {
             mockUser();
             UUID addressId = UUID.randomUUID();
-            StoreSearchPageResponse pageResponse = new StoreSearchPageResponse(
+            StoreSliceResponse<StoreSearchResponse> pageResponse = StoreSliceResponse.ofDistanceCursor(
                     List.of(new StoreSearchResponse(
                             NON_PENDING_STORE_ID, Category.KOREAN, "후와후와",
-                            "서울특별시 강남구 테헤란로 427", "1층", Status.OPENED, "store.jpg"
+                            "서울특별시 강남구 테헤란로 427", "1층", Status.OPENED, 2500, 0.0, 0L, "store.jpg"
                     )),
                     false, null, null
             );
@@ -443,6 +451,21 @@ class StoreControllerTest extends StoreControllerHelper {
                     .andDo(print())
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.error").value("FORBIDDEN"));
+        }
+
+        @Test
+        @DisplayName("실패: 진행 중인 주문이 있는 가게 CLOSED 변경 시 409 반환")
+        void ownerUpdateStatus_hasActiveOrders_returns409() throws Exception {
+            mockUser();
+            StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.CLOSED);
+            given(storeService.modifyStoreStatus(any(), eq(NON_PENDING_STORE_ID), any()))
+                    .willThrow(new OminBusinessException(ErrorCode.STORE_HAS_ACTIVE_ORDERS));
+
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(NON_PENDING_STORE_ID))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isConflict());
         }
     }
 }

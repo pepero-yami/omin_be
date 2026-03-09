@@ -8,4 +8,7 @@ public class ImageUploader {
     public String uploadReviewImage (MultipartFile file){
         return "업로드 이후 생성된 S3 url";
     }
+    public String uploadStoreImage (MultipartFile file){
+        return "업로드 이후 생성된 S3 stores/file url";
+    }
 }

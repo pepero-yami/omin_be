@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.store.dto;
+package com.sparta.omin.app.model.store.dto.response;
 
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
@@ -19,6 +19,8 @@ public record StoreResponse(
         String roadAddress,
         String detailAddress,
         Status status,
+        double avgRating,
+        long totalReview,
         List<StoreImageResponse> images
 ) {
     @Builder
@@ -37,6 +39,10 @@ public record StoreResponse(
     }
 
     public static StoreResponse of(Store store) {
+        return of(store, 0.0, 0L);
+    }
+
+    public static StoreResponse of(Store store, double avgRating, long totalReview) {
         return StoreResponse.builder()
                 .id(store.getId())
                 .ownerId(store.getOwnerId())
@@ -45,6 +51,8 @@ public record StoreResponse(
                 .roadAddress(store.getRoadAddress())
                 .detailAddress(store.getDetailAddress())
                 .status(store.getStatus())
+                .avgRating(avgRating)
+                .totalReview(totalReview)
                 .images(store.getImages().stream()
                         .sorted(Comparator.comparingInt(StoreImage::getSequence))
                         .map(StoreImageResponse::of).toList())

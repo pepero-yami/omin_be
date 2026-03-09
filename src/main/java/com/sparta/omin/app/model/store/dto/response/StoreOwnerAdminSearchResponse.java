@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.store.dto;
+package com.sparta.omin.app.model.store.dto.response;
 
 import com.sparta.omin.app.model.store.code.Category;
 import com.sparta.omin.app.model.store.code.Status;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Builder
-public record StoreListResponse(
+public record StoreOwnerAdminSearchResponse(
         UUID id,
         String name,
         Category category,
@@ -17,8 +17,8 @@ public record StoreListResponse(
         String roadAddress,
         LocalDateTime createdAt
 ) {
-    public static StoreListResponse of(Store store) {
-        return StoreListResponse.builder()
+    public static StoreOwnerAdminSearchResponse of(Store store) {
+        return StoreOwnerAdminSearchResponse.builder()
                 .id(store.getId())
                 .name(store.getName())
                 .category(store.getCategory())

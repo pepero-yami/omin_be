@@ -104,6 +104,10 @@ public class User extends BaseEntity implements UserDetails {
 		this.role = Role.OWNER;
 	}
 
+	public void demoteToCustomer() {
+		this.role = Role.CUSTOMER;
+	}
+
 	public void softDelete(UUID id) {
 		this.isDeleted = true;
 		this.deletedBy = id; //FIXME @순식님 일단 주석처리

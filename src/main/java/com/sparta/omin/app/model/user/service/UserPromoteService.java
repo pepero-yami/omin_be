@@ -28,4 +28,14 @@ public class UserPromoteService {
             log.info("유저 권한 변경 - userId: {}, CUSTOMER -> OWNER", userId);
         }
     }
+
+    @Transactional
+    public void demoteToCustomerIfOwner(UUID userId) {
+        User user = userRepository.findByIdAndIsDeletedFalse(userId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.USER_NOT_FOUND));
+        if (user.getRole() == Role.OWNER) {
+            user.demoteToCustomer();
+            log.info("유저 권한 변경 - userId: {}, OWNER -> CUSTOMER", userId);
+        }
+    }
 }

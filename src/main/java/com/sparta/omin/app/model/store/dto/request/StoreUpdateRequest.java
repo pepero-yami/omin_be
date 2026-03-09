@@ -1,4 +1,4 @@
-package com.sparta.omin.app.model.store.dto;
+package com.sparta.omin.app.model.store.dto.request;
 
 import com.sparta.omin.app.model.store.code.Category;
 import jakarta.validation.constraints.NotBlank;
