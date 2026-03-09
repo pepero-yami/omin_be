@@ -1,6 +1,6 @@
 package com.sparta.omin.store.service;
 
-import com.sparta.omin.app.model.order.repos.OrderRepository;
+import com.sparta.omin.app.model.order.service.OrderStatusCheckService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.service.StoreRatingStatService;
@@ -70,7 +70,7 @@ class StoreServiceTest {
     @Mock
     private StoreWriter storeWriter;
     @Mock
-    private OrderRepository orderRepository;
+    private OrderStatusCheckService orderStatusCheckService;
     @Mock
     private ImageUploader imageUploader;
 
@@ -616,7 +616,7 @@ class StoreServiceTest {
             Store pendingStore = buildStore(UUID.randomUUID(), ownerId, Status.PENDING);
             StoreOwnerAdminSearchRequest req = new StoreOwnerAdminSearchRequest(null, null, 10);
 
-            given(storeRepository.findByStatusCursor(eq(Status.PENDING), isNull(), isNull(), any(Pageable.class)))
+            given(storeRepository.findByStatusCursor(eq(Status.PENDING.name()), isNull(), isNull(), any(Pageable.class)))
                     .willReturn(new SliceImpl<>(List.of(pendingStore), Pageable.ofSize(10), false));
 
             StoreSliceResponse<StoreOwnerAdminSearchResponse> result = storeService.findPendingStores(req);
@@ -634,7 +634,7 @@ class StoreServiceTest {
             Store lastStore = buildStoreWithCreatedAt(lastStoreId, UUID.randomUUID(), Status.PENDING, createdAt);
             StoreOwnerAdminSearchRequest req = new StoreOwnerAdminSearchRequest(null, null, 10);
 
-            given(storeRepository.findByStatusCursor(eq(Status.PENDING), isNull(), isNull(), any(Pageable.class)))
+            given(storeRepository.findByStatusCursor(eq(Status.PENDING.name()), isNull(), isNull(), any(Pageable.class)))
                     .willReturn(new SliceImpl<>(List.of(lastStore), Pageable.ofSize(10), true));
 
             StoreSliceResponse<StoreOwnerAdminSearchResponse> result = storeService.findPendingStores(req);
@@ -651,13 +651,13 @@ class StoreServiceTest {
             UUID lastId = UUID.randomUUID();
             StoreOwnerAdminSearchRequest req = new StoreOwnerAdminSearchRequest(lastCreatedAt, lastId, 10);
 
-            given(storeRepository.findByStatusCursor(eq(Status.PENDING), eq(lastCreatedAt), eq(lastId), any(Pageable.class)))
+            given(storeRepository.findByStatusCursor(eq(Status.PENDING.name()), eq(lastCreatedAt), eq(lastId), any(Pageable.class)))
                     .willReturn(new SliceImpl<>(List.of(), Pageable.ofSize(10), false));
 
             StoreSliceResponse<StoreOwnerAdminSearchResponse> result = storeService.findPendingStores(req);
 
             assertThat(result.content()).isEmpty();
-            verify(storeRepository).findByStatusCursor(eq(Status.PENDING), eq(lastCreatedAt), eq(lastId), any(Pageable.class));
+            verify(storeRepository).findByStatusCursor(eq(Status.PENDING.name()), eq(lastCreatedAt), eq(lastId), any(Pageable.class));
         }
     }
 
@@ -749,7 +749,7 @@ class StoreServiceTest {
             StoreStatusUpdateRequest req = new StoreStatusUpdateRequest(Status.CLOSED);
 
             given(storeRepository.findByIdWithImages(storeId)).willReturn(Optional.of(store));
-            given(orderRepository.existsByStoreIdAndStatusInAndIsDeletedFalse(eq(storeId), anyList())).willReturn(false);
+            given(orderStatusCheckService.existsProcessingOrder(eq(storeId), anyList())).willReturn(false);
 
             StoreResponse result = storeService.modifyStoreStatus(req, storeId, owner);
 
@@ -800,7 +800,7 @@ class StoreServiceTest {
             StoreStatusUpdateRequest req = new StoreStatusUpdateRequest(Status.CLOSED);
 
             given(storeRepository.findByIdWithImages(storeId)).willReturn(Optional.of(store));
-            given(orderRepository.existsByStoreIdAndStatusInAndIsDeletedFalse(eq(storeId), anyList())).willReturn(true);
+            given(orderStatusCheckService.existsProcessingOrder(eq(storeId), anyList())).willReturn(true);
 
             assertThatThrownBy(() -> storeService.modifyStoreStatus(req, storeId, owner))
                     .isInstanceOf(OminBusinessException.class)

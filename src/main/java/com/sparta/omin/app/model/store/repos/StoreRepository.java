@@ -30,14 +30,14 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
                        s.detail_address as detailAddress,
                        s.status,
                        si.image_url   as mainImage,
-                       ST_Distance(s.coordinates, :center::geography) as distance,
+                       ST_Distance(s.coordinates, cast(:center as geography)) as distance,
                        srs.avg_rating  as avgRating,
                        srs.total_review as totalReview
                 FROM p_store s
                 JOIN p_store_image si ON s.id = si.store_id AND si.sequence = 1 AND si.is_deleted = false
                 LEFT JOIN p_store_rating_stat srs ON s.id = srs.store_id
                 WHERE s.is_deleted = false
-                  AND ST_DWithin(s.coordinates, :center::geography, :radius)
+                  AND ST_DWithin(s.coordinates, cast(:center as geography), :radius)
                   AND s.category = :#{#category.name()}
                   AND s.status != 'PENDING'
                   AND (:name IS NULL OR s.name ILIKE CONCAT('%', :name, '%'))
@@ -70,10 +70,16 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
         String getMainImage();
     }
 
-    @Query("SELECT s FROM Store s WHERE s.ownerId = :ownerId " +
-            "AND (:lastCreatedAt IS NULL OR s.createdAt < :lastCreatedAt " +
-            "     OR (s.createdAt = :lastCreatedAt AND s.id < :lastId)) " +
-            "ORDER BY s.createdAt DESC, s.id DESC")
+    @Query(value = """
+            SELECT s.* FROM p_store s
+            WHERE s.is_deleted = false
+              AND s.owner_id = :ownerId
+              AND (CAST(:lastCreatedAt AS timestamp) IS NULL
+                   OR s.created_at < CAST(:lastCreatedAt AS timestamp)
+                   OR (s.created_at = CAST(:lastCreatedAt AS timestamp)
+                       AND s.id < CAST(:lastId AS uuid)))
+            ORDER BY s.created_at DESC, s.id DESC
+            """, nativeQuery = true)
     Slice<Store> findByOwnerIdCursor(
             @Param("ownerId") UUID ownerId,
             @Param("lastCreatedAt") LocalDateTime lastCreatedAt,
@@ -81,12 +87,18 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
             Pageable pageable
     );
 
-    @Query("SELECT s FROM Store s WHERE s.status = :status " +
-            "AND (:lastCreatedAt IS NULL OR s.createdAt < :lastCreatedAt " +
-            "     OR (s.createdAt = :lastCreatedAt AND s.id < :lastId)) " +
-            "ORDER BY s.createdAt DESC, s.id DESC")
+    @Query(value = """
+            SELECT s.* FROM p_store s
+            WHERE s.is_deleted = false
+              AND s.status = :status
+              AND (CAST(:lastCreatedAt AS timestamp) IS NULL
+                   OR s.created_at < CAST(:lastCreatedAt AS timestamp)
+                   OR (s.created_at = CAST(:lastCreatedAt AS timestamp)
+                       AND s.id < CAST(:lastId AS uuid)))
+            ORDER BY s.created_at DESC, s.id DESC
+            """, nativeQuery = true)
     Slice<Store> findByStatusCursor(
-            @Param("status") Status status,
+            @Param("status") String status,
             @Param("lastCreatedAt") LocalDateTime lastCreatedAt,
             @Param("lastId") UUID lastId,
             Pageable pageable

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -28,7 +29,7 @@ public class StoreWriter {
     private static final int MAX_IMAGE_COUNT = 10;
 
     //db 저장만
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public StoreResponse save(StoreCreateRequest request, UUID ownerId, Point coordinates, List<String> imageUrlList) {
         Store store = Store.builder()
                 .ownerId(ownerId)
@@ -46,7 +47,7 @@ public class StoreWriter {
         return StoreResponse.of(savedStore);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public StoreResponse update(UUID storeId, StoreUpdateRequest request, Point coordinates, List<String> newUrlList) {
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));

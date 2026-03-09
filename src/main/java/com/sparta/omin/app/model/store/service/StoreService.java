@@ -224,7 +224,7 @@ public class StoreService {
     public StoreSliceResponse<StoreOwnerAdminSearchResponse> findPendingStores(StoreOwnerAdminSearchRequest cursorRequest) {
         log.debug("PENDING 매장 목록 조회 - lastCreatedAt: {}, size: {}", cursorRequest.lastCreatedAt(), cursorRequest.size());
         Slice<Store> result = storeRepository.findByStatusCursor(
-                Status.PENDING, cursorRequest.lastCreatedAt(), cursorRequest.lastId(),
+                Status.PENDING.name(), cursorRequest.lastCreatedAt(), cursorRequest.lastId(),
                 PageRequest.of(0, cursorRequest.size()));
         return toCreatedAtCursorResponse(result);
     }
