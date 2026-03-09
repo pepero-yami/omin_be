@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -66,4 +69,8 @@ public class ProductReadService {
             () -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND)
         );
     }
+  
+	public List<Product> getProductsInStore(List<UUID> productIds, UUID storeId) {
+		return productRepository.findByIdInAndStoreId(productIds, storeId);	}
+
 }
