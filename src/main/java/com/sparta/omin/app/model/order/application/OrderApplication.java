@@ -8,6 +8,8 @@ import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
 import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.dto.OrderUpdateRequest;
+import com.sparta.omin.app.model.order.entity.Order;
+import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.order.service.OrderService;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.service.StoreReadService;
@@ -26,6 +28,7 @@ import java.util.UUID;
 public class OrderApplication {
 
     private final OrderService orderService;
+    private final OrderReadService orderReadService;
     private final RCartService cartService;
     private final AddressReadService addressReadService;
     private final StoreReadService storeReadService;
@@ -58,7 +61,7 @@ public class OrderApplication {
     }
 
     public Slice<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, Pageable pageable) {
-        if(!storeReadService.isOwnedStore(storeId, userId)) {
+        if (!storeReadService.isOwnedStore(storeId, userId)) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
         return orderService.getOrdersByOwner(storeId, pageable);
@@ -66,10 +69,21 @@ public class OrderApplication {
 
     public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, OrderUpdateRequest request) {
         Address address = getAddress(userId, request.addressId());
-
         return orderService.updateOrderByCustomer(userId, orderId, address, request.userRequest());
     }
 
+    public OrderResponse updateOrderStatus(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        validateStoreOwner(order, userId, orderId);
+        return orderService.updateOrderStatus(order);
+    }
+
+
+    public void rejectOrder(UUID userId, UUID orderId) {
+        Order order = getOrder(orderId);
+        validateStoreOwner(order, userId, orderId);
+        orderService.rejectOrder(order);
+    }
 
     //===== Helper Method =====
     private static void validateCart(RCart cart) {
@@ -81,4 +95,15 @@ public class OrderApplication {
     private Address getAddress(UUID userId, UUID addressId) {
         return addressReadService.getMyAddress(userId, addressId);
     }
+
+    private void validateStoreOwner(Order order, UUID userId, UUID orderId) {
+        if (!storeReadService.isOwnedStore(order.getStore().getId(), userId)) {
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+    }
+
+    private Order getOrder(UUID orderId) {
+        return orderReadService.getOrder(orderId);
+    }
+
 }

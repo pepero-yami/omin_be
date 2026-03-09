@@ -102,6 +102,37 @@ public class Order extends BaseEntity {
         this.status = OrderStatus.REJECT;
     }
 
+    public void nextStatus() {
+        switch (this.status) {
+            case PENDING -> accepted();
+            case ACCEPTED -> cooking();
+            case COOKING -> completed();
+            default -> throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+    }
+
+    /**
+     * 상태변이 메서드
+     * API명세서의 엔드포인트를 유지하고, 각각 상태전이별 확장성을 고려하여 메서드로 분리
+     */
+    private void accepted(){
+        this.status = OrderStatus.ACCEPTED;
+    }
+
+    private void cooking(){
+        if (this.status != OrderStatus.ACCEPTED) {
+            throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.COOKING;
+    }
+
+    private void completed(){
+        if (this.status != OrderStatus.COOKING) {
+            throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.COMPLETED;
+    }
+
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
         products.forEach(product ->
                 this.orderItems.add(OrderItem.create(this, product, quantityMap.get(product.getId())))

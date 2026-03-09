@@ -67,15 +67,14 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/status")
     public ResponseEntity<OrderResponse> updateOrderStatus(@PathVariable UUID orderId,
-                                                            @AuthenticationPrincipal User user,
-                                                            @RequestBody OrderStatusRequest request) {
-        return ResponseEntity.ok(orderService.updateOrderStatus(user.getId(), orderId, request));
+                                                           @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(orderApplication.updateOrderStatus(user.getId(), orderId));
     }
 
     @PatchMapping("/{orderId}/reject")
     public ResponseEntity<Void> rejectOrder(@PathVariable UUID orderId,
-                                                            @AuthenticationPrincipal User user) {
-        orderService.rejectOrder(user.getId(), orderId);
+                                            @AuthenticationPrincipal User user) {
+        orderApplication.rejectOrder(user.getId(), orderId);
         return ResponseEntity.noContent().build();
     }
 }

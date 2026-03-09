@@ -2,7 +2,10 @@ package com.sparta.omin.app.model.order.service;
 
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.cart.entity.RCart;
-import com.sparta.omin.app.model.order.dto.*;
+import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
+import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
+import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
+import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.product.entity.Product;
@@ -73,7 +76,7 @@ public class OrderService {
     public void cancelOrderByCustomer(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
 
-        if (userId.equals(order.getUser().getId())) {
+        if (!userId.equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
 
@@ -81,13 +84,13 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrderStatus(UUID userId, UUID orderId, OrderStatusRequest request) {
-        return null;
+    public OrderResponse updateOrderStatus(Order order) {
+        order.nextStatus();
+        return OrderResponse.from(order);
     }
 
     @Transactional
-    public void rejectOrder(UUID userId, UUID orderId) {
-        Order order = getOrder(orderId);
+    public void rejectOrder(Order order) {
         order.reject();
     }
 
@@ -110,6 +113,4 @@ public class OrderService {
         return orderRepository.findByIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
     }
-
-
 }
