@@ -2,6 +2,7 @@ package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.product.dto.ProductResult;
 import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
+import com.sparta.omin.app.model.product.dto.ProductWithUrlResult;
 import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.app.model.store.service.StoreReadService;
@@ -52,16 +53,13 @@ public class ProductReadService {
      * @param storeId
      * @return {@code List<ProductResult>}
      */
-    public List<ProductResult> getProducts(UUID storeId) {
+    public List<ProductWithUrlResult> getProducts(UUID storeId) {
         // 운영중인 가게인지 검증
         if(storeReadService.isStatusPending(storeId)) {
             throw new OminBusinessException(ErrorCode.BAD_REQUEST);
         }
 
-        return productRepository.findByStoreIdAndIsDeletedFalse(storeId)
-            .stream()
-            .map(ProductResult::from)
-            .toList();
+        return productRepository.findProductListWithUrl(storeId);
     }
 
     public Product getProductInStore(UUID productId, UUID storeId) {

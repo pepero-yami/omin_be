@@ -2,7 +2,9 @@ package com.sparta.omin.app.controller.product;
 
 import com.sparta.omin.app.controller.product.payload.ProductCreateRequest;
 import com.sparta.omin.app.controller.product.payload.ProductListResponse;
+import com.sparta.omin.app.controller.product.payload.ProductDetailResponse;
 import com.sparta.omin.app.controller.product.payload.ProductResponse;
+import com.sparta.omin.app.model.product.service.ProductImageService;
 import com.sparta.omin.app.model.product.service.ProductReadService;
 import com.sparta.omin.app.model.product.service.ProductService;
 import com.sparta.omin.app.controller.product.payload.ProductUpdateRequest;
@@ -41,6 +43,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final ProductReadService productReadService;
+    private final ProductImageService productImageService;
 
     /**
      * 상품 추가 api
@@ -64,11 +67,12 @@ public class ProductController {
      * 상품 상세 조회 api
      */
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProduct(
+    public ResponseEntity<ProductDetailResponse> getProduct(
         @PathVariable UUID productId
     ) {
-        ProductResponse response = ProductResponse.from(
-            productReadService.getProduct(productId)
+        ProductDetailResponse response = ProductDetailResponse.from(
+            productReadService.getProduct(productId),
+            productImageService.getImgUrl(productId)
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
