@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.product.service;
 
-import com.sparta.omin.app.model.product.dto.ProductResult;
+import com.sparta.omin.app.model.product.dto.ProductDetailResult;
 import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
 import com.sparta.omin.app.model.product.dto.ProductWithUrlResult;
 import com.sparta.omin.app.model.product.entity.Product;
@@ -14,9 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -28,11 +25,12 @@ public class ProductReadService {
     /**
      * 메뉴의 상세 정보를 반환합니다.<br>
      * 메뉴별 옵션 기능은 현재 존재하지 않기에 해당 정보는 포함되지 않습니다.<br>
-     * {@link ProductResult} 를 반환합니다.
+     * @param productId 상품의 {@code UUID}
+     * @return {@link ProductDetailResult}
      */
-    public ProductResult getProduct(UUID productId) {
+    public ProductDetailResult getProductDetail(UUID productId) {
         return productRepository.findByIdAndIsDeletedFalse(productId)
-            .map(ProductResult::from)
+            .map(ProductDetailResult::from)
             .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
     }
 

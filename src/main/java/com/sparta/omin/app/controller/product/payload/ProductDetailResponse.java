@@ -1,7 +1,8 @@
 package com.sparta.omin.app.controller.product.payload;
 
 import com.sparta.omin.app.model.product.code.ProductStatus;
-import com.sparta.omin.app.model.product.dto.ProductResult;
+import com.sparta.omin.app.model.product.dto.ProductDetailResult;
+import com.sparta.omin.app.model.product.dto.ProductImageResult;
 import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
@@ -14,10 +15,10 @@ public record ProductDetailResponse(
     String description,
     Double price,
     ProductStatus status,
-    List<String> imgUrl
+    List<ProductImageResult> images
 ) {
 
-    public static ProductDetailResponse from(ProductResult dto, List<String> imgUrl) {
+    public static ProductDetailResponse from(ProductDetailResult dto, List<ProductImageResult> images) {
         return ProductDetailResponse.builder()
             .productId(dto.id())
             .storeId(dto.storeId())
@@ -25,7 +26,7 @@ public record ProductDetailResponse(
             .description(dto.description())
             .price(dto.price())
             .status(dto.status())
-            .imgUrl(imgUrl)
+            .images(images)
             .build();
     }
 }

@@ -4,10 +4,9 @@ import com.sparta.omin.app.model.product.code.ProductStatus;
 import com.sparta.omin.app.model.product.entity.Product;
 import java.util.UUID;
 import lombok.Builder;
-import lombok.Data;
 
 @Builder
-public record ProductResult(
+public record ProductDetailResult(
     UUID id,
     UUID storeId,
     String name,
@@ -16,8 +15,8 @@ public record ProductResult(
     ProductStatus status
 ) {
 
-    public static ProductResult from(Product product) {
-        return ProductResult.builder()
+    public static ProductDetailResult from(Product product) {
+        return ProductDetailResult.builder()
             .id(product.getId())
             .storeId(product.getStore().getId())
             .name(product.getName())

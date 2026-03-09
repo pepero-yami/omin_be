@@ -33,7 +33,7 @@ public class ProductImage extends BaseEntity {
     private String url;
 
     @Column(name="is_primary", nullable = false)
-    private boolean isPrimary;
+    private Boolean isPrimary;
 
     @Column(name = "sort_order", nullable = false)
     private Integer sortOrder;
@@ -42,6 +42,9 @@ public class ProductImage extends BaseEntity {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    // ---------------------
+    // Methods
+    // ---------------------
     @Builder
     public ProductImage(ProductStatus productStatus, String url, Product product, Integer sortOrder, Boolean isPrimary) {
         this.url = url;

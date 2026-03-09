@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.product.repos;
 
+import com.sparta.omin.app.model.product.dto.ProductImageResult;
 import com.sparta.omin.app.model.product.entity.ProductImage;
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, UUID> {
 
-    List<ProductImage> findByProductIdAndIsDeletedFalse(UUID productId);
-
     List<ProductImage> findAllByIdInAndIsDeletedFalse(List<UUID> imgIds);
+
+    List<ProductImage> findAllByProductIdAndIsDeletedFalseOrderBySortOrderAsc(UUID productId);
 }

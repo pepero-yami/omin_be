@@ -73,8 +73,8 @@ public class ProductController {
         @PathVariable UUID productId
     ) {
         ProductDetailResponse response = ProductDetailResponse.from(
-            productReadService.getProduct(productId),
-            productImageService.getImgUrl(productId)
+            productReadService.getProductDetail(productId),
+            productImageService.getImages(productId)
         );
 
         return ResponseEntity.status(HttpStatus.OK).body(response);

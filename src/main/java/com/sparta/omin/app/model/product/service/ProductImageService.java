@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.product.service;
 
+import com.sparta.omin.app.model.product.dto.ProductImageResult;
 import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.entity.ProductImage;
 import com.sparta.omin.app.model.product.repos.ProductImageRepository;
@@ -62,11 +63,9 @@ public class ProductImageService {
      * @return s3에 저장된 이미지의 url을 {@code List<String>}으로 반환합니다.
      */
     @Transactional(readOnly = true)
-    public List<String> getImgUrl(UUID productId) {
-        return productImageRepository.findByProductIdAndIsDeletedFalse(productId)
-            .stream()
-            .map(ProductImage::getUrl)
-            .toList();
+    public List<ProductImageResult> getImages(UUID productId) {
+        return productImageRepository.findAllByProductIdAndIsDeletedFalseOrderBySortOrderAsc(productId)
+            .stream().map(ProductImageResult::from).toList();
     }
 
     /**
