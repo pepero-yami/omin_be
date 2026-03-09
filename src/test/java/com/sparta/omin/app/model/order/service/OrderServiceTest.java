@@ -350,7 +350,7 @@ class OrderServiceTest {
         orderService.cancelOrderByCustomer(mockUser, orderId);
 
         // then
-        then(order).should().softDelete();
+        then(order).should().cancel();
 
         System.out.println("=== 주문 삭제 검증 완료 ===");
     }
@@ -373,7 +373,7 @@ class OrderServiceTest {
         assertThatThrownBy(() -> orderService.cancelOrderByCustomer(mockUser, orderId))
                 .isInstanceOf(OminBusinessException.class);
 
-        then(order).should(never()).softDelete(); // softDelete 호출 안됨
+        then(order).should(never()).cancel(); // softDelete 호출 안됨
 
         System.out.println("=== 본인 주문 아님 삭제 실패 검증 완료 ===");
     }
