@@ -89,7 +89,8 @@ public class ProductController {
                 .toList()
         );
         return ResponseEntity.status(HttpStatus.OK).body(response);
-      
+    }
+
      /**
      * 상품 수정 api 권한 : {@code ROLE_OWNER}
      */
