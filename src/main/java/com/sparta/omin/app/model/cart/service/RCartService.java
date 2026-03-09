@@ -21,24 +21,16 @@ public class RCartService {
 	public RCart getCartInCustomer(UUID userId, UUID storeId) {
 		return Optional.ofNullable(redisClient.get(userId, RCart.class))
 			.filter(cart -> cart.getStoreId() != null)
-			.orElseGet(() -> createNewCart(userId, storeId));
+			.orElseGet(() -> RCart.create(userId, storeId));
 	}
 
 	public RCart save(RCart cart) {
 		redisClient.put(cart.getCustomerId(), cart);
-		return cart;
+		return redisClient.get(cart.getCustomerId(), RCart.class);
 	}
 
 	public RCart refresh(UUID userId) {
 		redisClient.put(userId, new RCart(userId));
 		return redisClient.get(userId, RCart.class);
 	}
-
-	private RCart createNewCart(UUID userId, UUID storeId) {
-		return RCart.builder()
-			.customerId(userId)
-			.storeId(storeId)
-			.build();
-	}
-
 }

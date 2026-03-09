@@ -73,7 +73,7 @@ class OrderApplicationTest {
     @DisplayName("주문 생성 성공")
     void createOrder_success() {
         // given
-        RCart.Product product = RCart.Product.builder()
+        RCart.CartItem product = RCart.CartItem.builder()
                 .id(UUID.randomUUID())
                 .name("김치찌개")
                 .price(8000.0)
