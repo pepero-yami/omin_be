@@ -13,6 +13,7 @@ import com.sparta.omin.app.model.store.service.StoreReadService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @AllArgsConstructor
@@ -21,6 +22,7 @@ public class ProductService {
     private final AiService aiService;
     private final ProductRepository productRepository;
     private final StoreReadService storeReadService;
+    private final ProductImageService productImageService;
 
     /**
      * 점주가 본인의 가계에 메뉴를 등록할 수 있도록 합니다.<br>
@@ -30,7 +32,8 @@ public class ProductService {
     @Transactional
     public void createProduct(
         ProductCreateCommand command,
-        UUID userId
+        UUID userId,
+        MultipartFile image
     ) {
         // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(command.storeId(), userId)) {
@@ -45,7 +48,7 @@ public class ProductService {
 
         // 생성되거나 입력된 설명을 포함한 상품 정보 저장
         try{
-            productRepository.save(Product.builder()
+            Product product = productRepository.save(Product.builder()
                     .name(command.name())
                     .description(description)
                     .price(command.price())
@@ -53,6 +56,10 @@ public class ProductService {
                     .store(storeReadService.getStoreReference(command.storeId()))
                 .build()
             );
+
+            // 상품 사진이 있는 경우 함께 저장
+            productImageService.create(product, image);
+
         } catch (Exception e) {
             throw new OminBusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
