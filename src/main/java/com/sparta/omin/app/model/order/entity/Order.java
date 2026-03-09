@@ -163,4 +163,12 @@ public class Order extends BaseEntity {
     private static @NonNull String getDeliveryAddress(Address address) {
         return address.getRoadAddress() + " " + address.getShippingDetailAddress();
     }
+
+    //리스너용 메서드 2개
+    public void updateStatus(OrderStatus status) {
+        this.status = status;
+    }
+    public void completePayment() {
+        this.status = OrderStatus.ACCEPTED;
+    }
 }
