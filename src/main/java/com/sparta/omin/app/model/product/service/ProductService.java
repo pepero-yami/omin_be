@@ -72,7 +72,7 @@ public class ProductService {
 
         UUID storeId = product.getStore().getId();
 
-        // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
+        // 메뉴를 수정하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(storeId, userId)) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
@@ -94,7 +94,7 @@ public class ProductService {
 
         UUID storeId = product.getStore().getId();
 
-        // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
+        // 메뉴의 상태를 변경하려는 사장님이 해당 매장의 사장님인지 확인
         if(!storeReadService.isOwnedStore(storeId, userId)) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
@@ -112,7 +112,7 @@ public class ProductService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new OminBusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        // 메뉴를 추가하려는 사장님이 해당 매장의 사장님인지 확인
+        // 메뉴를 삭제하려는 사장님이 해당 매장의 사장님인지 확인
         UUID storeId = product.getStore().getId();
         if(!storeReadService.isOwnedStore(storeId, userId)) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
