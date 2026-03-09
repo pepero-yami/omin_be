@@ -63,8 +63,8 @@ public enum ErrorCode {
 	// Product
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
 	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
-	PRODUCT_INVALID_PRIMARY_INDEX(HttpStatus.BAD_REQUEST, "Invalid primary index."),
 	PRODUCT_INVALID_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "Invalid product image count."),
+	PRODUCT_IMAGE_INVALID_ACCESS(HttpStatus.BAD_REQUEST, "Invalid product image access."),
 
 	// AI - 외부 의존성(OpenAI) (502/503/504/429)
 	AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),

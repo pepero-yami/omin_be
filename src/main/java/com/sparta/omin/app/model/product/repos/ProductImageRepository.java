@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, UUID> {
 
-    List<ProductImage> findAllByIdInAndIsDeletedFalse(List<UUID> imgIds);
+    List<ProductImage> findAllByProductIdAndIsDeletedFalse(UUID productId);
 
     List<ProductImage> findAllByProductIdAndIsDeletedFalseOrderBySortOrderAsc(UUID productId);
 }

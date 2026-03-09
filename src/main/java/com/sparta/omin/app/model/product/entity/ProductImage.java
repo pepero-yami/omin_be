@@ -56,4 +56,9 @@ public class ProductImage extends BaseEntity {
     public void softDelete() {
         this.isDeleted = true;
     }
+
+    public void updateMetadata(Integer sortOrder, Boolean isPrimary) {
+        this.sortOrder = sortOrder;
+        this.isPrimary = isPrimary;
+    }
 }

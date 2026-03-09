@@ -100,19 +100,17 @@ public class ProductController {
     }
 
     /**
-     * 상품 수정 api 권한 : {@code ROLE_OWNER}
+     * @apiNote <b>상품 수정 api</b> 입니다.<br>상품의 상태는 변경하지 않습니다.
      */
     @PreAuthorize("hasRole('OWNER')")
-    @PutMapping("/{productId}")
+    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
-        @RequestBody @Valid ProductUpdateRequest request,
         @PathVariable UUID productId,
-        @RequestPart(required = false) List<MultipartFile> files,
+        @RequestPart("request") @Valid ProductUpdateRequest request,
+        @RequestPart(value = "files", required = false) List<MultipartFile> files,
         @AuthenticationPrincipal User user
     ) {
-        ProductUpdateCommand command = request.toCommand();
-        productService.updateProduct(productId, command, user.getId(), files);
-
+        productService.updateProduct(productId, request.toCommand(files), user.getId());
         return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 
