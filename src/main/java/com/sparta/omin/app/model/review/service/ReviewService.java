@@ -13,6 +13,7 @@ import com.sparta.omin.app.model.stats.entity.StoreRatingStat;
 import com.sparta.omin.app.model.stats.repos.StoreRatingStatRepository;
 import com.sparta.omin.app.model.user.constants.Role;
 import com.sparta.omin.app.model.user.entity.User;
+import com.sparta.omin.app.model.user.repository.UserRepository;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import com.sparta.omin.common.util.ImageUploader;
@@ -39,6 +40,7 @@ public class ReviewService {
     private final StoreRatingStatRepository statRepository;
     private final OrderRepository orderRepository;
     private final ImageUploader imageUploader;
+    private final UserRepository userRepository;
 
     @Transactional
     public ReviewResponse createReview(User user, ReviewCreateRequest request, List<MultipartFile> images) {
@@ -153,7 +155,7 @@ public class ReviewService {
         return ReviewResponse.from(old);
     }
 
-// TODO: 이미지 처리 로직
+    // TODO: 이미지 처리 로직
     private void handleReviewImageAdd(Review old, List<MultipartFile> newFiles) {
         boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
         // 새 이미지 추가
@@ -183,7 +185,7 @@ public class ReviewService {
                                           List<MultipartFile> newFiles // 클라이언트가 추가하길 원하는 이미지 파일
     ) {
         boolean isUpdated = false; // 연관 엔티티 수정 시 updatedAt 갱신여부 flag
-                        int deleteCount = deleteUrls == null ? 0 : deleteUrls.size();
+        int deleteCount = deleteUrls == null ? 0 : deleteUrls.size();
         // 1️⃣ 소프트 삭제
         if (deleteUrls != null && !deleteUrls.isEmpty()) {
             for (String url : deleteUrls) {
@@ -243,5 +245,18 @@ public class ReviewService {
         if (isUpdated) {
             review.markUpdated();
         }
+    }
+
+    @Transactional
+    public void deleteReview(UUID reviewId, User user) {
+        Review review = reviewRepository.findByIdAndIsDeletedFalse(reviewId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.REVIEW_NOT_FOUND));
+        if (!review.getUser().getId().equals(user.getId())) {
+            throw new OminBusinessException(ErrorCode.REVIEW_USER_MISMATCH);
+        }
+        statRepository.findByStoreIdWithLock(review.getStore().getId())
+                .ifPresent(stat -> stat.updateRatingByDiff(-review.getRating()));
+        review.delete();
+        review.getImages().forEach(ReviewImage::delete);
     }
 }

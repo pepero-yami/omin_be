@@ -65,4 +65,10 @@ public class ReviewController {
         ReviewResponse response = reviewService.updateReview(reviewId, user, request, images);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable UUID reviewId, @AuthenticationPrincipal User user) {
+        reviewService.deleteReview(reviewId, user);
+        return ResponseEntity.ok().build();
+    }
 }

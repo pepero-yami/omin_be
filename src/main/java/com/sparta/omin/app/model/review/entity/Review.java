@@ -100,4 +100,7 @@ public class Review extends BaseEntity {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
