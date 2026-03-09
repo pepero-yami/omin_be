@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,10 +15,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-	private final JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter;
 
     /**
      * TODO(auth):
@@ -33,60 +35,66 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
-                // 지금은 개발 편의를 위해 전부 오픈
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                        .permitAll() // 정적 리소스 허용
-                        .requestMatchers("/api/v1/users/auth").permitAll()
-                        .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
-                        .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
-						.requestMatchers("/api/v1/me/addresses/**").hasRole("CUSTOMER") // address
+            // 지금은 개발 편의를 위해 전부 오픈
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
+                .permitAll() // 정적 리소스 허용
+                .requestMatchers("/api/v1/users/auth").permitAll()
+                .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
+                .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
+                .requestMatchers("/api/v1/me/addresses/**").hasRole("CUSTOMER") // address
 
-						.requestMatchers("/api/v1/payments/**").hasRole("CUSTOMER") // 결제 관련 권한 수정
-						.requestMatchers("/api/v1/admin/payments/**").hasAnyRole("MANAGER", "MASTER")
+                .requestMatchers("/api/v1/payments/**").hasRole("CUSTOMER") // 결제 관련 권한 수정
+                .requestMatchers("/api/v1/admin/payments/**").hasAnyRole("MANAGER", "MASTER")
 
-						// Region 조회: CUSTOMER도 가능
-						.requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")
-						.requestMatchers(HttpMethod.GET, "/api/v1/regions").hasRole("CUSTOMER")
+                // Region 조회: CUSTOMER도 가능
+                .requestMatchers(HttpMethod.GET, "/api/v1/regions/**").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/regions").hasRole("CUSTOMER")
 
-						// Region 생성/수정/삭제: MASTER만 가능
-						.requestMatchers(HttpMethod.POST, "/api/v1/regions").hasRole("MASTER")
-						.requestMatchers(HttpMethod.PUT, "/api/v1/regions/**").hasRole("MASTER")
-						.requestMatchers(HttpMethod.DELETE, "/api/v1/regions/**").hasRole("MASTER")
+                // Region 생성/수정/삭제: MASTER만 가능
+                .requestMatchers(HttpMethod.POST, "/api/v1/regions").hasRole("MASTER")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/regions/**").hasRole("MASTER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/regions/**").hasRole("MASTER")
 
-						// Region seed 실행: MASTER만 가능
-						.requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
+                // Region seed 실행: MASTER만 가능
+                .requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
 
-						//store
-						.requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
-						.requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
-						.requestMatchers(HttpMethod.GET,"/api/v1/stores/*").hasRole("CUSTOMER")
-						.requestMatchers(HttpMethod.DELETE,"/api/v1/stores/*").hasRole("OWNER")
-						.requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
-						.requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
+                //store
+                .requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
+                .requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/stores/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/stores/*").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/stores/*").hasRole("OWNER")
+                .requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
 
-						//order
-						.requestMatchers(HttpMethod.POST, "/api/v1/orders").hasRole("CUSTOMER")
-						.requestMatchers(HttpMethod.GET, "/api/v1/orders/history").hasRole("CUSTOMER")
-						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole("CUSTOMER")
-						.requestMatchers(HttpMethod.DELETE, "/api/v1/orders/*").hasRole("CUSTOMER")
+                // PRODUCT
+                .requestMatchers(HttpMethod.POST, "/api/v1/products").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/products/*").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/products/*").hasRole("OWNER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").hasRole("OWNER")
 
-						.requestMatchers(HttpMethod.GET, "/api/v1/orders").hasRole("OWNER")
-						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasRole("OWNER")
-						.requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
+                //order
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/history").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/*").hasRole("CUSTOMER")
 
-						.requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
 
-						.anyRequest().permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
+
+                .anyRequest().permitAll()
                 )
 
-                // 개발 단계: Postman 호출 편의상 csrf 끔
-                // TODO(auth): 인증 방식 확정 후(세션 기반이면 켜는 것을 고려), 정책 재검토 필요
-                .csrf(csrf -> csrf.disable())
+            // 개발 단계: Postman 호출 편의상 csrf 끔
+            // TODO(auth): 인증 방식 확정 후(세션 기반이면 켜는 것을 고려), 정책 재검토 필요
+            .csrf(csrf -> csrf.disable())
 
-                // 기본 로그인 폼/Basic 인증도 불필요하므로 비활성화(완전 오픈 모드)
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(form -> form.disable());
+            // 기본 로그인 폼/Basic 인증도 불필요하므로 비활성화(완전 오픈 모드)
+            .httpBasic(Customizer.withDefaults())
+            .formLogin(form -> form.disable());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
