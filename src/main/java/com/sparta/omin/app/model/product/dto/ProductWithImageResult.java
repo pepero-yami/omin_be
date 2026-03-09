@@ -5,7 +5,7 @@ import java.util.UUID;
 import lombok.Builder;
 
 @Builder
-public record ProductWithUrlResult(
+public record ProductWithImageResult(
     UUID id,
     UUID storeId,
     String name,

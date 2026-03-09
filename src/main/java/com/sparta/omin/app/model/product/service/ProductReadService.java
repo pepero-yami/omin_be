@@ -1,8 +1,7 @@
 package com.sparta.omin.app.model.product.service;
 
 import com.sparta.omin.app.model.product.dto.ProductDetailResult;
-import com.sparta.omin.app.model.product.dto.ProductSummaryResult;
-import com.sparta.omin.app.model.product.dto.ProductWithUrlResult;
+import com.sparta.omin.app.model.product.dto.ProductWithImageResult;
 import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.repos.ProductRepository;
 import com.sparta.omin.app.model.store.service.StoreReadService;
@@ -38,9 +37,9 @@ public class ProductReadService {
      * 매장에 등록되어있는 메뉴들의 목록을 반환합니다.<br>
      * 품절된 메뉴의 경우, UI에서 "품절되었습니다"메세지가 뜨는 것을 가정하여, 포함하여 반환합니다.
      * @param storeId
-     * @return {@code List<ProductResult>}
+     * @return {@code List<{@link ProductWithImageResult }>}
      */
-    public List<ProductWithUrlResult> getProducts(UUID storeId) {
+    public List<ProductWithImageResult> getProducts(UUID storeId) {
         // 운영중인 가게인지 검증
         if(storeReadService.isStatusPending(storeId)) {
             throw new OminBusinessException(ErrorCode.BAD_REQUEST);

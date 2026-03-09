@@ -1,6 +1,6 @@
 package com.sparta.omin.app.model.product.repos;
 
-import com.sparta.omin.app.model.product.dto.ProductWithUrlResult;
+import com.sparta.omin.app.model.product.dto.ProductWithImageResult;
 import com.sparta.omin.app.model.product.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
@@ -18,7 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByIdInAndStoreId(List<UUID> productIds, UUID storeId);
 
     @Query("""
-      select new com.sparta.omin.app.model.product.dto.ProductWithUrlResult(
+      select new com.sparta.omin.app.model.product.dto.ProductWithImageResult(
             p.id,
             p.store.id,
             p.name,
@@ -31,8 +31,11 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
           left join ProductImage pi
               on pi.product.id = p.id
               and pi.isDeleted = false
+              and pi.isPrimary = true
           where p.store.id = :storeId
               and p.isDeleted = false
+              and p.status <> com.sparta.omin.app.model.product.code.ProductStatus.HIDE
+          order by p.createdAt desc
     """)
-    List<ProductWithUrlResult> findProductListWithUrl(UUID storeId);
+    List<ProductWithImageResult> findProductListWithUrl(UUID storeId);
 }

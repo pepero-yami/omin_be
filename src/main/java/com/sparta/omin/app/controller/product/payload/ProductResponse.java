@@ -1,7 +1,7 @@
 package com.sparta.omin.app.controller.product.payload;
 
 import com.sparta.omin.app.model.product.code.ProductStatus;
-import com.sparta.omin.app.model.product.dto.ProductWithUrlResult;
+import com.sparta.omin.app.model.product.dto.ProductWithImageResult;
 import java.util.UUID;
 import lombok.Builder;
 
@@ -13,10 +13,10 @@ public record ProductResponse(
     String description,
     Double price,
     ProductStatus status,
-    String imgUrl
+    String primaryImgUrl
 ) {
 
-    public static ProductResponse from(ProductWithUrlResult dto) {
+    public static ProductResponse from(ProductWithImageResult dto) {
         return ProductResponse.builder()
             .productId(dto.id())
             .storeId(dto.storeId())
@@ -24,7 +24,7 @@ public record ProductResponse(
             .description(dto.description())
             .price(dto.price())
             .status(dto.status())
-            .imgUrl(dto.imgUrl())
+            .primaryImgUrl(dto.imgUrl())
             .build();
     }
 }

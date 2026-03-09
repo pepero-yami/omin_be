@@ -48,8 +48,7 @@ public class ProductController {
     private final ProductImageService productImageService;
 
     /**
-     * 상품 추가 api
-     * 권한 : {@code Role Owner}
+     * @apiNote 상품 생성 api 입니다.
      */
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -82,8 +81,8 @@ public class ProductController {
     }
 
     /**
-     * 상품 목록 조회 api ({@code .../products?storeId=})<br>
-     * 페이지네이션 적용 x<br>
+     * @apiNote 상품 목록 조회 api입니다.<br> 각 상품에 대한 데이터와 대표 사진을 반환합니다.<br>
+     * 페이지네이션은 적용되어있지 않습니다.
      */
     // 100개까지는 그냥 내려도 될거 같은데 굳이...? 한 매장의 메뉴개수가 100개가 넘어가는 경우가 거의 없을듯
     // 꼭 넣어야 한다면, 가게별 카테고리 추가해서 카테고리 별로 내려주는 방향으로 개발
