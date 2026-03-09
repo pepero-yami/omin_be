@@ -24,11 +24,22 @@ spring:
         format_sql: true
     defer-datasource-initialization: true
 
+  # 이미지 / 파일 관련:
   servlet:
     multipart: # 파일 용량을 지정
       max-file-size: 10MB
       max-request-size: 10MB
 
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS}
+        secret-key: ${AWS_SECRET}
+      region:
+        static: ap-northeast-2 # 아시아 태평양(서울)
+      s3:
+        bucket:
+          omin-dev-test
 
   # OPEN AI
 
