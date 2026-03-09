@@ -1,7 +1,7 @@
-package com.sparta.omin.app.model.cart.client;
+package com.sparta.omin.app.model.user.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.omin.app.model.cart.entity.RCart;
+import com.sparta.omin.app.model.user.dto.response.TokenResponse;
 import com.sparta.omin.common.client.AbstractRedisClient;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
@@ -10,29 +10,31 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CartRedisClient extends AbstractRedisClient<RCart> {
+public class JwtRedisClient extends AbstractRedisClient<TokenResponse> {
 
-	public CartRedisClient(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
-		super(redisTemplate, objectMapper, RCart.class);
+	public JwtRedisClient(
+		RedisTemplate<String, Object> redisTemplate,
+		ObjectMapper objectMapper) {
+		super(redisTemplate, objectMapper, TokenResponse.class);
 	}
 
 	@Override
 	protected String getPrefix() {
-		return "Cart";
+		return "RT";
 	}
 
 	@Override
 	protected RuntimeException getException() {
-		return new OminBusinessException(ErrorCode.CART_CHANGE_FAIL);
+		return new OminBusinessException(ErrorCode.TOKEN_SAVE_FAILED);
 	}
 
 	@Override
 	protected Long getExpireTime() {
-		return 24L;
+		return 43_002_000L;
 	}
 
 	@Override
 	protected TimeUnit getExpireTimeUnit() {
-		return TimeUnit.HOURS;
+		return TimeUnit.MILLISECONDS;
 	}
 }

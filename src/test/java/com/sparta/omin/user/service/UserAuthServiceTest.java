@@ -1,5 +1,17 @@
 package com.sparta.omin.user.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import com.sparta.omin.app.model.user.client.JwtRedisClient;
 import com.sparta.omin.app.model.user.dto.UserDto;
 import com.sparta.omin.app.model.user.dto.UserRegister;
 import com.sparta.omin.app.model.user.dto.request.UserLoginRequest;
@@ -10,7 +22,8 @@ import com.sparta.omin.app.model.user.service.UserAuthService;
 import com.sparta.omin.app.security.jwt.JwtUtil;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,17 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserAuthServiceTest {
@@ -46,10 +49,7 @@ class UserAuthServiceTest {
 	private JwtUtil jwtUtil;
 
 	@Mock
-	private RedisTemplate<String, Object> redisTemplate;
-
-	@Mock
-	private ValueOperations<String, Object> valueOperations;
+	private JwtRedisClient jwtRedisClient;
 
 	@Nested
 	@DisplayName("회원가입 테스트")
@@ -117,9 +117,6 @@ class UserAuthServiceTest {
 			TokenResponse tokenResponse = new TokenResponse("access-token", "refresh-token");
 			given(jwtUtil.generateToken(any(), anyString(), anyString())).willReturn(tokenResponse);
 
-			// RedisTemplate.opsForValue()가 valueOperations를 반환하도록 설정
-			given(redisTemplate.opsForValue()).willReturn(valueOperations);
-
 			// when
 			TokenResponse result = userAuthService.login(request);
 
@@ -128,11 +125,8 @@ class UserAuthServiceTest {
 			assertThat(result.refreshToken()).isEqualTo("refresh-token");
 
 			// Redis 저장 로직 검증
-			verify(valueOperations, times(1)).set(
-				eq("RT:" + email),
-				eq("refresh-token"),
-				eq(12L * 60 * 60 * 1000), // 1000 * 60 * 60 * 12
-				eq(TimeUnit.MILLISECONDS)
+			verify(jwtRedisClient, times(1)).put(
+				eq(userId), eq(tokenResponse)
 			);
 		}
 

@@ -1,9 +1,9 @@
 package com.sparta.omin.address.controller;
 
+import com.sparta.omin.WebMvcTestBase;
 import com.sparta.omin.app.controller.address.AddressController;
 import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.user.entity.User;
-import com.sparta.omin.region.WebMvcTestBase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

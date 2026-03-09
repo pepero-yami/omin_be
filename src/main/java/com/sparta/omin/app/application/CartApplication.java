@@ -13,10 +13,12 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class CartApplication {
 
 	private final RCartService cartService;
@@ -26,6 +28,10 @@ public class CartApplication {
 		Product product = productReadService.getProductInStore(request.productId(),
 			request.storeId());
 		validateProductStatus(product);
+
+		if (request.force()) {
+			cartService.refresh(customerId);
+		}
 
 		RCart cart = cartService.getCartInCustomer(customerId, request.storeId());
 		validateCartStore(cart, request.storeId());
