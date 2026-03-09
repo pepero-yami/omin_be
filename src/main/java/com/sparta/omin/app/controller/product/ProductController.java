@@ -66,7 +66,8 @@ public class ProductController {
     }
 
     /**
-     * 상품 상세 조회 api
+     * @apiNote 상품 상세 조회 api입니다.<br>
+     * 하나의 상품에 대한 데이터들을 반환합니다.
      */
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDetailResponse> getProduct(
