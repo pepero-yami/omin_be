@@ -92,8 +92,8 @@ public enum ErrorCode {
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
 	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다."),
 
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
+	BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
 
-    private final HttpStatus status;
-    private final String description;
+	private final HttpStatus status;
+	private final String description;
 }
