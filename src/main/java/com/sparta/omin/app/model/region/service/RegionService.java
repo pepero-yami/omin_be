@@ -9,10 +9,12 @@ import com.sparta.omin.app.model.region.repos.RegionRepository;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -67,18 +69,23 @@ public class RegionService {
         region.softDelete();
     }
 
-    public List<RegionResponse> getRegions() {
-        return regionRepository.findAllByIsDeletedFalseOrderByCreatedAtDesc()
-                .stream()
-                .map(r -> RegionResponse.of(r.getId(), r.getAddress()))
-                .toList();
+    public Page<RegionResponse> getRegions(String keyword, Pageable pageable) {
+        Pageable validatedPageable = validatePageSize(pageable);
+
+        if (keyword != null && !keyword.isBlank()) {
+            return regionRepository.findAllByAddressContainingAndIsDeletedFalse(keyword, validatedPageable)
+                    .map(r -> RegionResponse.of(r.getId(), r.getAddress()));
+        }
+        return regionRepository.findAllByIsDeletedFalse(validatedPageable)
+                .map(r -> RegionResponse.of(r.getId(), r.getAddress()));
     }
 
-    public List<RegionResponse> searchRegions(String keyword) {
-        return regionRepository.findAllByAddressContainingAndIsDeletedFalseOrderByAddressAsc(keyword)
-                .stream()
-                .map(r -> RegionResponse.of(r.getId(), r.getAddress()))
-                .toList();
+    private Pageable validatePageSize(Pageable pageable) {
+        int size = pageable.getPageSize();
+        if (size != 10 && size != 30 && size != 50) {
+            return PageRequest.of(pageable.getPageNumber(), 10, pageable.getSort());
+        }
+        return pageable;
     }
 
     //주소 문자열로 Region ID 조회 - Address 서비스 등 외부 도메인에서 Region 정보가 필요할 때 사용!

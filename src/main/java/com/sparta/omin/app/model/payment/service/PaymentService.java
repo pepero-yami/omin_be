@@ -14,6 +14,7 @@ import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,11 +72,16 @@ public class PaymentService {
         return PaymentResponse.from(paymentRepository.save(payment));
     }
 
-    // 2. 결제 승인 (Toss등 외부에서 결제 완료 후 호출됨)
+    // 2. 결제 승인 (Toss등 외부에서 결제 완료 후 호출됨) 멱등성 보장
     @Transactional
     public PaymentResponse confirmPayment(UUID orderId, String paymentKey, double amount, UUID userId) {
         Payment payment = paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+
+        // 이미 성공했다면 그대로 반환 (멱등성)
+        if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+            return PaymentResponse.from(payment);
+        }
 
         // 1) 결제 정보 소유권(권한) 확인
         if (!payment.getUserId().equals(userId)) {
@@ -101,6 +107,31 @@ public class PaymentService {
         eventPublisher.publishEvent(new PaymentCompletedEvent(orderId, userId, amount));
 
         return PaymentResponse.from(payment);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PaymentResponse> getPayments(UUID customerId, PaymentStatus status, Pageable pageable) {
+        // 1. UserReadService를 통해 유저 존재 여부 확인 (MSA 인터페이스 지향)
+        userReadService.validateUserExists(customerId);
+
+        Pageable validatedPageable = validatePageSize(pageable);
+
+        if (status != null) {
+            return paymentRepository.findByUserIdAndPaymentStatusAndIsDeletedFalse(customerId, status, validatedPageable)
+                    .map(PaymentResponse::from);
+        }
+
+        // 2. 결제 내역 조회 및 반환
+        return paymentRepository.findByUserIdAndIsDeletedFalse(customerId, validatedPageable)
+                .map(PaymentResponse::from);
+    }
+
+    private Pageable validatePageSize(Pageable pageable) {
+        int size = pageable.getPageSize();
+        if (size != 10 && size != 30 && size != 50) {
+            return PageRequest.of(pageable.getPageNumber(), 10, pageable.getSort());
+        }
+        return pageable;
     }
 
     @Transactional(readOnly = true)
@@ -132,16 +163,6 @@ public class PaymentService {
         eventPublisher.publishEvent(new PaymentCanceledEvent(payment.getOrderId(), userId));
 
         return PaymentResponse.from(payment);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PaymentResponse> getPayments(UUID customerId, Pageable pageable) {
-        // 1. UserReadService를 통해 유저 존재 여부 확인 (MSA 인터페이스 지향)
-        userReadService.validateUserExists(customerId);
-
-        // 2. 결제 내역 조회 및 반환
-        return paymentRepository.findByUserIdAndIsDeletedFalse(customerId, pageable)
-                .map(PaymentResponse::from);
     }
 
     @Transactional(readOnly = true)
