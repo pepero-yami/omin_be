@@ -21,6 +21,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,10 +61,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrderByCustomer(User user, UUID orderId, Address address, String userRequest) {
+    public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, Address address, String userRequest) {
         Order order = getOrder(orderId);
 
-        if (!user.getId().equals(order.getUser().getId())) {
+        if (!userId.equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_NOT_OWNED);
         }
 
@@ -73,14 +74,25 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrderByCustomer(User user, UUID orderId) {
+    public void cancelOrderByCustomer(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
 
-        if (!user.getId().equals(order.getUser().getId())) {
+        if (!userId.equals(order.getUser().getId())) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
 
-        order.cancel();
+        order.cancel(LocalDateTime.now());
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(Order order) {
+        order.nextStatus();
+        return OrderResponse.from(order);
+    }
+
+    @Transactional
+    public void rejectOrder(Order order) {
+        order.reject();
     }
 
     public OrderDetailResponse getOrderDetail(UUID orderId) {

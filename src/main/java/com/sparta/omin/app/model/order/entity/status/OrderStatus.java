@@ -9,6 +9,7 @@ public enum OrderStatus {
     PENDING("대기중"),
     ACCEPTED("수락"),
     CANCELLED("취소"),
+    REJECT("거절"),
     COOKING("조리중"),
     COMPLETED("완료");
 

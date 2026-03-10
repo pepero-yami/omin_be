@@ -85,6 +85,9 @@ public enum ErrorCode {
     ORDER_NOT_OWNED(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다."),
     ORDER_UPDATE_DENIED(HttpStatus.FORBIDDEN, "해당 주문은 수정할 수 없습니다."),
     ORDER_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "주문한지 5분 이상 된 주문은 취소할 수 없습니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "처리할 수 없는 주문 요청입니다."),
+    ORDER_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 주문입니다."),
+    ORDER_OWNER_REJECTED(HttpStatus.CONFLICT, "사장님이 주문을 거절했습니다."),
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),
@@ -106,8 +109,7 @@ public enum ErrorCode {
 	STORE_IMAGE_INVALID_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 이미지 파일 형식입니다. (jpg, png, webp만 가능)"),
 	STORE_IMAGE_EMPTY(HttpStatus.BAD_REQUEST, "빈 파일은 업로드할 수 없습니다."),
 
-    BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
-
+	BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
 
 	private final HttpStatus status;
 	private final String description;

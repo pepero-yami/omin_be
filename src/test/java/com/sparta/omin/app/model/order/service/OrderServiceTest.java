@@ -271,7 +271,7 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when
-        OrderResponse response = orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요");
+        OrderResponse response = orderService.updateOrderByCustomer(userId, orderId, mockAddress, "경비실에 맡겨주세요");
 
         // then
         assertThat(response).isNotNull();
@@ -303,7 +303,7 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when & then
-        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요"))
+        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser.getId(), orderId, mockAddress, "경비실에 맡겨주세요"))
                 .isInstanceOf(OminBusinessException.class);
 
         then(order).should(never()).update(any(), any()); // update 호출 안됨
@@ -326,7 +326,7 @@ class OrderServiceTest {
                 .when(order).update(any(), any());
 
         // when & then
-        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser, orderId, mockAddress, "경비실에 맡겨주세요"))
+        assertThatThrownBy(() -> orderService.updateOrderByCustomer(mockUser.getId(), orderId, mockAddress, "경비실에 맡겨주세요"))
                 .isInstanceOf(OminBusinessException.class);
 
         System.out.println("=== PENDING 아닌 상태 수정 실패 검증 완료 ===");
@@ -347,10 +347,10 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when
-        orderService.cancelOrderByCustomer(mockUser, orderId);
+        orderService.cancelOrderByCustomer(mockUser.getId(), orderId);
 
         // then
-        then(order).should().cancel();
+        then(order).should().cancel(LocalDateTime.now());
 
         System.out.println("=== 주문 삭제 검증 완료 ===");
     }
@@ -370,10 +370,10 @@ class OrderServiceTest {
         given(orderRepository.findByIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(order));
 
         // when & then
-        assertThatThrownBy(() -> orderService.cancelOrderByCustomer(mockUser, orderId))
+        assertThatThrownBy(() -> orderService.cancelOrderByCustomer(mockUser.getId(), orderId))
                 .isInstanceOf(OminBusinessException.class);
 
-        then(order).should(never()).cancel(); // softDelete 호출 안됨
+        then(order).should(never()).cancel(LocalDateTime.now());
 
         System.out.println("=== 본인 주문 아님 삭제 실패 검증 완료 ===");
     }

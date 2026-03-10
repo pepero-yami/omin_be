@@ -79,8 +79,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/products/*").hasRole("OWNER")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").hasRole("OWNER")
 
+                //order
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/history").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/*").hasRole("CUSTOMER")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
+
                 .anyRequest().permitAll()
-            )
+                )
 
             // 개발 단계: Postman 호출 편의상 csrf 끔
             // TODO(auth): 인증 방식 확정 후(세션 기반이면 켜는 것을 고려), 정책 재검토 필요
