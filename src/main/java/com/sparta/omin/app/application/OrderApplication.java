@@ -72,14 +72,14 @@ public class OrderApplication {
 
     public OrderResponse updateOrderStatus(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
-        validateStoreOwner(order, userId, orderId);
+        validateStoreOwner(userId, order);
         return orderService.updateOrderStatus(order);
     }
 
 
     public void rejectOrder(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
-        validateStoreOwner(order, userId, orderId);
+        validateStoreOwner(userId, order);
         orderService.rejectOrder(order);
     }
 
@@ -90,14 +90,12 @@ public class OrderApplication {
         }
     }
 
-    private Address getAddress(UUID userId, UUID addressId) {
-        return addressReadService.getMyAddress(userId, addressId);
+    private void validateStoreOwner(UUID userId, Order order) {
+        storeReadService.validateStoreOwner(order.getStore().getId(), userId);
     }
 
-    private void validateStoreOwner(Order order, UUID userId, UUID orderId) {
-        if (!storeReadService.isOwnedStore(order.getStore().getId(), userId)) {
-            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
-        }
+    private Address getAddress(UUID userId, UUID addressId) {
+        return addressReadService.getMyAddress(userId, addressId);
     }
 
     private Order getOrder(UUID orderId) {
