@@ -159,6 +159,10 @@ public class Order extends BaseEntity {
         return address.getRoadAddress() + " " + address.getShippingDetailAddress();
     }
 
+    public boolean isCompleted() {
+        return this.status == OrderStatus.COMPLETED;
+    }
+
     //리스너용 메서드 2개
     public void updateStatus(OrderStatus status) {
         this.status = status;
