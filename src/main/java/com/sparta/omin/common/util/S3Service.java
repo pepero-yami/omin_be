@@ -18,9 +18,9 @@ public class S3Service {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
-    public String uploadImage(MultipartFile file) {
+    public String uploadImage(MultipartFile file, String domainName) {
         // 1. S3에서 파일 이름이 겹치지 않게 UUID를 붙여서 생성합니다.
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String fileName = domainName + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
         // 2. S3에 업로드
         try {
             var result = s3Template.upload(bucketName, fileName, file.getInputStream());

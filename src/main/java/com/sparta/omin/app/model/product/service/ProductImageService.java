@@ -51,7 +51,7 @@ public class ProductImageService {
         List<ProductImage> images = new ArrayList<>();
 
         for (int i = 0; i < files.size(); i++) {
-            String imgUrl = imageUploader.uploadReviewImage(files.get(i));
+            String imgUrl = imageUploader.uploadProductImage(files.get(i));
 
             images.add(ProductImage.builder()
                 .url(imgUrl)
@@ -145,7 +145,7 @@ public class ProductImageService {
                 continue;
             }
 
-            String imageUrl = imageUploader.uploadReviewImage(command.file());
+            String imageUrl = imageUploader.uploadProductImage(command.file());
 
             newImages.add(ProductImage.builder()
                 .product(product)

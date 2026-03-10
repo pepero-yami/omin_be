@@ -9,13 +9,18 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageUploader {
     private final S3Service s3Service;
 
-    public String uploadReviewImage(MultipartFile file) {
-        return s3Service.uploadImage(file);
-    }
-
     public void deleteReviewImage(String url) { // S3에서 해당 url을 가진 이미지 삭제
     }
-    public String uploadStoreImage (MultipartFile file){
-        return "업로드 이후 생성된 S3 stores/file url";
+
+    public String uploadReviewImage(MultipartFile file) {
+        return s3Service.uploadImage(file, "Review");
+    }
+
+    public String uploadStoreImage(MultipartFile file) {
+        return s3Service.uploadImage(file, "Store");
+    }
+
+    public String uploadProductImage(MultipartFile file) {
+        return s3Service.uploadImage(file, "Product");
     }
 }
