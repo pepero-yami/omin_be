@@ -9,8 +9,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,9 +48,10 @@ public class Review extends BaseEntity {
     @Column(name = "review_comment", length = 300)
     private String comment;
 
+    @SQLRestriction("is_deleted = false")
     @BatchSize(size = 100)
     @OrderBy("sequence ASC")
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL)
     private List<ReviewImage> images = new ArrayList<>();
 
     public static Review create(
@@ -77,7 +80,7 @@ public class Review extends BaseEntity {
         }
     }
 
-    public void updateReview(double newRating, String newComment, UUID actorId) {
+    public void updateReview(double newRating, String newComment) {
         this.rating = newRating;
         this.comment = newComment;
     }
@@ -85,9 +88,19 @@ public class Review extends BaseEntity {
     public void addImages(List<String> imageUrls) {
         this.images.clear();
         for (int i = 0; i < imageUrls.size(); i++) {
-            ReviewImage.create(this, imageUrls.get(i), i * 1000);
-            // sequence = i * 1000: 중간 이미지를 수정/삭제 되었을 때도 다시 sequence 계산 안해도 됨
+            ReviewImage.create(this, imageUrls.get(i), i);
         }
     }
 
+    /**
+     * BaseEntity를 상속받지 않는 ReviewImage 객체가 수정될 때
+     * updatedAt 갱신 (서버-DB 시간 같은지??)
+     */
+    public void markUpdated() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }

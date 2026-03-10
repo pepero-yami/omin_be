@@ -1,5 +1,6 @@
 package com.sparta.omin.app.model.review.entity;
 
+import com.sparta.omin.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.util.UUID;
 @Table(name = "p_review_image")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewImage {
+public class ReviewImage extends BaseEntity {
     @Id
     @GeneratedValue
     @UuidGenerator
@@ -41,4 +42,13 @@ public class ReviewImage {
         return image;
     }
 
+    public void reorder(int newSequence) {
+        if (this.sequence != newSequence) {
+            this.sequence = newSequence;
+        }
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
 }
