@@ -102,9 +102,7 @@ public class OrderService {
     }
 
     public Slice<OrderResponse> getOrdersByOwner(UUID storeId, String status, Pageable pageable) {
-        System.out.println("status = " + status);
         OrderStatus orderStatus = status != null ? OrderStatus.valueOf(status) : null;
-        System.out.println("orderStatus = " + orderStatus);
         return orderRepository.findByStoreIdWithStatus(storeId, orderStatus, pageable)
                 .map(OrderResponse::from);
     }
