@@ -15,4 +15,7 @@ public class ImageUploader {
 
     public void deleteReviewImage(String url) { // S3에서 해당 url을 가진 이미지 삭제
     }
+    public String uploadStoreImage (MultipartFile file){
+        return "업로드 이후 생성된 S3 stores/file url";
+    }
 }

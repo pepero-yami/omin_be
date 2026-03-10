@@ -64,11 +64,13 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/region-seeds").hasRole("MASTER")
 
                 //store
+                .requestMatchers(HttpMethod.GET, "/api/v1/stores/admin/pending").hasRole("MANAGER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/stores/owner/my").hasRole("OWNER")
                 .requestMatchers("/api/v1/stores/*/admin").hasRole("MANAGER")
                 .requestMatchers("/api/v1/stores/*/owner").hasRole("OWNER")
-                .requestMatchers(HttpMethod.GET, "/api/v1/stores/*").hasRole("CUSTOMER")
-                .requestMatchers(HttpMethod.DELETE, "/api/v1/stores/*").hasRole("OWNER")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/stores/*").hasRole("OWNER")
+                .requestMatchers(HttpMethod.GET,"/api/v1/stores/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE,"/api/v1/stores/*").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PUT,"/api/v1/stores/*").hasRole("OWNER")
                 .requestMatchers("/api/v1/stores").hasRole("CUSTOMER")
 
                 // PRODUCT

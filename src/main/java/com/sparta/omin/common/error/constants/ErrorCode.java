@@ -95,10 +95,23 @@ public enum ErrorCode {
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),
+	STORE_DUPLICATE_ADDRESS(HttpStatus.CONFLICT, "이미 동일한 주소로 등록된 가게가 존재합니다."),
 	STORE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "해당 가게에 대한 권한이 없습니다."),
 	STORE_STATUS_NOT_PENDING(HttpStatus.CONFLICT, "가게가 승인 대기 상태가 아닙니다"),
 	STORE_STATUS_PENDING_CANNOT_MODIFY(HttpStatus.CONFLICT, "승인 대기 중인 가게의 상태는 변경 불가합니다."),
 	STORE_STATUS_INVALID_CHANGE(HttpStatus.BAD_REQUEST, "승인 대기 상태로는 변경할 수 없습니다."),
+    STORE_HAS_ACTIVE_ORDERS(HttpStatus.CONFLICT, "진행 중인 주문이 있어 가게를 닫을 수 없습니다."),
+    STORE_OPENED_CANNOT_DELETE(HttpStatus.CONFLICT, "영업중인 매장은 삭제할 수 없습니다. 먼저 영업 종료 처리를 해주세요."),
+
+    // store image 에러
+    STORE_IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 이미지를 찾을 수 없습니다."),
+	STORE_IMAGE_COUNT_MISMATCH(HttpStatus.BAD_REQUEST, "추가한 이미지 수와 업로드된 파일 수가 일치하지 않습니다."),
+	STORE_IMAGE_INVALID_ACTION(HttpStatus.BAD_REQUEST, "추가한 이미지는 id가 없어야 하고, 기존-삭제할 이미지는 id가 필수입니다."),
+	STORE_IMAGE_MAX_EXCEEDED(HttpStatus.BAD_REQUEST, "최종 이미지 수는 최대 10개까지 허용됩니다."),
+	STORE_IMAGE_DUPLICATE_ID(HttpStatus.BAD_REQUEST, "이미지 id가 중복되었습니다."),
+	STORE_IMAGE_MIN_REQUIRED(HttpStatus.BAD_REQUEST, "매장 이미지는 최소 1개 이상이어야 합니다."),
+	STORE_IMAGE_INVALID_TYPE(HttpStatus.BAD_REQUEST, "허용되지 않는 이미지 파일 형식입니다. (jpg, png, webp만 가능)"),
+	STORE_IMAGE_EMPTY(HttpStatus.BAD_REQUEST, "빈 파일은 업로드할 수 없습니다."),
 
 	BAD_REQUEST(HttpStatus.BAD_REQUEST, "Bad Request");
 

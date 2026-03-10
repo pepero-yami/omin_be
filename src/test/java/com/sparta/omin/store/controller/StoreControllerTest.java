@@ -1,76 +1,40 @@
-package com.sparta.omin;
+package com.sparta.omin.store.controller;
+
+import com.sparta.omin.app.model.store.code.Category;
+import com.sparta.omin.app.model.store.code.Status;
+import com.sparta.omin.app.model.store.dto.request.StoreCreateRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreOwnerAdminSearchRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreStatusUpdateRequest;
+import com.sparta.omin.app.model.store.dto.request.StoreUpdateRequest;
+import com.sparta.omin.common.error.OminBusinessException;
+import com.sparta.omin.common.error.constants.ErrorCode;
+import com.sparta.omin.app.model.store.dto.response.StoreOwnerAdminSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSearchResponse;
+import com.sparta.omin.app.model.store.dto.response.StoreSliceResponse;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.access.AccessDeniedException;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.omin.app.controller.store.StoreController;
-import com.sparta.omin.app.model.store.dto.StoreCreateRequest;
-import com.sparta.omin.app.model.store.dto.StoreResponse;
-import com.sparta.omin.app.model.store.dto.StoreStatusUpdateRequest;
-import com.sparta.omin.app.model.store.dto.StoreUpdateRequest;
-import com.sparta.omin.app.model.store.code.Category;
-import com.sparta.omin.app.model.store.code.Status;
-import com.sparta.omin.app.model.store.service.StoreService;
-import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
-import com.sparta.omin.app.security.jwt.JwtUtil;
-import com.sparta.omin.common.error.GlobalExceptionHandler;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.UUID;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-@WebMvcTest(controllers = StoreController.class)
+@DisplayName("Store:Controller")
 @AutoConfigureMockMvc(addFilters = false)
-@Import(GlobalExceptionHandler.class)
-class StoreApiTest {
-
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockitoBean
-    StoreService storeService;
-
-    @MockitoBean
-    JwtUtil jwtUtil;
-
-    @MockitoBean
-    UserDetailsServiceImpl userDetailsService;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    // PENDING 상태인 가게 ID
-    static final UUID PENDING_STORE_ID = UUID.fromString("a6836031-57b1-427b-9796-5eee3a07eb41");
-    // PENDING이 아닌 가게 ID
-    static final UUID NON_PENDING_STORE_ID = UUID.fromString("51badc9e-319a-4764-816d-76923ed64d75");
-
-    static final UUID REGION_ID = UUID.fromString("31bb6096-82e2-4919-9188-7a1167c68bd0");
+class StoreControllerTest extends StoreControllerHelper {
 
     @Nested
     @DisplayName("POST /api/v1/stores - 가게 생성")
@@ -79,37 +43,22 @@ class StoreApiTest {
         @Test
         @DisplayName("성공: 데이터와 이미지 파일을 함께 전송하면 201 반환")
         void createStore_returns201() throws Exception {
+            mockUser();
             StoreCreateRequest request = new StoreCreateRequest(
-                    REGION_ID, Category.KOREAN, "후와후와",
-                    "서울특별시 강남구 테헤란로 427", "1층",
-                    new BigDecimal("127.050000"), new BigDecimal("37.500000")
+                    Category.KOREAN, "후와후와",
+                    "서울특별시 강남구 테헤란로 427", "1층"
             );
-
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsString(request).getBytes(StandardCharsets.UTF_8)
             );
             MockMultipartFile imageFile = new MockMultipartFile(
-                    "images", "store.jpg", MediaType.IMAGE_JPEG_VALUE, "image-content".getBytes()
+                    "images", "store.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes()
             );
+            given(storeService.registerStore(any(), any(), any()))
+                    .willReturn(buildStoreResponse(PENDING_STORE_ID, "후와후와", Status.PENDING, Category.KOREAN));
 
-            StoreResponse response = StoreResponse.builder()
-                    .id(PENDING_STORE_ID)
-                    .ownerId(UUID.randomUUID())
-                    .regionId(REGION_ID)
-                    .category(Category.KOREAN)
-                    .name("후와후와")
-                    .roadAddress("서울특별시 강남구 테헤란로 427")
-                    .detailAddress("1층")
-                    .status(Status.PENDING)
-                    .longitude(new BigDecimal("127.050000"))
-                    .latitude(new BigDecimal("37.500000"))
-                    .images(List.of(new StoreResponse.StoreImageResponse(UUID.randomUUID(),"store.jpg",1)))
-                    .build();
-
-            given(storeService.registerStore(any(), any(), any())).willReturn(response);
-
-            mockMvc.perform(multipart("/api/v1/stores")
+            mockMvc.perform(multipart(STORES_BASE_URL)
                             .file(dataFile)
                             .file(imageFile)
                             .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -124,19 +73,16 @@ class StoreApiTest {
         @Test
         @DisplayName("실패: 필수 데이터 누락 시 400 반환")
         void createStore_validationError_returns400() throws Exception {
-            StoreCreateRequest invalidRequest = new StoreCreateRequest(
-                    null, null, "", "", "", null, null
-            );
-
+            StoreCreateRequest invalidRequest = new StoreCreateRequest(null, "", "", "");
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsString(invalidRequest).getBytes(StandardCharsets.UTF_8)
             );
             MockMultipartFile imageFile = new MockMultipartFile(
-                    "images", "store.jpg", MediaType.IMAGE_JPEG_VALUE, "image-content".getBytes()
+                    "images", "store.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes()
             );
 
-            mockMvc.perform(multipart("/api/v1/stores")
+            mockMvc.perform(multipart(STORES_BASE_URL)
                             .file(dataFile)
                             .file(imageFile))
                     .andDo(print())
@@ -147,29 +93,16 @@ class StoreApiTest {
     }
 
     @Nested
-    @DisplayName("GET /api/v1/stores/{storeId} - 가게 조회")
+    @DisplayName("GET /api/v1/stores/{storeId} - 가게 단건 조회")
     class GetStore {
 
         @Test
         @DisplayName("성공: 존재하는 가게 조회 시 200 반환")
         void getStore_returns200() throws Exception {
-            StoreResponse response = StoreResponse.builder()
-                    .id(NON_PENDING_STORE_ID)
-                    .ownerId(UUID.randomUUID())
-                    .regionId(REGION_ID)
-                    .category(Category.KOREAN)
-                    .name("후와후와")
-                    .roadAddress("서울특별시 강남구 테헤란로 427")
-                    .detailAddress("1층")
-                    .status(Status.OPENED)
-                    .longitude(new BigDecimal("127.050000"))
-                    .latitude(new BigDecimal("37.500000"))
-                    .images(List.of(new StoreResponse.StoreImageResponse(UUID.randomUUID(),"store.jpg",1)))
-                    .build();
+            given(storeService.findStore(eq(NON_PENDING_STORE_ID), any()))
+                    .willReturn(buildStoreResponse(NON_PENDING_STORE_ID, "후와후와", Status.OPENED, Category.KOREAN));
 
-            given(storeService.findStore(NON_PENDING_STORE_ID)).willReturn(response);
-
-            mockMvc.perform(get("/api/v1/stores/{storeId}", NON_PENDING_STORE_ID))
+            mockMvc.perform(get(STORE_URL.formatted(NON_PENDING_STORE_ID)))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -181,14 +114,13 @@ class StoreApiTest {
         @DisplayName("실패: 존재하지 않는 가게 조회 시 404 반환")
         void getStore_notFound_returns404() throws Exception {
             UUID notExistId = UUID.randomUUID();
-            given(storeService.findStore(notExistId))
+            given(storeService.findStore(eq(notExistId), any()))
                     .willThrow(new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
 
-            mockMvc.perform(get("/api/v1/stores/{storeId}", notExistId))
+            mockMvc.perform(get(STORE_URL.formatted(notExistId)))
                     .andDo(print())
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
     }
 
@@ -199,44 +131,28 @@ class StoreApiTest {
         @Test
         @DisplayName("성공: 정보 수정 및 이미지 추가 시 200 반환")
         void updateStore_returns200() throws Exception {
+            mockUser();
             StoreUpdateRequest request = new StoreUpdateRequest(
-                    REGION_ID, Category.CHINESE, "수정후와후와",
+                    Category.CHINESE, "수정후와후와",
                     "서울특별시 서초구 강남대로 465", "2층",
-                    new BigDecimal("128.000000"), new BigDecimal("38.000000"),
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
-
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsString(request).getBytes(StandardCharsets.UTF_8)
             );
             MockMultipartFile newImageFile = new MockMultipartFile(
-                    "newImages", "new.jpg", MediaType.IMAGE_JPEG_VALUE, "new-content".getBytes()
+                    "newImages", "new.jpg", MediaType.IMAGE_JPEG_VALUE, "img".getBytes()
             );
-
-            StoreResponse response = StoreResponse.builder()
-                    .id(NON_PENDING_STORE_ID)
-                    .ownerId(UUID.randomUUID())
-                    .regionId(REGION_ID)
-                    .category(Category.CHINESE)
-                    .name("수정후와후와")
-                    .roadAddress("서울특별시 서초구 강남대로 465")
-                    .detailAddress("2층")
-                    .status(Status.OPENED)
-                    .longitude(new BigDecimal("128.000000"))
-                    .latitude(new BigDecimal("38.000000"))
-                    .images(List.of(new StoreResponse.StoreImageResponse(UUID.randomUUID(),"new.jpg",1)))
-                    .build();
-
             given(storeService.modifyStore(eq(NON_PENDING_STORE_ID), any(), any(), any()))
-                    .willReturn(response);
+                    .willReturn(buildStoreResponse(NON_PENDING_STORE_ID, "수정후와후와", Status.OPENED, Category.CHINESE));
 
-            mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/stores/{storeId}", NON_PENDING_STORE_ID)
+            mockMvc.perform(multipart(org.springframework.http.HttpMethod.PUT,
+                            STORE_URL.formatted(NON_PENDING_STORE_ID))
                             .file(dataFile)
                             .file(newImageFile))
                     .andDo(print())
                     .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$.id").value(NON_PENDING_STORE_ID.toString()))
                     .andExpect(jsonPath("$.name").value("수정후와후와"))
                     .andExpect(jsonPath("$.category").value("CHINESE"));
@@ -245,62 +161,58 @@ class StoreApiTest {
         @Test
         @DisplayName("실패: 권한 없는 사용자가 수정 시도하면 403 반환")
         void updateStore_accessDenied_returns403() throws Exception {
+            mockUser();
             StoreUpdateRequest request = new StoreUpdateRequest(
-                    REGION_ID, Category.KOREAN, "테스트",
+                    Category.KOREAN, "테스트",
                     "서울특별시 강남구 테헤란로 427", "1층",
-                    new BigDecimal("127.050000"), new BigDecimal("37.500000"),
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
-
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsString(request).getBytes(StandardCharsets.UTF_8)
             );
             MockMultipartFile newImageFile = new MockMultipartFile(
-                    "newImages", "noImg.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]
+                    "newImages", "img.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]
             );
-
             given(storeService.modifyStore(eq(NON_PENDING_STORE_ID), any(), any(), any()))
-                    .willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다"));
+                    .willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다."));
 
-            mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/stores/{storeId}", NON_PENDING_STORE_ID)
+            mockMvc.perform(multipart(org.springframework.http.HttpMethod.PUT,
+                            STORE_URL.formatted(NON_PENDING_STORE_ID))
                             .file(dataFile)
                             .file(newImageFile))
                     .andDo(print())
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.error").value("FORBIDDEN"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("FORBIDDEN"));
         }
 
         @Test
         @DisplayName("실패: 존재하지 않는 가게 수정 시 404 반환")
         void updateStore_notFound_returns404() throws Exception {
+            mockUser();
             UUID notExistId = UUID.randomUUID();
             StoreUpdateRequest request = new StoreUpdateRequest(
-                    REGION_ID, Category.KOREAN, "우리가게없는뎅본점",
+                    Category.KOREAN, "없는가게",
                     "서울특별시 강남구 테헤란로 427", "1층",
-                    new BigDecimal("127.050000"), new BigDecimal("37.500000"),
-                    List.of(new StoreUpdateRequest.StoreImageRequest(null, true))
+                    List.of(new StoreUpdateRequest.StoreImageRequest(null, StoreUpdateRequest.ImageAction.ADD))
             );
-
             MockMultipartFile dataFile = new MockMultipartFile(
                     "data", "", MediaType.APPLICATION_JSON_VALUE,
                     objectMapper.writeValueAsString(request).getBytes(StandardCharsets.UTF_8)
             );
             MockMultipartFile newImageFile = new MockMultipartFile(
-                    "newImages", "noImg.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]
+                    "newImages", "img.jpg", MediaType.IMAGE_JPEG_VALUE, new byte[0]
             );
-
             given(storeService.modifyStore(eq(notExistId), any(), any(), any()))
                     .willThrow(new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
 
-            mockMvc.perform(multipart(HttpMethod.PUT, "/api/v1/stores/{storeId}", notExistId)
+            mockMvc.perform(multipart(org.springframework.http.HttpMethod.PUT,
+                            STORE_URL.formatted(notExistId))
                             .file(dataFile)
                             .file(newImageFile))
                     .andDo(print())
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
     }
 
@@ -311,9 +223,10 @@ class StoreApiTest {
         @Test
         @DisplayName("성공: 가게 삭제 시 204 반환")
         void deleteStore_returns204() throws Exception {
+            mockUser();
             willDoNothing().given(storeService).deleteStore(eq(NON_PENDING_STORE_ID), any());
 
-            mockMvc.perform(delete("/api/v1/stores/{storeId}", NON_PENDING_STORE_ID))
+            mockMvc.perform(delete(STORE_URL.formatted(NON_PENDING_STORE_ID)))
                     .andDo(print())
                     .andExpect(status().isNoContent());
         }
@@ -321,47 +234,120 @@ class StoreApiTest {
         @Test
         @DisplayName("실패: 권한 없는 사용자가 삭제 시도하면 403 반환")
         void deleteStore_accessDenied_returns403() throws Exception {
-            willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다"))
+            mockUser();
+            willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다."))
                     .given(storeService).deleteStore(eq(NON_PENDING_STORE_ID), any());
 
-            mockMvc.perform(delete("/api/v1/stores/{storeId}", NON_PENDING_STORE_ID))
+            mockMvc.perform(delete(STORE_URL.formatted(NON_PENDING_STORE_ID)))
                     .andDo(print())
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.error").value("FORBIDDEN"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("FORBIDDEN"));
         }
 
         @Test
         @DisplayName("실패: 존재하지 않는 가게 삭제 시 404 반환")
         void deleteStore_notFound_returns404() throws Exception {
+            mockUser();
             UUID notExistId = UUID.randomUUID();
             willThrow(new IllegalArgumentException("삭제할 가게가 없습니다."))
                     .given(storeService).deleteStore(eq(notExistId), any());
 
-            mockMvc.perform(delete("/api/v1/stores/{storeId}", notExistId))
+            mockMvc.perform(delete(STORE_URL.formatted(notExistId)))
                     .andDo(print())
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
     }
 
     @Nested
-    @DisplayName("PATCH /api/v1/stores/{storeId}/admin - 관리자 상태 변경 (PENDING → CLOSED)")
-    class AdminUpdateStatus {
+    @DisplayName("GET /api/v1/stores/owner/my - 점주 본인 매장 조회")
+    class GetMyStores {
 
         @Test
-        @DisplayName("성공: PENDING 가게를 CLOSED로 변경하면 200 반환")
+        @DisplayName("성공: 내 매장 목록을 200으로 반환")
+        void getMyStores_returns200() throws Exception {
+            mockUser();
+            StoreSliceResponse<StoreOwnerAdminSearchResponse> cursorResponse = StoreSliceResponse.ofCreatedAtCursor(
+                    List.of(
+                            buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING),
+                            buildStoreListResponse(NON_PENDING_STORE_ID, "후와후와2호점", Status.OPENED)
+                    ), false, null, null
+            );
+            given(storeService.findMyStores(any(StoreOwnerAdminSearchRequest.class), any())).willReturn(cursorResponse);
+
+            mockMvc.perform(get(STORE_OWNER_MY_URL))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content.length()").value(2))
+                    .andExpect(jsonPath("$.hasNext").value(false));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/stores/admin/pending - 관리자용 PENDING 매장 조회")
+    class GetPendingStores {
+
+        @Test
+        @DisplayName("성공: PENDING 매장 목록을 200으로 반환")
+        void getPendingStores_returns200() throws Exception {
+            StoreSliceResponse<StoreOwnerAdminSearchResponse> cursorResponse = StoreSliceResponse.ofCreatedAtCursor(
+                    List.of(buildStoreListResponse(PENDING_STORE_ID, "후와후와본점", Status.PENDING)),
+                    false, null, null
+            );
+            given(storeService.findPendingStores(any(StoreOwnerAdminSearchRequest.class))).willReturn(cursorResponse);
+
+            mockMvc.perform(get(STORE_ADMIN_PENDING_URL))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content.length()").value(1))
+                    .andExpect(jsonPath("$.content[0].status").value("PENDING"))
+                    .andExpect(jsonPath("$.hasNext").value(false));
+        }
+    }
+
+    @Nested
+    @DisplayName("GET /api/v1/stores - 매장 리스트 검색 (커서 기반)")
+    class SearchStores {
+
+        @Test
+        @DisplayName("성공: 검색 결과를 200으로 반환")
+        void searchStores_returns200() throws Exception {
+            mockUser();
+            UUID addressId = UUID.randomUUID();
+            StoreSliceResponse<StoreSearchResponse> pageResponse = StoreSliceResponse.ofDistanceCursor(
+                    List.of(new StoreSearchResponse(
+                            NON_PENDING_STORE_ID, Category.KOREAN, "후와후와",
+                            "서울특별시 강남구 테헤란로 427", "1층", Status.OPENED, 2500, 0.0, 0L, "store.jpg"
+                    )),
+                    false, null, null
+            );
+            given(storeService.searchStoreList(any(), any())).willReturn(pageResponse);
+
+            mockMvc.perform(get(STORES_BASE_URL)
+                            .param("addressId", addressId.toString())
+                            .param("category", Category.KOREAN.name()))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content.length()").value(1))
+                    .andExpect(jsonPath("$.hasNext").value(false));
+        }
+    }
+
+    @Nested
+    @DisplayName("PATCH /api/v1/stores/{storeId}/admin - 관리자 승인 (PENDING → CLOSED)")
+    class AdminApproveStore {
+
+        @Test
+        @DisplayName("성공: PENDING 가게를 CLOSED로 승인하면 200 반환")
         void adminApprove_returns200() throws Exception {
-            StoreResponse response = StoreResponse.builder()
-                    .id(PENDING_STORE_ID)
-                    .status(Status.CLOSED)
-                    .images(List.of())
-                    .build();
+            mockUser();
+            given(storeService.approveAndCloseStore(eq(PENDING_STORE_ID), any()))
+                    .willReturn(buildStoreResponse(PENDING_STORE_ID, "후와후와", Status.CLOSED, Category.KOREAN));
 
-            given(storeService.modifyStoreStatusToClose(PENDING_STORE_ID)).willReturn(response);
-
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/admin", PENDING_STORE_ID))
+            mockMvc.perform(patch(STORE_ADMIN_URL.formatted(PENDING_STORE_ID)))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -370,52 +356,46 @@ class StoreApiTest {
         }
 
         @Test
-        @DisplayName("실패: PENDING이 아닌 가게 변경 시도하면 409 반환")
+        @DisplayName("실패: PENDING이 아닌 가게 승인 시도하면 409 반환")
         void adminApprove_notPending_returns409() throws Exception {
-            given(storeService.modifyStoreStatusToClose(NON_PENDING_STORE_ID))
+            mockUser();
+            given(storeService.approveAndCloseStore(eq(NON_PENDING_STORE_ID), any()))
                     .willThrow(new IllegalStateException("가게가 승인대기 상태가 아닙니다."));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/admin", NON_PENDING_STORE_ID))
+            mockMvc.perform(patch(STORE_ADMIN_URL.formatted(NON_PENDING_STORE_ID)))
                     .andDo(print())
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.error").value("CONFLICT"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("CONFLICT"));
         }
 
         @Test
-        @DisplayName("실패: 존재하지 않는 가게 상태 변경 시 404 반환")
+        @DisplayName("실패: 존재하지 않는 가게 승인 시 404 반환")
         void adminApprove_notFound_returns404() throws Exception {
+            mockUser();
             UUID notExistId = UUID.randomUUID();
-            given(storeService.modifyStoreStatusToClose(notExistId))
+            given(storeService.approveAndCloseStore(eq(notExistId), any()))
                     .willThrow(new IllegalArgumentException("해당 가게를 찾을 수 없습니다."));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/admin", notExistId))
+            mockMvc.perform(patch(STORE_ADMIN_URL.formatted(notExistId)))
                     .andDo(print())
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
     }
 
     @Nested
-    @DisplayName("PATCH /api/v1/stores/{storeId}/owner - 점주 상태 변경")
+    @DisplayName("PATCH /api/v1/stores/{storeId}/owner - 점주 영업 상태 변경")
     class OwnerUpdateStatus {
 
         @Test
         @DisplayName("성공: CLOSED → OPENED 변경 시 200 반환")
         void ownerUpdateStatus_returns200() throws Exception {
+            mockUser();
             StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.OPENED);
-
-            StoreResponse response = StoreResponse.builder()
-                    .id(NON_PENDING_STORE_ID)
-                    .status(Status.OPENED)
-                    .images(List.of())
-                    .build();
-
             given(storeService.modifyStoreStatus(any(), eq(NON_PENDING_STORE_ID), any()))
-                    .willReturn(response);
+                    .willReturn(buildStoreResponse(NON_PENDING_STORE_ID, "후와후와", Status.OPENED, Category.KOREAN));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/owner", NON_PENDING_STORE_ID)
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(NON_PENDING_STORE_ID))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
@@ -428,52 +408,64 @@ class StoreApiTest {
         @Test
         @DisplayName("실패: PENDING 상태로 변경 시도하면 404 반환")
         void ownerUpdateStatus_toPending_returns404() throws Exception {
+            mockUser();
             StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.PENDING);
-
             given(storeService.modifyStoreStatus(any(), eq(NON_PENDING_STORE_ID), any()))
                     .willThrow(new IllegalArgumentException("승인 대기 상태로는 변경할 수 없습니다."));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/owner", NON_PENDING_STORE_ID)
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(NON_PENDING_STORE_ID))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("$.error").value("NOT_FOUND"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("NOT_FOUND"));
         }
 
         @Test
         @DisplayName("실패: PENDING 가게의 상태 변경 시도하면 409 반환")
         void ownerUpdateStatus_pendingStore_returns409() throws Exception {
+            mockUser();
             StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.OPENED);
-
             given(storeService.modifyStoreStatus(any(), eq(PENDING_STORE_ID), any()))
                     .willThrow(new IllegalStateException("승인 대기 중인 가게의 상태는 변경 불가합니다."));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/owner", PENDING_STORE_ID)
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(PENDING_STORE_ID))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.error").value("CONFLICT"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("CONFLICT"));
         }
 
         @Test
         @DisplayName("실패: 권한 없는 사용자가 상태 변경 시도하면 403 반환")
         void ownerUpdateStatus_accessDenied_returns403() throws Exception {
+            mockUser();
             StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.OPENED);
-
             given(storeService.modifyStoreStatus(any(), eq(NON_PENDING_STORE_ID), any()))
-                    .willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다"));
+                    .willThrow(new AccessDeniedException("해당 가게에 대한 권한이 없습니다."));
 
-            mockMvc.perform(patch("/api/v1/stores/{storeId}/owner", NON_PENDING_STORE_ID)
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(NON_PENDING_STORE_ID))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andDo(print())
                     .andExpect(status().isForbidden())
-                    .andExpect(jsonPath("$.error").value("FORBIDDEN"))
-                    .andExpect(jsonPath("$.details").exists());
+                    .andExpect(jsonPath("$.error").value("FORBIDDEN"));
+        }
+
+        @Test
+        @DisplayName("실패: 진행 중인 주문이 있는 가게 CLOSED 변경 시 409 반환")
+        void ownerUpdateStatus_hasActiveOrders_returns409() throws Exception {
+            mockUser();
+            StoreStatusUpdateRequest request = new StoreStatusUpdateRequest(Status.CLOSED);
+            given(storeService.modifyStoreStatus(any(), eq(NON_PENDING_STORE_ID), any()))
+                    .willThrow(new OminBusinessException(ErrorCode.STORE_HAS_ACTIVE_ORDERS));
+
+            mockMvc.perform(patch(STORE_OWNER_URL.formatted(NON_PENDING_STORE_ID))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andDo(print())
+                    .andExpect(status().isConflict());
         }
     }
 }

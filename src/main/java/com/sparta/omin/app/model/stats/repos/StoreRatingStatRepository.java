@@ -14,4 +14,6 @@ public interface StoreRatingStatRepository extends JpaRepository<StoreRatingStat
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select s from StoreRatingStat s where s.storeId = :storeId")
     Optional<StoreRatingStat> findByStoreIdWithLock(@Param("storeId") UUID id);
+
+    Optional<StoreRatingStat> findByStoreId(UUID storeId);
 }

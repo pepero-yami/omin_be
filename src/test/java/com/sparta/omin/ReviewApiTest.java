@@ -248,11 +248,10 @@ class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].rating").value(5.0))
                 .andExpect(jsonPath("$.content[1].rating").value(4.5))
-                .andExpect(jsonPath("$.totalElements").value(2))
-                .andExpect(jsonPath("$.size").value(10))
-                .andExpect(jsonPath("$.number").value(0));
+                .andExpect(jsonPath("$.page.totalElements").value(2))
+                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.number").value(0));
     }
-
     @Test
     @DisplayName("storeId로 리뷰 목록 조회 성공시 200 반환")
     void getReviews_byStoreId() throws Exception {
