@@ -47,6 +47,9 @@ dependencies {
     // S3
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
 
+    // spring batch
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
