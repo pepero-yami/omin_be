@@ -59,4 +59,18 @@ public abstract class AbstractRedisClient<V> implements RedisClient<UUID, V> {
 			throw getException();
 		}
 	}
+
+	@Override
+	public boolean delete(UUID key) {
+		String fullKey = generateKey(key.toString());
+		try {
+			boolean isDeleted = redisTemplate.delete(fullKey);
+			if (isDeleted)log.info("Redis data deleted | Key: {}", fullKey);
+			else log.warn("Redis delete attempted but key not found | Key: {}", fullKey);
+			return isDeleted;
+		} catch (Exception e) {
+			log.error("Redis deletion error | Key: {}, Error: {}", fullKey, e.getMessage());
+			return false;
+		}
+	}
 }

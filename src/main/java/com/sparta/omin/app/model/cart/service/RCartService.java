@@ -36,4 +36,9 @@ public class RCartService {
 		redisClient.put(userId, RCart.create(userId, null));
 		return getCartInfo(userId);
 	}
+
+	@Transactional
+	public void delete(UUID userId) {
+		redisClient.delete(userId);
+	}
 }
