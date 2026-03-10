@@ -59,7 +59,7 @@ class ProductServiceTest {
         given(storeReadService.getStoreReference(storeId)).willReturn(fakeStore);
 
         // when
-        productService.createProduct(command, userId);
+        productService.createProduct(command, userId, null);
 
         // then — save()에 넘어간 Product 캡처
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
