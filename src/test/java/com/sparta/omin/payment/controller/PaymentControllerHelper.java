@@ -24,7 +24,7 @@ public class PaymentControllerHelper extends WebMvcTestBase {
     @Autowired
     private WebApplicationContext context;
 
-    protected final String PAYMENTS_BASE_URL = "/api/v1/payments";
+//    protected final String PAYMENTS_BASE_URL = "/api/v1/payments";
 
     @BeforeEach
     void setupSecurity() {

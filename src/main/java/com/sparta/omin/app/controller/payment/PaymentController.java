@@ -3,6 +3,7 @@ package com.sparta.omin.app.controller.payment;
 import com.sparta.omin.app.model.payment.dto.PaymentConfirmRequest;
 import com.sparta.omin.app.model.payment.dto.PaymentRequest;
 import com.sparta.omin.app.model.payment.dto.PaymentResponse;
+import com.sparta.omin.app.model.payment.entity.PaymentStatus;
 import com.sparta.omin.app.model.payment.service.PaymentService;
 import com.sparta.omin.app.model.user.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -57,10 +58,11 @@ public class PaymentController {
     // 관리자 전용 API
     // 특정 고객의 모든 결제 내역 조회 (페이지네이션)
     @GetMapping("/admin/payments")
-    public ResponseEntity<Page<PaymentResponse>> getPayments(@RequestParam UUID customerId,
-                                                             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
-                                                             Pageable pageable) {
-        return ResponseEntity.ok(paymentService.getPayments(customerId, pageable));
+    public ResponseEntity<Page<PaymentResponse>> getPayments(
+            @RequestParam UUID customerId,
+            @RequestParam(required = false) PaymentStatus status,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(paymentService.getPayments(customerId, status, pageable));
     }
 
     // 결제 ID로 상세 조회
