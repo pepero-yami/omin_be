@@ -1,16 +1,16 @@
-package com.sparta.omin.app.model.store.dto;
+package com.sparta.omin.app.model.store.dto.request;
 
 import com.sparta.omin.app.model.store.code.Category;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 
 public record StoreUpdateRequest(
-        @NotNull
-        UUID regionId,
         @NotNull
         Category category,
         @NotBlank
@@ -22,20 +22,18 @@ public record StoreUpdateRequest(
         @NotBlank
         @Size(max = 100)
         String detailAddress,
-        @NotNull
-        @Digits(integer = 4, fraction = 6)
-        BigDecimal longitude,
-        @NotNull
-        @Digits(integer = 4, fraction = 6)
-        BigDecimal latitude,
         @NotEmpty
-        @Size(max = 10)
+        @Size(max = 20)
         List<StoreImageRequest> images
 ) {
+    public enum ImageAction {
+        KEEP, DELETE, ADD
+    }
+
     public record StoreImageRequest(
             UUID id,
-            boolean isNewUploaded
+            @NotNull
+            ImageAction action
     ) {
-
     }
 }

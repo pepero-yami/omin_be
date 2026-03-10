@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UuidGenerator;
@@ -31,14 +30,14 @@ public class StoreImage extends BaseEntity {
     private Integer sequence;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", nullable = false)
     private Store store;
 
     public StoreImage(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 
-    public void updateImageSorting(Integer sequence){
+    public void updateImageSorting(Integer sequence) {
         this.sequence = sequence;
     }
 

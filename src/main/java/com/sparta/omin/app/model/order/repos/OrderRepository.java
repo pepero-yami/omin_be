@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.sparta.omin.app.model.order.entity.status.OrderStatus;
+
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,4 +27,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE o.id = :orderId AND o.isDeleted = false")
     Optional<Order> findByIdAndIsDeletedFalse(UUID orderId);
     Slice<Order> findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(UUID storeId, Pageable pageable);
+    boolean existsByStoreIdAndStatusInAndIsDeletedFalse(UUID storeId, Collection<OrderStatus> statuses);
 }
