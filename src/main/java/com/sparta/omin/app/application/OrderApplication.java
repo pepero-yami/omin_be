@@ -58,11 +58,11 @@ public class OrderApplication {
         return response;
     }
 
-    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, Pageable pageable) {
+    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, UUID userId, String status, Pageable pageable) {
         if (!storeReadService.isOwnedStore(storeId, userId)) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
-        return orderService.getOrdersByOwner(storeId, pageable);
+        return orderService.getOrdersByOwner(storeId, status, pageable);
     }
 
     public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, OrderUpdateRequest request) {

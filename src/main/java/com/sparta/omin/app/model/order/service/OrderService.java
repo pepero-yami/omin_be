@@ -2,12 +2,9 @@ package com.sparta.omin.app.model.order.service;
 
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.cart.entity.RCart;
-import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
-import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
-import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
-import com.sparta.omin.app.model.order.dto.OrderInternalDto;
-import com.sparta.omin.app.model.order.dto.OrderResponse;
+import com.sparta.omin.app.model.order.dto.*;
 import com.sparta.omin.app.model.order.entity.Order;
+import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.service.ProductReadService;
@@ -104,8 +101,11 @@ public class OrderService {
                 .map(OrderResponse::from);
     }
 
-    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, Pageable pageable) {
-        return orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable)
+    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, String status, Pageable pageable) {
+        System.out.println("status = " + status);
+        OrderStatus orderStatus = status != null ? OrderStatus.valueOf(status) : null;
+        System.out.println("orderStatus = " + orderStatus);
+        return orderRepository.findByStoreIdWithStatus(storeId, orderStatus, pageable)
                 .map(OrderResponse::from);
     }
 

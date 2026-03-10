@@ -90,7 +90,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
 
                 .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
-
                 .anyRequest().permitAll()
                 )
 
