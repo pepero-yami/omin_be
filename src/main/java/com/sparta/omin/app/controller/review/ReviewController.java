@@ -30,10 +30,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
-    public ResponseEntity<ReviewResponse> create(@AuthenticationPrincipal User user,
-                                                 @Valid @RequestPart ReviewCreateRequest request,
-                                                 @Size(max = 5, message = "이미지는 최대 5개까지 업로드할 수 있습니다.")
-                                                 @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+    public ResponseEntity<ReviewResponse> createReview(@AuthenticationPrincipal User user,
+                                                       @Valid @RequestPart ReviewCreateRequest request,
+                                                       @Size(max = 5, message = "이미지는 최대 5개까지 업로드할 수 있습니다.")
+                                                       @RequestPart(value = "images", required = false) List<MultipartFile> images) {
         ReviewResponse response =
                 reviewService.createReview(user, request, images);
         URI uri = ServletUriComponentsBuilder
