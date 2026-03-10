@@ -42,7 +42,6 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class StoreService {
 
     private final StoreRepository storeRepository;
@@ -87,6 +86,7 @@ public class StoreService {
     }
 
     // 단건조회
+    @Transactional(readOnly = true)
     public StoreResponse findStore(UUID storeId, UserDetails user) {
         log.debug("매장 단건 조회 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
@@ -163,6 +163,7 @@ public class StoreService {
     }
 
     // customer용 매장 조회 리스트
+    @Transactional(readOnly = true)
     public StoreSliceResponse<StoreSearchResponse> searchStoreList(StoreSearchRequest storeSearchRequest, UserDetails user) {
         UUID userId = ((User) user).getId();
         //배송지 좌표조회
@@ -211,6 +212,7 @@ public class StoreService {
     }
 
     // 점주용: 본인 등록 매장 목록 조회
+    @Transactional(readOnly = true)
     public StoreSliceResponse<StoreOwnerAdminSearchResponse> findMyStores(StoreOwnerAdminSearchRequest cursorRequest, UserDetails user) {
         UUID ownerId = ((User) user).getId();
         log.debug("본인 매장 목록 조회 - ownerId: {}, lastCreatedAt: {}, size: {}", ownerId, cursorRequest.lastCreatedAt(), cursorRequest.size());
@@ -221,6 +223,7 @@ public class StoreService {
     }
 
     // 관리자용: PENDING 상태 매장 목록 조회
+    @Transactional(readOnly = true)
     public StoreSliceResponse<StoreOwnerAdminSearchResponse> findPendingStores(StoreOwnerAdminSearchRequest cursorRequest) {
         log.debug("PENDING 매장 목록 조회 - lastCreatedAt: {}, size: {}", cursorRequest.lastCreatedAt(), cursorRequest.size());
         Slice<Store> result = storeRepository.findByStatusCursor(

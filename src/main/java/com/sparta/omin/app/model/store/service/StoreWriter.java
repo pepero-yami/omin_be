@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -29,7 +28,7 @@ public class StoreWriter {
     private static final int MAX_IMAGE_COUNT = 10;
 
     //db 저장만
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public StoreResponse save(StoreCreateRequest request, UUID ownerId, Point coordinates, List<String> imageUrlList) {
         Store store = Store.builder()
                 .ownerId(ownerId)
@@ -47,7 +46,7 @@ public class StoreWriter {
         return StoreResponse.of(savedStore);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public StoreResponse update(UUID storeId, StoreUpdateRequest request, Point coordinates, List<String> newUrlList) {
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
@@ -79,7 +78,7 @@ public class StoreWriter {
         // 최종 이미지 수 검증: KEEP + ADD 만 실제 이미지로 남음
         long finalImageCount = imageRequests.stream()
                 .filter(r -> r.action() == StoreUpdateRequest.ImageAction.KEEP
-                          || r.action() == StoreUpdateRequest.ImageAction.ADD)
+                        || r.action() == StoreUpdateRequest.ImageAction.ADD)
                 .count();
         if (finalImageCount < 1) {
             throw new OminBusinessException(ErrorCode.STORE_IMAGE_MIN_REQUIRED);
