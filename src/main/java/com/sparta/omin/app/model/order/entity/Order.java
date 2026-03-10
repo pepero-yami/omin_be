@@ -13,6 +13,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
@@ -67,7 +68,7 @@ public class Order extends BaseEntity {
         order.user = user;
         order.store = store;
         order.userRequest = userRequest;
-        order.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+        order.deliveryAddress = getDeliveryAddress(address);
         order.orderItems = new ArrayList<>();
         order.status = OrderStatus.PENDING;
         order.isDeleted = false;
@@ -79,7 +80,7 @@ public class Order extends BaseEntity {
         validatePendingStatus();
 
         if (address != null) {
-            this.deliveryAddress = address.getRoadAddress() + " " + address.getShippingDetailAddress();
+            this.deliveryAddress = getDeliveryAddress(address);
         }
 
         if (userRequest != null) {
@@ -87,14 +88,52 @@ public class Order extends BaseEntity {
         }
     }
 
-    public void cancel() {
+    public void cancel(LocalDateTime now) {
         validatePendingStatus();
 
-        if (this.createdAt.plusMinutes(5).isBefore(LocalDateTime.now())) {
+        if (this.createdAt.plusMinutes(5).isBefore(now)) {
             throw new OminBusinessException(ErrorCode.ORDER_PERIOD_EXPIRED);
         }
 
         this.status = OrderStatus.CANCELLED;
+    }
+
+    public void reject() {
+        validatePendingStatus();
+        this.status = OrderStatus.REJECT;
+    }
+
+    public void nextStatus() {
+        switch (this.status) {
+            case PENDING -> accepted();
+            case ACCEPTED -> cooking();
+            case COOKING -> completed();
+            case COMPLETED -> throw new OminBusinessException(ErrorCode.ORDER_ALREADY_COMPLETED);
+            case REJECT -> throw new OminBusinessException(ErrorCode.ORDER_OWNER_REJECTED);
+            default -> throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+    }
+
+    /**
+     * 상태변이 메서드
+     * API명세서의 엔드포인트를 유지하고, 각각 상태전이별 확장성을 고려하여 메서드로 분리
+     */
+    private void accepted(){
+        this.status = OrderStatus.ACCEPTED;
+    }
+
+    private void cooking(){
+        if (this.status != OrderStatus.ACCEPTED) {
+            throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.COOKING;
+    }
+
+    private void completed(){
+        if (this.status != OrderStatus.COOKING) {
+            throw new OminBusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.status = OrderStatus.COMPLETED;
     }
 
     public void addOrderItems(List<Product> products, Map<UUID, Integer> quantityMap) {
@@ -113,10 +152,23 @@ public class Order extends BaseEntity {
         return false;
     }
 
+    //=====Helper method=====
     //validation
     private void validatePendingStatus() {
         if (this.getStatus() != OrderStatus.PENDING) {
             throw new OminBusinessException(ErrorCode.ORDER_UPDATE_DENIED);
         }
+    }
+
+    private static @NonNull String getDeliveryAddress(Address address) {
+        return address.getRoadAddress() + " " + address.getShippingDetailAddress();
+    }
+
+    //리스너용 메서드 2개
+    public void updateStatus(OrderStatus status) {
+        this.status = status;
+    }
+    public void completePayment() {
+        this.status = OrderStatus.ACCEPTED;
     }
 }

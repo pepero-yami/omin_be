@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,8 +14,11 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
+
 @Configuration
 @EnableWebSecurity
+@EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -73,8 +77,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/products/*").hasRole("OWNER")
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/products/*").hasRole("OWNER")
 
+                //order
+                .requestMatchers(HttpMethod.POST, "/api/v1/orders").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/history").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*").hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/orders/*").hasRole("CUSTOMER")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").hasRole("OWNER")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/reject").hasRole("OWNER")
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/*/details").hasAnyRole("CUSTOMER", "OWNER")
+
                 .anyRequest().permitAll()
-            )
+                )
 
             // 개발 단계: Postman 호출 편의상 csrf 끔
             // TODO(auth): 인증 방식 확정 후(세션 기반이면 켜는 것을 고려), 정책 재검토 필요

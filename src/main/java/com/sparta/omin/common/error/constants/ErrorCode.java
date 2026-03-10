@@ -21,8 +21,7 @@ public enum ErrorCode {
 	CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카트에 조회 가능한 상품이 없습니다."),
 	CART_STORE_CONFLICT(HttpStatus.CONFLICT, "다른 가게의 상품이 담겨있습니다."),
 	CART_CHANGE_FAIL(HttpStatus.CONFLICT, "장바구니를 추가할 수 없습니다."),
-	//상품에러
-	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
+
 	// Region 에러
 	REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 지역(regionId)입니다."),
 	REGION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 지역(address)입니다."),
@@ -46,19 +45,26 @@ public enum ErrorCode {
 	KAKAO_NO_LONGITUDE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과에 경도(x) 값이 없습니다."),
 	KAKAO_INVALID_COORDINATE(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 주소 검색 결과의 좌표 값이 올바르지 않습니다."),
 
-	//서버 에러
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+    //서버 에러
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 에러"),
+    // AI - 요청/검증 (400)
+    INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
+    // 결제 에러
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
+    PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
+    PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
+    PAYMENT_ALREADY_COMPLETED(HttpStatus.CONFLICT, "이미 완료된 결제입니다."),
+    PAYMENT_AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."),
+    PAYMENT_INVALID_STATUS(HttpStatus.BAD_REQUEST, "결제를 진행할 수 없는 상태입니다."),
+    PAYMENT_ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 처리가 가능합니다."),
+    PAYMENT_ORDER_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "이미 취소된 주문은 다시 결제할 수 없습니다. 새로 주문해 주세요."),
+    PAYMENT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "현재 결제가 진행 중인 주문입니다. 잠시 후 다시 시도해 주세요."),
 
 	// Product
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
-
-	// AI - 요청/검증 (400)
-	INVALID_AI_PROMPT(HttpStatus.BAD_REQUEST, "Empty AI prompt"),
-
-	//결제 에러
-	PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 결제 정보가 없습니다."),
-	PAYMENT_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 결제입니다."),
-	PAYMENT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "해당 결제에 대한 권한이 없습니다."),
+	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
+	PRODUCT_INVALID_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "Invalid product image count."),
+	PRODUCT_IMAGE_INVALID_ACCESS(HttpStatus.BAD_REQUEST, "Invalid product image access."),
 
 	// AI - 외부 의존성(OpenAI) (502/503/504/429)
 	AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
@@ -83,8 +89,9 @@ public enum ErrorCode {
     ORDER_NOT_OWNED(HttpStatus.FORBIDDEN, "해당 주문에 대한 권한이 없습니다."),
     ORDER_UPDATE_DENIED(HttpStatus.FORBIDDEN, "해당 주문은 수정할 수 없습니다."),
     ORDER_PERIOD_EXPIRED(HttpStatus.BAD_REQUEST, "주문한지 5분 이상 된 주문은 취소할 수 없습니다."),
-	// 주문 에러
-//	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 주문이 없습니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "처리할 수 없는 주문 요청입니다."),
+    ORDER_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 주문입니다."),
+    ORDER_OWNER_REJECTED(HttpStatus.CONFLICT, "사장님이 주문을 거절했습니다."),
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),

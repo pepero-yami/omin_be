@@ -4,23 +4,23 @@ import com.sparta.omin.app.model.product.code.ProductStatus;
 import com.sparta.omin.app.model.product.entity.Product;
 import java.util.UUID;
 import lombok.Builder;
-import lombok.Data;
 
-/**
- * 메뉴 설명을 포함하지 않는 정보를 반환하는 객체입니다.
- */
 @Builder
-public record ProductSummaryResult(
+public record ProductDetailResult(
     UUID id,
+    UUID storeId,
     String name,
+    String description,
     Double price,
     ProductStatus status
 ) {
 
-    public static ProductSummaryResult from(Product product) {
-        return ProductSummaryResult.builder()
+    public static ProductDetailResult from(Product product) {
+        return ProductDetailResult.builder()
             .id(product.getId())
+            .storeId(product.getStore().getId())
             .name(product.getName())
+            .description(product.getDescription())
             .price(product.getPrice())
             .status(product.getStatus())
             .build();

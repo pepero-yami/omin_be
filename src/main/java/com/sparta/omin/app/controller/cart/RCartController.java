@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -54,5 +55,13 @@ public class RCartController {
 		return ResponseEntity.ok().body(
 			cartApplication.deleteProductInCart(user.getId(), request)
 		);
+	}
+
+	@DeleteMapping
+	public ResponseEntity<Void> cartDelete(
+		@AuthenticationPrincipal User user
+	) {
+		cartService.delete(user.getId());
+		return ResponseEntity.noContent().build();
 	}
 }

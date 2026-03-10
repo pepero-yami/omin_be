@@ -1,10 +1,10 @@
 package com.sparta.omin.region.controller;
 
+import com.sparta.omin.WebMvcTestBase;
 import com.sparta.omin.app.controller.region.RegionController;
 import com.sparta.omin.app.controller.region.RegionSeedController;
 import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionService;
-import com.sparta.omin.region.WebMvcTestBase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
