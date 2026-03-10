@@ -147,11 +147,6 @@ public class Order extends BaseEntity {
                 .sum();
     }
 
-    //에러방지
-    public boolean isCompleted() {
-        return false;
-    }
-
     //=====Helper method=====
     //validation
     private void validatePendingStatus() {
