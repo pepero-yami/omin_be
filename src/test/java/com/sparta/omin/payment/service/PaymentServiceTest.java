@@ -1,7 +1,7 @@
 package com.sparta.omin.payment.service;
 
 import com.sparta.omin.app.model.order.dto.OrderInternalDto;
-import com.sparta.omin.app.model.order.service.OrderService;
+import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.payment.dto.PaymentResponse;
 import com.sparta.omin.app.model.payment.entity.Payment;
 import com.sparta.omin.app.model.payment.entity.PaymentStatus;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 class PaymentServiceTest {
 
     @Mock private PaymentRepository paymentRepository;
-    @Mock private OrderService orderService;
+    @Mock private OrderReadService orderReadService;
     @Mock private UserReadService userReadService; // 유저 존재 확인을 위해 필요
     @Mock private ApplicationEventPublisher eventPublisher; // 이벤트 발행 검증을 위해 필요
     @InjectMocks private PaymentService paymentService;
@@ -57,7 +57,7 @@ class PaymentServiceTest {
             double amount = 25000.0;
             OrderInternalDto orderDto = new OrderInternalDto(orderId, userId, amount);
 
-            given(orderService.getOrderForPayment(orderId)).willReturn(orderDto);
+            given(orderReadService.getOrderForPayment(orderId)).willReturn(orderDto);
             given(paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.empty());
             given(paymentRepository.save(any(Payment.class))).willAnswer(invocation -> invocation.getArgument(0));
 
@@ -79,7 +79,7 @@ class PaymentServiceTest {
             OrderInternalDto orderDto = new OrderInternalDto(orderId, userId, amount);
             Payment existingPayment = Payment.create(orderId, userId, amount);
 
-            given(orderService.getOrderForPayment(orderId)).willReturn(orderDto);
+            given(orderReadService.getOrderForPayment(orderId)).willReturn(orderDto);
             given(paymentRepository.findByOrderIdAndIsDeletedFalse(orderId)).willReturn(Optional.of(existingPayment));
 
             // When: 다시 결제 요청
@@ -98,7 +98,7 @@ class PaymentServiceTest {
             UUID userId = UUID.randomUUID();
             OrderInternalDto orderDto = new OrderInternalDto(orderId, userId, 25000.0);
 
-            given(orderService.getOrderForPayment(orderId)).willReturn(orderDto);
+            given(orderReadService.getOrderForPayment(orderId)).willReturn(orderDto);
 
             // When & Then: 비즈니스 예외 발생 검증
             assertThatThrownBy(() -> paymentService.requestPayment(orderId, userId, 1000.0))

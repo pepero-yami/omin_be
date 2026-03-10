@@ -1,7 +1,7 @@
 package com.sparta.omin.app.model.payment.service;
 
 import com.sparta.omin.app.model.order.dto.OrderInternalDto;
-import com.sparta.omin.app.model.order.service.OrderService;
+import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.payment.dto.PaymentResponse;
 import com.sparta.omin.app.model.payment.entity.Payment;
 import com.sparta.omin.app.model.payment.entity.PaymentStatus;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-    private final OrderService orderService;
+    private final OrderReadService orderReadService;
     private final UserReadService userReadService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -34,7 +34,7 @@ public class PaymentService {
     public PaymentResponse requestPayment(UUID orderId, UUID userId, double amount) {
 
         // 1) 주문 정보 및 소유권 확인 - 엔티티 대신 DTO를 받아옴(MSA)
-        OrderInternalDto order = orderService.getOrderForPayment(orderId);
+        OrderInternalDto order = orderReadService.getOrderForPayment(orderId);
 
         // 본인 주문 확인 (Dto의 정보를 활용)
         if (!order.userId().equals(userId)) {
