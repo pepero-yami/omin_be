@@ -18,6 +18,18 @@ public class StoreReadService {
     /**
      * 자신이 소유한 Store인지 검증합니다.
      */
+    public void validateStoreOwner(UUID storeId, UUID userId) {
+        if (!isOwnedStore(storeId, userId)) {
+            throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
+        }
+    }
+
+    /**
+     * user가 소유한 Store인지 확인합니다.
+     * @param storeId
+     * @param userId
+     * @return 소유 여부에 따라 {@code Boolean}값을 반환합니다.
+     */
     public Boolean isOwnedStore(UUID storeId, UUID userId) {
         Store store = storeRepository.findById(storeId).orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         return userId.equals(store.getOwnerId());

@@ -21,8 +21,7 @@ public enum ErrorCode {
 	CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 카트에 조회 가능한 상품이 없습니다."),
 	CART_STORE_CONFLICT(HttpStatus.CONFLICT, "다른 가게의 상품이 담겨있습니다."),
 	CART_CHANGE_FAIL(HttpStatus.CONFLICT, "장바구니를 추가할 수 없습니다."),
-	//상품에러
-	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
+
 	// Region 에러
 	REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 지역(regionId)입니다."),
 	REGION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 존재하는 지역(address)입니다."),
@@ -63,6 +62,9 @@ public enum ErrorCode {
 
 	// Product
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
+	PRODUCT_IS_NOT_AVAILABLE_FOR_SALE(HttpStatus.CONFLICT, "상품의 상태가 판매 가능하지 않습니다."),
+	PRODUCT_INVALID_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "Invalid product image count."),
+	PRODUCT_IMAGE_INVALID_ACCESS(HttpStatus.BAD_REQUEST, "Invalid product image access."),
 
 	// AI - 외부 의존성(OpenAI) (502/503/504/429)
 	AI_GENERATION_FAILED(HttpStatus.BAD_GATEWAY, "Failed to generate AI response"),
