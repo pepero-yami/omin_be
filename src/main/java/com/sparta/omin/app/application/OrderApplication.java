@@ -11,6 +11,9 @@ import com.sparta.omin.app.model.order.dto.OrderUpdateRequest;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.order.service.OrderService;
+import com.sparta.omin.app.model.payment.entity.Payment;
+import com.sparta.omin.app.model.payment.entity.PaymentStatus;
+import com.sparta.omin.app.model.payment.service.PaymentReadService;
 import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.service.StoreReadService;
@@ -33,6 +36,7 @@ public class OrderApplication {
     private final RCartService cartService;
     private final AddressReadService addressReadService;
     private final StoreReadService storeReadService;
+    private final PaymentReadService paymentReadService;
 
     /**
      * 주문 생성 흐름
@@ -70,18 +74,27 @@ public class OrderApplication {
 
     public OrderResponse updateOrderByCustomer(UUID userId, UUID orderId, OrderUpdateRequest request) {
         Address address = getAddress(userId, request.addressId());
+
         return orderService.updateOrderByCustomer(userId, orderId, address, request.userRequest());
     }
 
     public OrderResponse updateOrderStatus(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
+
+        Payment payment = paymentReadService.getPayment(orderId);
+
         validateStoreOwner(userId, order);
-        return orderService.updateOrderStatus(order);
+
+        validatePaymentStatus(payment);
+
+        return orderService.updateOrderStatus(order, order.getUser().getEmail());
     }
 
     public void rejectOrder(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
+
         validateStoreOwner(userId, order);
+
         orderService.rejectOrder(order);
     }
 
@@ -100,6 +113,12 @@ public class OrderApplication {
 
     private void validateStoreOwner(UUID userId, Order order) {
         storeReadService.validateStoreOwner(order.getStore().getId(), userId);
+    }
+
+    private static void validatePaymentStatus(Payment payment) {
+        if(payment.getPaymentStatus() != PaymentStatus.SUCCESS){
+            throw new OminBusinessException(ErrorCode.PAYMENT_NOT_COMPLETED);
+        }
     }
 
     private Address getAddress(UUID userId, UUID addressId) {
