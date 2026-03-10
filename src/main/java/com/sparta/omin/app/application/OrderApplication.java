@@ -11,6 +11,7 @@ import com.sparta.omin.app.model.order.dto.OrderUpdateRequest;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.order.service.OrderService;
+import com.sparta.omin.app.model.store.code.Status;
 import com.sparta.omin.app.model.store.entity.Store;
 import com.sparta.omin.app.model.store.service.StoreReadService;
 import com.sparta.omin.app.model.user.entity.User;
@@ -51,6 +52,8 @@ public class OrderApplication {
 
         Store store = storeReadService.getStoreReference(request.storeId());
 
+        validateStoreOpen(store.getStatus());
+
         OrderCreateResponse response = orderService.createOrder(user, cart, address, store, request);
 
         cartService.refresh(user.getId());
@@ -76,7 +79,6 @@ public class OrderApplication {
         return orderService.updateOrderStatus(order);
     }
 
-
     public void rejectOrder(UUID userId, UUID orderId) {
         Order order = getOrder(orderId);
         validateStoreOwner(userId, order);
@@ -87,6 +89,12 @@ public class OrderApplication {
     private static void validateCart(RCart cart) {
         if (cart == null || cart.getProducts().isEmpty()) {
             throw new OminBusinessException(ErrorCode.CART_NOT_FOUND);
+        }
+    }
+
+    private void validateStoreOpen(Status storeStatus) {
+        if (storeStatus != Status.OPENED) {
+            throw new OminBusinessException(ErrorCode.STORE_NOT_OPEN);
         }
     }
 

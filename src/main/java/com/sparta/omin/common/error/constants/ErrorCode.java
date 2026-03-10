@@ -90,6 +90,7 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "처리할 수 없는 주문 요청입니다."),
     ORDER_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 주문입니다."),
     ORDER_OWNER_REJECTED(HttpStatus.CONFLICT, "사장님이 주문을 거절했습니다."),
+	STORE_NOT_OPEN(HttpStatus.CONFLICT, "현재 오픈된 가게에서만 주문이 가능합니다."),
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),
