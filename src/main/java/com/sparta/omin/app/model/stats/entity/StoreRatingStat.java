@@ -52,4 +52,9 @@ public class StoreRatingStat {
         this.totalRating -= rating;
         this.avgRating = totalReview == 0 ? 0 : totalRating / totalReview;
     }
+
+    public void updateRatingByDiff(double ratingDiff) {
+        this.totalRating += ratingDiff;
+        this.avgRating = totalRating / totalReview;
+    }
 }

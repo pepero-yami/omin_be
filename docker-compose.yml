@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:latest           # 버전
+    image: postgis/postgis:latest
     container_name: omin-db
     ports:
       - "5432:5432"
@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: omin_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}  # .env 파일에서 불러옴
     volumes:
-      - ./postgres_data:/var/lib/postgresql
+      - ./postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest

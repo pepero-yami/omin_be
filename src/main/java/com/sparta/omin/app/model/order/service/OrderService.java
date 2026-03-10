@@ -3,6 +3,10 @@ package com.sparta.omin.app.model.order.service;
 import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.cart.entity.RCart;
 import com.sparta.omin.app.model.order.dto.*;
+import com.sparta.omin.app.model.order.dto.OrderCreateRequest;
+import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
+import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
+import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
@@ -111,22 +115,5 @@ public class OrderService {
     private Order getOrder(UUID orderId) {
         return orderRepository.findByIdAndIsDeletedFalse(orderId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
-    }
-
-
-
-    // payment 서비스에서 주문 존재 여부와 데이터를 확인하기 위한 메서드
-    public Order getOrderEntity(UUID orderId) {
-        return orderRepository.findByIdAndIsDeletedFalse(orderId)
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.ORDER_NOT_FOUND));
-    }
-
-    public OrderInternalDto getOrderForPayment(UUID orderId) {
-        Order order = getOrderEntity(orderId);
-        return new OrderInternalDto(
-                order.getId(),
-                order.getUser().getId(),
-                order.getTotalPrice()
-        );
     }
 }
