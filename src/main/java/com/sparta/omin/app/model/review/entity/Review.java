@@ -42,10 +42,10 @@ public class Review extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private Store store;
 
-    @Column(name = "review_rating", nullable = false)
+    @Column(name = "rating", nullable = false)
     private double rating;
 
-    @Column(name = "review_comment", length = 300)
+    @Column(name = "comment", length = 300)
     private String comment;
 
     @SQLRestriction("is_deleted = false")

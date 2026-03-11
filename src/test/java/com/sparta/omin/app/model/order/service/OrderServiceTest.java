@@ -218,6 +218,7 @@ class OrderServiceTest {
         // given
         UUID storeId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
+        String orderStatusString = "";
         String email = "owner@gwanghwamun.com";
 
         List<Order> orders = List.of(
@@ -228,11 +229,11 @@ class OrderServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         SliceImpl<Order> slice = new SliceImpl<>(orders, pageable, false);
 
-        given(orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable))
-                .willReturn(slice);
+//        given(orderRepository.findByStoreIdWithStatus(storeId, orderStatusString, pageable))
+//                .willReturn(slice);
 
         // when
-        Slice<OrderResponse> response = orderService.getOrdersByOwner(storeId, pageable);
+        Slice<OrderResponse> response = orderService.getOrdersByOwner(storeId, orderStatusString, pageable);
 
         // then
         assertThat(response).isNotNull();
