@@ -15,6 +15,9 @@ public enum ErrorCode {
 	PASSWORD_POLICY_VIOLATION(HttpStatus.BAD_REQUEST, "패스워드 정책 위반"),
 	TOKEN_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 저장 실패"),
 
+	//관리자 에러
+	MASTER_APPROVAL_IS_REQUIRED(HttpStatus.FORBIDDEN, "관리자 계정 승인이 필요합니다"),
+
 	//카트 에러
 	CART_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 카트가 없습니다."),
 	STORE_MISMATCH(HttpStatus.CONFLICT, "다른 가게의 상품은 담을 수 없습니다."),
