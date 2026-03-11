@@ -1,6 +1,6 @@
 package com.sparta.omin.app.security.jwt;
 
-import com.sparta.omin.app.model.user.service.UserDetailsServiceImpl;
+import com.sparta.omin.common.CombinedUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
-	private final UserDetailsServiceImpl userDetailsService;
+	private final CombinedUserDetailsService combinedUserDetailsService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -38,15 +38,13 @@ public class JwtFilter extends OncePerRequestFilter {
 			String username = jwtUtil.getEmail(tokenValue);
 
 			try {
-				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
+				UserDetails userDetails = combinedUserDetailsService.loadUserByUsername(username);
 				UsernamePasswordAuthenticationToken authentication =
 					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
 				SecurityContext context = SecurityContextHolder.createEmptyContext();
 				context.setAuthentication(authentication);
 				SecurityContextHolder.setContext(context);
-
 			} catch (Exception e) {
 				log.error("Security Context에 유저 정보를 설정할 수 없습니다: {}", e.getMessage());
 				return;

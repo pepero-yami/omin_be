@@ -43,6 +43,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                 .permitAll() // 정적 리소스 허용
+                .requestMatchers(HttpMethod.POST, "/api/v1/admins/auth").hasRole("MASTER")
+                .requestMatchers("/api/v1/admins/auth").permitAll()
                 .requestMatchers("/api/v1/users/auth").permitAll()
                 .requestMatchers("/api/v1/users").hasRole("CUSTOMER")
                 .requestMatchers("/api/v1/cart/**").hasRole("CUSTOMER") // 카트 관련 권한 수정
