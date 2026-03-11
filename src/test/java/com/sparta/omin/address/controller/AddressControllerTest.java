@@ -1,7 +1,6 @@
 package com.sparta.omin.address.controller;
 
 import com.sparta.omin.app.model.address.dto.AddressResponse;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,7 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Disabled("테스트코드 수정중")
 @DisplayName("Address:Controller")
 @AutoConfigureMockMvc(addFilters = false)
 class AddressControllerTest extends AddressControllerHelper {
@@ -66,7 +64,9 @@ class AddressControllerTest extends AddressControllerHelper {
 
         // When & Then
         // 목록의 개수가 2개인지 확인
-        mockMvc.perform(get(ADDRESS_BASE_URL))
+        mockMvc.perform(get(ADDRESS_BASE_URL)
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(2))
