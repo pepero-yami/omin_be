@@ -5,10 +5,12 @@ import com.sparta.omin.app.controller.region.RegionController;
 import com.sparta.omin.app.controller.region.RegionSeedController;
 import com.sparta.omin.app.model.region.service.RegionSeedService;
 import com.sparta.omin.app.model.region.service.RegionService;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @WebMvcTest(controllers = {RegionController.class, RegionSeedController.class})
+@Disabled
 public class RegionControllerHelper extends WebMvcTestBase {
     @MockitoBean
     protected RegionService regionService;

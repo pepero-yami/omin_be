@@ -7,6 +7,8 @@ import com.sparta.omin.app.model.order.dto.OrderCreateResponse;
 import com.sparta.omin.app.model.order.dto.OrderDetailResponse;
 import com.sparta.omin.app.model.order.dto.OrderResponse;
 import com.sparta.omin.app.model.order.entity.Order;
+import com.sparta.omin.app.model.order.entity.status.OrderStatus;
+import com.sparta.omin.app.model.order.event.OrderStatusChangedEvent;
 import com.sparta.omin.app.model.order.repos.OrderRepository;
 import com.sparta.omin.app.model.product.entity.Product;
 import com.sparta.omin.app.model.product.service.ProductReadService;
@@ -15,6 +17,7 @@ import com.sparta.omin.app.model.user.entity.User;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductReadService productReadService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public OrderCreateResponse createOrder(User user, RCart cart, Address address, Store store, OrderCreateRequest request) {
@@ -84,8 +88,9 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrderStatus(Order order) {
+    public OrderResponse updateOrderStatus(Order order, String customerEmail) {
         order.nextStatus();
+        eventPublisher.publishEvent(new OrderStatusChangedEvent(customerEmail, order.getStatus()));
         return OrderResponse.from(order);
     }
 
@@ -103,8 +108,9 @@ public class OrderService {
                 .map(OrderResponse::from);
     }
 
-    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, Pageable pageable) {
-        return orderRepository.findByStoreIdAndIsDeletedFalseOrderByCreatedAtDesc(storeId, pageable)
+    public Slice<OrderResponse> getOrdersByOwner(UUID storeId, String status, Pageable pageable) {
+        OrderStatus orderStatus = status != null ? OrderStatus.valueOf(status) : null;
+        return orderRepository.findByStoreIdWithStatus(storeId, orderStatus, pageable)
                 .map(OrderResponse::from);
     }
 

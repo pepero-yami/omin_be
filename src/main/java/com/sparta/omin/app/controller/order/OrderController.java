@@ -52,7 +52,7 @@ public class OrderController {
     /**
      * 손님 & 사장님
      */
-    @GetMapping("/{orderId}/details") // TODO 중복으로 인한 임시
+    @GetMapping("/{orderId}/details")
     public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable UUID orderId) {
         return ResponseEntity.ok(orderService.getOrderDetail(orderId));
     }
@@ -61,8 +61,8 @@ public class OrderController {
      * 사장님
      */
     @GetMapping
-    public ResponseEntity<Slice<OrderResponse>> getOrdersByOwner(@RequestParam UUID storeId, @AuthenticationPrincipal User user, @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), pageable));
+    public ResponseEntity<Slice<OrderResponse>> getOrdersByOwner(@RequestParam UUID storeId, @RequestParam(required = false) String status, @AuthenticationPrincipal User user, @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderApplication.getOrdersByOwner(storeId, user.getId(), status, pageable));
     }
 
     @PatchMapping("/{orderId}/status")

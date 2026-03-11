@@ -59,6 +59,7 @@ public enum ErrorCode {
     PAYMENT_ORDER_USER_MISMATCH(HttpStatus.BAD_REQUEST, "본인의 주문에 대해서만 처리가 가능합니다."),
     PAYMENT_ORDER_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "이미 취소된 주문은 다시 결제할 수 없습니다. 새로 주문해 주세요."),
     PAYMENT_IN_PROGRESS(HttpStatus.BAD_REQUEST, "현재 결제가 진행 중인 주문입니다. 잠시 후 다시 시도해 주세요."),
+	PAYMENT_NOT_COMPLETED(HttpStatus.BAD_REQUEST,"결제가 완료되지 않은 주문은 상태를 변경할 수 없습니다."),
 
 	// Product
 	PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "Product Not Found"),
@@ -92,6 +93,7 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "처리할 수 없는 주문 요청입니다."),
     ORDER_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 주문입니다."),
     ORDER_OWNER_REJECTED(HttpStatus.CONFLICT, "사장님이 주문을 거절했습니다."),
+	STORE_NOT_OPEN(HttpStatus.CONFLICT, "현재 오픈된 가게에서만 주문이 가능합니다."),
 
 	// store 에러
 	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 가게를 찾을 수 없습니다."),

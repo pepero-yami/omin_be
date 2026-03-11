@@ -5,6 +5,7 @@ import com.sparta.omin.app.model.order.entity.status.OrderStatus;
 import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.payment.event.PaymentCanceledEvent;
 import com.sparta.omin.app.model.payment.event.PaymentCompletedEvent;
+import com.sparta.omin.common.util.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderEventListener {
 
     private final OrderReadService orderReadService;
+    private final MailService mailService;
 
     // 결제 완료 시: 주문 상태 -> ACCEPTED
     @EventListener
@@ -30,5 +32,10 @@ public class OrderEventListener {
     public void handlePaymentCanceled(PaymentCanceledEvent event) {
         Order order = orderReadService.getOrder(event.orderId());
         order.updateStatus(OrderStatus.CANCELLED);
+    }
+
+    @EventListener
+    public void handleOrderStatusChanged(OrderStatusChangedEvent event) {
+        mailService.snedOrderStatusMail(event.customerEmail(), event.status());
     }
 }
