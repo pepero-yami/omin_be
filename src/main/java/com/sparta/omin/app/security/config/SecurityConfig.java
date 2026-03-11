@@ -43,6 +43,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                 .permitAll() // 정적 리소스 허용
+                .requestMatchers(HttpMethod.POST, "/api/v1/admins/auth/masters").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/admins/auth").hasRole("MASTER")
                 .requestMatchers("/api/v1/admins/auth").permitAll()
                 .requestMatchers("/api/v1/users/auth").permitAll()

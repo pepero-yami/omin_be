@@ -16,7 +16,7 @@ public enum ErrorCode {
 	TOKEN_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "토큰 저장 실패"),
 
 	//관리자 에러
-	MASTER_APPROVAL_IS_REQUIRED(HttpStatus.FORBIDDEN, "관리자 계정 승인이 필요합니다"),
+	INVALID_MASTER_KEY(HttpStatus.FORBIDDEN, "마스터 키 불일치"),
 
 	//카트 에러
 	CART_NOT_FOUND(HttpStatus.NOT_FOUND, "조회 가능한 카트가 없습니다."),
