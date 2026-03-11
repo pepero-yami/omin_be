@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public interface StoreRepository extends JpaRepository<Store, UUID> {
 
-    @Query("SELECT s FROM Store s LEFT JOIN FETCH s.images WHERE s.id = :id")
+    @Query("SELECT s FROM Store s JOIN FETCH s.images i WHERE s.id = :id ORDER BY i.sequence")
     Optional<Store> findByIdWithImages(@Param("id") UUID id);
 
     @Query(value = """
