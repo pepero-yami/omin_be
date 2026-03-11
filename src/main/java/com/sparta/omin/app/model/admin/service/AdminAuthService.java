@@ -3,6 +3,7 @@ package com.sparta.omin.app.model.admin.service;
 import com.sparta.omin.app.model.admin.dto.AdminDto;
 import com.sparta.omin.app.model.admin.dto.request.AdminLoginRequest;
 import com.sparta.omin.app.model.admin.dto.request.AdminRegister;
+import com.sparta.omin.app.model.admin.dto.request.MasterRegister;
 import com.sparta.omin.app.model.admin.entity.Admin;
 import com.sparta.omin.app.model.admin.repository.AdminRepository;
 import com.sparta.omin.app.model.user.client.JwtRedisClient;
@@ -12,6 +13,7 @@ import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,9 @@ public class AdminAuthService {
 	private final PasswordEncoder passwordEncoder;
 	private final JwtUtil jwtUtil;
 	private final JwtRedisClient jwtRedisClient;
+
+	@Value("${jwt.secret}")
+	private String secret;
 
 	public AdminDto register(AdminRegister request) {
 		if (adminRepository.existsByEmail(request.email())) {
@@ -50,5 +55,18 @@ public class AdminAuthService {
 			admin.getRole().name());
 		jwtRedisClient.put(admin.getId(), tokenResponse);
 		return tokenResponse;
+	}
+
+	public void registerMaster(MasterRegister request) {
+		if (!request.masterKey().equals(secret)) {
+			throw new OminBusinessException(ErrorCode.INVALID_MASTER_KEY);
+		}
+		adminRepository.save(
+			Admin.builder()
+				.name(request.name())
+				.department(request.department())
+				.email(request.email())
+				.password(passwordEncoder.encode(request.password()))
+				.build());
 	}
 }

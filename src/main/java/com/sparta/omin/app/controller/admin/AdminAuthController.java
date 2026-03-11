@@ -2,6 +2,7 @@ package com.sparta.omin.app.controller.admin;
 
 import com.sparta.omin.app.model.admin.dto.request.AdminLoginRequest;
 import com.sparta.omin.app.model.admin.dto.request.AdminRegister;
+import com.sparta.omin.app.model.admin.dto.request.MasterRegister;
 import com.sparta.omin.app.model.admin.dto.response.AdminInfo;
 import com.sparta.omin.app.model.admin.service.AdminAuthService;
 import com.sparta.omin.app.model.user.dto.response.TokenResponse;
@@ -34,5 +35,13 @@ public class AdminAuthController {
 		@RequestBody AdminLoginRequest request) {
 		return ResponseEntity.ok()
 			.body(adminAuthService.login(request));
+	}
+
+	@PostMapping("/masters")
+	ResponseEntity<Void> masterRegister(
+		@RequestBody MasterRegister masterRegister
+	) {
+		adminAuthService.registerMaster(masterRegister);
+		return ResponseEntity.ok().build();
 	}
 }
