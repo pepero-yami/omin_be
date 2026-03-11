@@ -23,8 +23,8 @@ public class StoreImage extends BaseEntity {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "image_url", nullable = false)
-    private String imageUrl;
+    @Column(name = "url", nullable = false)
+    private String url;
 
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
@@ -34,7 +34,7 @@ public class StoreImage extends BaseEntity {
     private Store store;
 
     public StoreImage(String imageUrl) {
-        this.imageUrl = imageUrl;
+        this.url = imageUrl;
     }
 
     public void updateImageSorting(Integer sequence) {

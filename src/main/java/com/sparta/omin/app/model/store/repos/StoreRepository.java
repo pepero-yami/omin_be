@@ -29,7 +29,7 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
                        s.road_address  as roadAddress,
                        s.detail_address as detailAddress,
                        s.status,
-                       si.image_url   as mainImage,
+                       si.url   as mainImage,
                        ST_Distance(s.coordinates, cast(:center as geography)) as distance,
                        srs.avg_rating  as avgRating,
                        srs.total_review as totalReview
