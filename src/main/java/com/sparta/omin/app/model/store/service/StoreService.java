@@ -1,5 +1,5 @@
 package com.sparta.omin.app.model.store.service;
-
+import com.sparta.omin.app.model.admin.entity.Admin;
 import com.sparta.omin.app.model.address.dto.CoordinatesSearchDto;
 import com.sparta.omin.app.model.address.service.CoordinatesSearchService;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
@@ -67,8 +67,8 @@ public class StoreService {
     // 가게 생성
     // 외부 API/S3 호출을 트랜잭션 밖에서 실행할 수 있게 DB 저장은 StoreWriter에 위임
     public StoreResponse registerStore(StoreCreateRequest storeCreateRequest, List<MultipartFile> images, UserDetails user) {
-        User loginUser = (User) user;
-        log.debug("매장 등록 요청 - ownerId: {}, name: {}", loginUser.getId(), storeCreateRequest.name());
+        UserRoleAndId userInfo = getUser(user);
+        log.debug("매장 등록 요청 - ownerId: {}, name: {}", userInfo.id(), storeCreateRequest.name());
 
         //주소 중복 검증
         if (storeRepository.existsByRoadAddressAndDetailAddress(storeCreateRequest.roadAddress(), storeCreateRequest.detailAddress())) {
@@ -82,19 +82,20 @@ public class StoreService {
         //S3에 이미지 업로드
         List<String> imageUrlList = images.stream().map(imageUploader::uploadStoreImage).toList();
 
-        return storeWriter.save(storeCreateRequest, loginUser.getId(), coordinates, imageUrlList);
+        return storeWriter.save(storeCreateRequest, userInfo.id(), coordinates, imageUrlList);
     }
 
     // 단건조회
     @Transactional(readOnly = true)
     public StoreResponse findStore(UUID storeId, UserDetails user) {
+        UserRoleAndId userInfo = getUser(user);
         log.debug("매장 단건 조회 - storeId: {}", storeId);
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         if (store.getStatus() == Status.PENDING) {
-            User loginUser = (User) user;
-            boolean isAdmin = loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER;
-            boolean isOwner = store.getOwnerId().equals(loginUser.getId());
+
+            boolean isAdmin = userInfo.role() == Role.MANAGER || userInfo.role() == Role.MASTER;
+            boolean isOwner = store.getOwnerId().equals(userInfo.id());
             if (!isAdmin && !isOwner) {
                 throw new OminBusinessException(ErrorCode.STORE_NOT_FOUND);
             }
@@ -165,15 +166,15 @@ public class StoreService {
     // customer용 매장 조회 리스트
     @Transactional(readOnly = true)
     public StoreSliceResponse<StoreSearchResponse> searchStoreList(StoreSearchRequest storeSearchRequest, UserDetails user) {
-        UUID userId = ((User) user).getId();
+        UserRoleAndId userInfo = getUser(user);
         //배송지 좌표조회
-        CoordinatesSearchDto addressCoordinate = coordinatesSearchService.getCoordinates(storeSearchRequest.addressId(), userId);
+        CoordinatesSearchDto addressCoordinate = coordinatesSearchService.getCoordinates(storeSearchRequest.addressId(), userInfo.id());
         //반경 5km 내
         final double radius = 5000;
         Point center = toPoint(addressCoordinate);
 
         log.info("목록 검색 - userId: {}, Point: {}, Radius: {}, Category: {}, Name: {}, LastDist: {}, LastId: {}, Size: {}",
-                userId, center, radius, storeSearchRequest.category(),
+                userInfo.id(), center, radius, storeSearchRequest.category(),
                 storeSearchRequest.name(), storeSearchRequest.lastDistance(),
                 storeSearchRequest.lastId(), storeSearchRequest.size());
 
@@ -214,7 +215,8 @@ public class StoreService {
     // 점주용: 본인 등록 매장 목록 조회
     @Transactional(readOnly = true)
     public StoreSliceResponse<StoreOwnerAdminSearchResponse> findMyStores(StoreOwnerAdminSearchRequest cursorRequest, UserDetails user) {
-        UUID ownerId = ((User) user).getId();
+        UserRoleAndId userInfo = getUser(user);
+        UUID ownerId = userInfo.id();
         log.debug("본인 매장 목록 조회 - ownerId: {}, lastCreatedAt: {}, size: {}", ownerId, cursorRequest.lastCreatedAt(), cursorRequest.size());
         Slice<Store> result = storeRepository.findByOwnerIdCursor(
                 ownerId, cursorRequest.lastCreatedAt(), cursorRequest.lastId(),
@@ -250,9 +252,9 @@ public class StoreService {
     // 관리자용: 승인 대기(PENDING) 매장을 CLOSED 상태로 승인 처리
     @Transactional
     public StoreResponse approveAndCloseStore(UUID storeId, UserDetails user) {
-        User loginUser = (User) user;
-        log.info("매장 승인 요청 - storeId: {}, adminId: {}", storeId, loginUser.getId());
-        if (loginUser.getRole() != Role.MANAGER && loginUser.getRole() != Role.MASTER) {
+        UserRoleAndId userInfo = getUser(user);
+        log.info("매장 승인 요청 - storeId: {}, adminId: {}", storeId, userInfo.id());
+        if (userInfo.role() != Role.MANAGER && userInfo.role() != Role.MASTER) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
         Store store = storeRepository.findByIdWithImages(storeId)
@@ -271,14 +273,14 @@ public class StoreService {
     //점포 상태 (CLOSED) -> (OPENED)
     @Transactional
     public StoreResponse modifyStoreStatus(StoreStatusUpdateRequest storeStatusUpdateRequest, UUID storeId, UserDetails user) {
-        User loginUser = (User) user;
+        UserRoleAndId userInfo = getUser(user);
         log.info("매장 상태 변경 요청 - storeId: {}, targetStatus: {}", storeId, storeStatusUpdateRequest.status());
         Store store = storeRepository.findByIdWithImages(storeId)
                 .orElseThrow(() -> new OminBusinessException(ErrorCode.STORE_NOT_FOUND));
         hasStoreAuth(user, store);
 
         //점주는 가게상태를 승인대기로는 변경못함.
-        if (storeStatusUpdateRequest.status() == Status.PENDING && !(loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER)) {
+        if (storeStatusUpdateRequest.status() == Status.PENDING && !(userInfo.role() == Role.MANAGER || userInfo.role() == Role.MASTER)) {
             throw new OminBusinessException(ErrorCode.STORE_STATUS_INVALID_CHANGE);
         }
         //가게 상태가 PENDING 일 때 예외발생
@@ -299,14 +301,13 @@ public class StoreService {
 
     // 권한 검증
     private static void hasStoreAuth(UserDetails user, Store store) {
-        User loginUser = (User) user;
-
+        UserRoleAndId userInfo = getUser(user);
         //관리자면 통과
-        if (loginUser.getRole() == Role.MANAGER || loginUser.getRole() == Role.MASTER) {
+        if (userInfo.role() == Role.MANAGER || userInfo.role() == Role.MASTER) {
             return;
         }
         //관리자가 아니라면 반드시 가게 주인이어야 함
-        if (!store.getOwnerId().equals(loginUser.getId())) {
+        if (!store.getOwnerId().equals(userInfo.id())) {
             throw new OminBusinessException(ErrorCode.STORE_ACCESS_DENIED);
         }
     }
@@ -339,5 +340,18 @@ public class StoreService {
                 dto.longitude().doubleValue(),
                 dto.latitude().doubleValue()
         ));
+    }
+
+    private static UserRoleAndId getUser(UserDetails user) {
+        if (user instanceof User u) {
+            return new UserRoleAndId(u.getId(), u.getRole());
+        } else if (user instanceof Admin a) {
+            return new UserRoleAndId(a.getId(), a.getRole());
+        } else {
+            throw new OminBusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+    record UserRoleAndId(UUID id, Role role) {
+
     }
 }
