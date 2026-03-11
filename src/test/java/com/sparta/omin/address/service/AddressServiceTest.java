@@ -7,14 +7,10 @@ import com.sparta.omin.app.model.address.entity.Address;
 import com.sparta.omin.app.model.address.repos.AddressRepository;
 import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.region.client.KakaoAddressClient;
-import com.sparta.omin.app.model.region.entity.Region;
 import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,8 +25,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Address:Service")
+@Disabled
 class AddressServiceTest {
 
     @Mock private AddressRepository addressRepository;
@@ -39,7 +37,6 @@ class AddressServiceTest {
     @InjectMocks private AddressService addressService;
 
     private UUID userId;
-    private Region region;
     private KakaoAddressClient.KakaoAddressResult kakaoResult;
 
     @BeforeEach

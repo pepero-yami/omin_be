@@ -32,7 +32,7 @@ public record StoreResponse(
         public static StoreImageResponse of(StoreImage storeImage) {
             return StoreImageResponse.builder()
                     .id(storeImage.getId())
-                    .imageUrl(storeImage.getImageUrl())
+                    .imageUrl(storeImage.getUrl())
                     .sequence(storeImage.getSequence())
                     .build();
         }

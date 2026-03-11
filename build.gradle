@@ -56,6 +56,9 @@ dependencies {
 
     // spring ai
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    //google smtp
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 dependencyManagement {

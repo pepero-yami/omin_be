@@ -2,9 +2,10 @@ package com.sparta.omin.app.model.order.event;
 
 import com.sparta.omin.app.model.order.entity.Order;
 import com.sparta.omin.app.model.order.entity.status.OrderStatus;
-import com.sparta.omin.app.model.order.service.OrderService;
+import com.sparta.omin.app.model.order.service.OrderReadService;
 import com.sparta.omin.app.model.payment.event.PaymentCanceledEvent;
 import com.sparta.omin.app.model.payment.event.PaymentCompletedEvent;
+import com.sparta.omin.common.util.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -14,13 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OrderEventListener {
 
-    private final OrderService orderService;
+    private final OrderReadService orderReadService;
+    private final MailService mailService;
 
     // 결제 완료 시: 주문 상태 -> ACCEPTED
     @EventListener
     @Transactional
     public void handlePaymentCompleted(PaymentCompletedEvent event) {
-        Order order = orderService.getOrderEntity(event.orderId());
+        Order order = orderReadService.getOrder(event.orderId());
         order.completePayment(); // 또는 order.updateStatus(OrderStatus.ACCEPTED);
     }
 
@@ -28,7 +30,12 @@ public class OrderEventListener {
     @EventListener
     @Transactional
     public void handlePaymentCanceled(PaymentCanceledEvent event) {
-        Order order = orderService.getOrderEntity(event.orderId());
+        Order order = orderReadService.getOrder(event.orderId());
         order.updateStatus(OrderStatus.CANCELLED);
+    }
+
+    @EventListener
+    public void handleOrderStatusChanged(OrderStatusChangedEvent event) {
+        mailService.snedOrderStatusMail(event.customerEmail(), event.status());
     }
 }

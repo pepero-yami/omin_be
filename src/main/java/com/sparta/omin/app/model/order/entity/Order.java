@@ -147,11 +147,6 @@ public class Order extends BaseEntity {
                 .sum();
     }
 
-    //에러방지
-    public boolean isCompleted() {
-        return false;
-    }
-
     //=====Helper method=====
     //validation
     private void validatePendingStatus() {
@@ -162,6 +157,10 @@ public class Order extends BaseEntity {
 
     private static @NonNull String getDeliveryAddress(Address address) {
         return address.getRoadAddress() + " " + address.getShippingDetailAddress();
+    }
+
+    public boolean isCompleted() {
+        return this.status == OrderStatus.COMPLETED;
     }
 
     //리스너용 메서드 2개

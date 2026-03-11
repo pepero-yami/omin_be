@@ -6,6 +6,10 @@ import com.sparta.omin.app.model.region.dto.RegionUpdateRequest;
 import com.sparta.omin.app.model.region.service.RegionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +31,11 @@ public class RegionController {
     }
 
     @GetMapping //주소로 조회
-    public ResponseEntity<List<RegionResponse>> getRegions(@RequestParam(required = false) String keyword) {
-        if (keyword != null && !keyword.isBlank()) {
-            return ResponseEntity.ok(regionService.searchRegions(keyword));
-        }
-        return ResponseEntity.ok(regionService.getRegions());
+    public ResponseEntity<Page<RegionResponse>> getRegions(
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(regionService.getRegions(keyword, pageable));
     }
 
     @GetMapping("/{regionId}") //지역아이디로 조회

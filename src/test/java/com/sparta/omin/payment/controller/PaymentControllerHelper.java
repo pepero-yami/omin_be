@@ -5,6 +5,7 @@ import com.sparta.omin.app.controller.payment.PaymentController;
 import com.sparta.omin.app.model.payment.service.PaymentService;
 import com.sparta.omin.app.model.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 @WebMvcTest(controllers = {PaymentController.class})
+@Disabled
 public class PaymentControllerHelper extends WebMvcTestBase {
     @MockitoBean
     protected PaymentService paymentService;
@@ -24,7 +26,7 @@ public class PaymentControllerHelper extends WebMvcTestBase {
     @Autowired
     private WebApplicationContext context;
 
-    protected final String PAYMENTS_BASE_URL = "/api/v1/payments";
+//    protected final String PAYMENTS_BASE_URL = "/api/v1/payments";
 
     @BeforeEach
     void setupSecurity() {

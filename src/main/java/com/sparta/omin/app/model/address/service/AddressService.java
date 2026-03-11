@@ -11,10 +11,12 @@ import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -69,18 +71,7 @@ public class AddressService {
         return toResponse(saved);
     }
 
-    public List<AddressResponse> getMyAddresses(UUID userId) {
-        return addressRepository.findAllByUserIdAndIsDeletedFalseOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
 
-    public AddressResponse getMyAddress(UUID userId, UUID addressId) {
-        Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
-                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
-        return toResponse(address);
-    }
 
     @Transactional
     public AddressResponse updateAddress(UUID userId, UUID addressId, AddressUpdateRequest request) {
@@ -132,6 +123,19 @@ public class AddressService {
         return toResponse(address);
     }
 
+    // 페이징 처리 및 반환
+    public Page<AddressResponse> getMyAddresses(UUID userId, Pageable pageable) {
+        Pageable validatedPageable = validatePageSize(pageable);
+        return addressRepository.findAllByUserIdAndIsDeletedFalse(userId, validatedPageable)
+                .map(this::toResponse);
+    }
+
+    public AddressResponse getMyAddress(UUID userId, UUID addressId) {
+        Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
+                .orElseThrow(() -> new OminBusinessException(ErrorCode.ADDRESS_NOT_FOUND));
+        return toResponse(address);
+    }
+
     @Transactional
     public void deleteAddress(UUID userId, UUID addressId) {
         Address address = addressRepository.findByIdAndUserIdAndIsDeletedFalse(addressId, userId)
@@ -158,6 +162,14 @@ public class AddressService {
 
         address.setDefault(true);
         return toResponse(address);
+    }
+
+    private Pageable validatePageSize(Pageable pageable) {
+        int size = pageable.getPageSize();
+        if (size != 10 && size != 30 && size != 50) {
+            return PageRequest.of(pageable.getPageNumber(), 10, pageable.getSort());
+        }
+        return pageable;
     }
 
     private AddressResponse toResponse(Address address) {

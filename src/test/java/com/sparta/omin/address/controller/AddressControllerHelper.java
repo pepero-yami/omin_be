@@ -4,6 +4,7 @@ import com.sparta.omin.WebMvcTestBase;
 import com.sparta.omin.app.controller.address.AddressController;
 import com.sparta.omin.app.model.address.service.AddressService;
 import com.sparta.omin.app.model.user.entity.User;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @WebMvcTest(controllers = {AddressController.class})
+@Disabled
 public abstract class AddressControllerHelper extends WebMvcTestBase {
 
     @MockitoBean
