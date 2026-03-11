@@ -10,25 +10,32 @@ import com.sparta.omin.app.model.region.client.KakaoAddressClient;
 import com.sparta.omin.app.model.region.service.RegionService;
 import com.sparta.omin.common.error.OminBusinessException;
 import com.sparta.omin.common.error.constants.ErrorCode;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Address:Service")
-@Disabled
 class AddressServiceTest {
 
     @Mock private AddressRepository addressRepository;
@@ -91,6 +98,30 @@ class AddressServiceTest {
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ADDRESS_DUPLICATED);
         }
     }
+
+    @Nested
+    @DisplayName("주소 목록 조회 테스트")
+    class GetAddresses {
+        @Test
+        @DisplayName("내 주소 목록을 페이징하여 조회한다")
+        void getMyAddresses_success() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+            Address address = createMockAddress(true);
+            Page<Address> page = new PageImpl<>(List.of(address), pageable, 1);
+
+            given(addressRepository.findAllByUserIdAndIsDeletedFalse(eq(userId), any(Pageable.class)))
+                    .willReturn(page);
+
+            // When
+            Page<AddressResponse> result = addressService.getMyAddresses(userId, pageable);
+
+            // Then
+            assertThat(result.getContent()).hasSize(1);
+            assertThat(result.getTotalElements()).isEqualTo(1);
+        }
+    }
+
 
     @Nested
     @DisplayName("주소 수정 및 삭제 테스트")
