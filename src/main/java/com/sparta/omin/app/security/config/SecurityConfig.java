@@ -93,8 +93,6 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
                 )
 
-            // 개발 단계: Postman 호출 편의상 csrf 끔
-            // TODO(auth): 인증 방식 확정 후(세션 기반이면 켜는 것을 고려), 정책 재검토 필요
             .csrf(csrf -> csrf.disable())
 
             // 기본 로그인 폼/Basic 인증도 불필요하므로 비활성화(완전 오픈 모드)
